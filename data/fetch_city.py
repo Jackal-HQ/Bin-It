@@ -3,6 +3,8 @@ import sys
 import time
 from datetime import date, timedelta
 from pathlib import Path
+import requests, json
+
 
 import requests
 import yaml
@@ -83,4 +85,22 @@ if c["source"] == "socrata":
             if len(rows) < 50000:
                 break
             offset += 50000
+
+
+def osm_boundary(query, slug):
+    r = requests.get(
+        "https://nominatim.openstreetmap.org/search",
+        params={"q": query, "format": "geojson", "polygon_geojson": 1,
+                "limit": 1, "featureType": "city"},
+        headers={"User-Agent": "trash-hackathon (binit.kh9@gmail.com)"},  # required by OSM
+        timeout=60,
+    )
+    fc = r.json()
+    geom = fc["features"][0]["geometry"]["type"]
+    assert geom in ("Polygon", "MultiPolygon"), f"Got a {geom}, not a boundary"
+    with open(DATA / "raw" / slug / "boundary.geojson", "w") as f:
+        json.dump(fc, f)
+
+if slug == 'orlando':
+    osm_boundary("Orlando, Florida, USA", "orlando")
 print("done:", out)
