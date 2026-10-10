@@ -16,6 +16,18 @@ overflowing-trash-bin-filled-with-plastic-bottles-cans-paper-debris-cracked-conc
 piles-of-household-waste-that-exceed-the-capacity-of-the-trash-cans-so-they-smell-bad-photo.webp,nyc,bag_pile,2,stock (web; license unverified),Red bags and boxes piled in front of three bins
 hf_overflow_000.jpg,orlando,bag_pile,3,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: large pile of bags beside a dumpster, not a can overflowing; night street scene, no faces"
 hf_overflow_001.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: two park trash cans heaped above rim, gulls around; distant person too small to be identifiable"
-hf_overflow_004.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: street dumpster lid open with trash heaped above rim plus a spill on the ground; no faces"
+hf_overflow_004.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)",Reviewed by eye: street dumpster lid open with trash heaped above rim plus a spill on the ground; no faces
 hf_overflow_005.jpg,orlando,illegal_dumping,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: discarded couch cushions plus bags dumped at a curb next to a bin; distant person, back turned, not identifiable"
 binsandbags.jpg,Orlando,bag_pile,2,stock(Getty Images),
+bags1.jpg,orlando,bag_pile,2,stock (web; license unverified),Pile of ~12 black bags on grass at roadside; no bin
+bags2.jpg,nyc,bag_pile,3,stock (Alamy watermark; license unverified),Large heap of black bags against a wall; Alamy watermark
+bags3.jpg,nyc,bag_pile,2,stock (Alamy watermark; license unverified),"Black bags on NYC sidewalk next to a bus; pedestrians visible (small, blurred) - crop or skip before publishing; Alamy watermark"
+bags4.jpg,chicago,bag_pile,2,stock (Dreamstime watermark; license unverified),Black bags piled on grass beside a path; Dreamstime watermark
+bags5.jpg,orlando,bag_pile,2,stock (web; license unverified),Translucent dark bags stacked along a wall; no bin
+bags6.jpg,nyc,bag_pile,3,stock (Alamy watermark; license unverified),Bags and cardboard piled in front of a metal dumpster; Alamy watermark
+bags7.jpg,chicago,bag_pile,1,stock (web; license unverified),Four black bags against a fence; small pile
+bags8.webp,orlando,bag_pile,2,stock (web; license unverified),About 10 grey bags with red ties along a park path
+bags9.jpg,nyc,bag_pile,3,stock (web; license unverified),Very large heap of clear bags at roadside with debris; looks like a cleanup collection
+bags10.jpg,chicago,bag_pile,3,stock (web; license unverified),Long row of clear bags and cardboard along a mural wall; looks like a cleanup collection
+bags11.jpg,orlando,bag_pile,3,stock (web; license unverified),Heap of clear bags at a street corner plus burnt debris
+bags12.jpg,nyc,illegal_dumping,3,stock (web; license unverified),"Clear bags plus burnt electronics and boxes at a fence; mixed dumping, bags dominate - could also be bag_pile"
