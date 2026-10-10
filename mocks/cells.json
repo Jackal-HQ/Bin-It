@@ -1,0 +1,7 @@
+{
+  "cells": [
+    { "h3_cell": "892a1008003ffff", "lat": 28.5383, "lng": -81.3792, "expected_overflow": 0.62, "reports_per_1k": 0.21, "under_reported": true, "demand": 0.71 },
+    { "h3_cell": "892a1008007ffff", "lat": 28.5401, "lng": -81.3755, "expected_overflow": 0.30, "reports_per_1k": 0.35, "under_reported": false, "demand": 0.33 },
+    { "h3_cell": "892a100800bffff", "lat": 28.5420, "lng": -81.3820, "expected_overflow": 0.80, "reports_per_1k": 0.18, "under_reported": true, "demand": 0.88 }
+  ]
+}

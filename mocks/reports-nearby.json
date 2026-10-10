@@ -1,0 +1,10 @@
+{
+  "tickets": [
+    { "id": "t_01", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "max_severity": 2, "report_count": 3, "status": "received", "is_synthetic": true },
+    { "id": "t_02", "lat": 28.5401, "lng": -81.3755, "label": "illegal_dumping", "max_severity": 3, "report_count": 1, "status": "reviewed", "is_synthetic": true }
+  ],
+  "bins": [
+    { "id": "b_01", "lat": 28.5390, "lng": -81.3800, "source": "osm" },
+    { "id": "b_02", "lat": 28.5375, "lng": -81.3770, "source": "city" }
+  ]
+}
