@@ -103,7 +103,7 @@ One YAML per city in `data/cities/`: slug, name, center, bbox (four numbers: wes
 
 ## Test photos
 
-No ready-made dataset fits our classes. The team shoots 60-100 photos (`data/test_photos_raw/`), labels them in `data/test_photos/labels.csv` (filename,label,severity,staged) with the 0-3 severity rubric from the doc, and runs `data/prep_photos.py` (rotate, resize to 1600 px, strip EXIF). Staged photos must be marked and disclosed. No faces or license plates. Keep one photo named `overflow1.jpg` (the smoke test uses it). The same photos feed `data/eval.py` (accuracy for the slide), `db/seed.py` (demo reports, flagged synthetic) and the public Hugging Face dataset (EXIF stripped first).
+No ready-made dataset fits our classes. The team shoots 60-100 photos. `data/test_photos_raw/` holds the originals (they contain GPS data: gitignored, never published, shared via a team drive). `data/prep_photos.py` (rotate, resize to 1600 px, strip EXIF) writes processed `.jpg` copies into `data/test_photos/`, which is what all code reads; never edit those by hand, rerun the script. `data/test_photos/labels.csv` (filename,label,severity,staged) is hand-written, uses the processed `.jpg` names and the 0-3 severity rubric from the doc, and is never overwritten by the script. Staged photos must be marked and disclosed. No faces or license plates. Keep one photo named `overflow1.jpg` (the smoke test uses it). The same photos feed `data/eval.py` (accuracy for the slide), `db/seed.py` (demo reports, flagged synthetic) and the public Hugging Face dataset (EXIF stripped first).
 
 ## Environment variables (`.env.local`, never commit)
 
