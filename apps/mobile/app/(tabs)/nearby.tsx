@@ -1,11 +1,41 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
+import { WebView } from "react-native-webview";
 import { useRouter } from "expo-router";
 import { useCity } from "@/lib/city";
 import { useCities, useNearby } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
 import { labelText } from "@/lib/types";
+
+type Point = { lat: number; lng: number; color: string; title: string; description: string };
+
+// The map is Leaflet + OpenStreetMap tiles inside a WebView: no Google Maps key, and no
+// dependency on a native map module (the native MapView rendered black under Expo Go).
+function mapHtml(center: { lat: number; lng: number }, points: Point[]) {
+  // "<" is escaped so no title can close the script tag.
+  const data = JSON.stringify(points).replace(/</g, "\\u003c");
+  return `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>html,body,#map{height:100%;margin:0}</style></head><body><div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var map = L.map("map").setView([${center.lat}, ${center.lng}], 15);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
+}).addTo(map);
+L.circleMarker([${center.lat}, ${center.lng}], {radius: 6, color: "#1d4ed8", fillColor: "#3b82f6", fillOpacity: 1}).addTo(map);
+var points = ${data};
+points.forEach(function (p) {
+  var m = L.circleMarker([p.lat, p.lng], {radius: 10, color: "#111", weight: 1, fillColor: p.color, fillOpacity: 0.9}).addTo(map);
+  var box = document.createElement("div");
+  var b = document.createElement("b"); b.textContent = p.title;
+  box.appendChild(b); box.appendChild(document.createElement("br"));
+  box.appendChild(document.createTextNode(p.description));
+  m.bindPopup(box);
+});
+</script></body></html>`;
+}
 
 export default function NearbyScreen() {
   const router = useRouter();
@@ -14,13 +44,22 @@ export default function NearbyScreen() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
 
-  // Center on the device if possible; otherwise fall back to the city center.
-  const cityCenter = cities?.find((c) => c.slug === city)?.center ?? null;
+  // Center on the device if possible; otherwise (no GPS, or the device is outside the
+  // selected city) fall back to the city center so the map always shows that city's data.
+  const cityInfo = cities?.find((c) => c.slug === city);
+  const cityCenter = cityInfo?.center ?? null;
+  const cityBbox = cityInfo?.bbox ?? null;
 
   useEffect(() => {
     let active = true;
     getCurrentCoords()
-      .then((c) => active && setCoords(c))
+      .then((c) => {
+        if (!active) return;
+        const inCity =
+          !cityBbox ||
+          (c.lng >= cityBbox[0] && c.lat >= cityBbox[1] && c.lng <= cityBbox[2] && c.lat <= cityBbox[3]);
+        setCoords(inCity || !cityCenter ? c : cityCenter);
+      })
       .catch((e) => {
         if (active) {
           setLocationError(String(e?.message ?? e));
@@ -31,7 +70,7 @@ export default function NearbyScreen() {
       active = false;
     };
     // re-run when the resolved city center first becomes available
-  }, [cityCenter?.lat, cityCenter?.lng]);
+  }, [cityCenter?.lat, cityCenter?.lng, city]);
 
   const { data, isLoading, error } = useNearby({
     city,
@@ -50,39 +89,33 @@ export default function NearbyScreen() {
     );
   }
 
+  const points: Point[] = [
+    ...(data?.tickets ?? []).map((t) => ({
+      lat: t.lat,
+      lng: t.lng,
+      color: t.max_severity >= 3 ? "#dc2626" : t.max_severity >= 2 ? "#f97316" : "#facc15",
+      title: `${labelText(t.label)}${t.is_synthetic ? " (demo data)" : ""}`,
+      description: `Severity ${t.max_severity} · ${t.report_count} report${
+        t.report_count === 1 ? "" : "s"
+      } · ${t.status}`,
+    })),
+    ...(data?.bins ?? []).map((b) => ({
+      lat: b.lat,
+      lng: b.lng,
+      color: "#16a34a",
+      title: `Bin (${b.source})`,
+      description: "Existing bin",
+    })),
+  ];
+
   return (
     <View style={styles.flex}>
-      <MapView
-        provider={PROVIDER_DEFAULT}
+      <WebView
         style={styles.flex}
-        initialRegion={{
-          latitude: coords.lat,
-          longitude: coords.lng,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
-        showsUserLocation
-      >
-        {(data?.tickets ?? []).map((t) => (
-          <Marker
-            key={t.id}
-            coordinate={{ latitude: t.lat, longitude: t.lng }}
-            pinColor={t.max_severity >= 3 ? "red" : t.max_severity >= 2 ? "orange" : "yellow"}
-            title={`${labelText(t.label)}${t.is_synthetic ? " (demo data)" : ""}`}
-            description={`Severity ${t.max_severity} · ${t.report_count} report${
-              t.report_count === 1 ? "" : "s"
-            } · ${t.status}`}
-          />
-        ))}
-        {(data?.bins ?? []).map((b) => (
-          <Marker
-            key={b.id}
-            coordinate={{ latitude: b.lat, longitude: b.lng }}
-            pinColor="green"
-            title={`Bin (${b.source})`}
-          />
-        ))}
-      </MapView>
+        originWhitelist={["*"]}
+        source={{ html: mapHtml(coords, points) }}
+        javaScriptEnabled
+      />
 
       {isLoading ? (
         <View style={styles.badge}>

@@ -6,7 +6,6 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -38,7 +37,8 @@
         {
           "locationWhenInUsePermission": "Bin-It tags your report with its location so staff know where the overflow is."
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "extra": {
       "router": {}

@@ -1,6 +1,7 @@
 // The only module that talks to the network. Clients only ever talk to the API
 // (never the DB, storage, classifier, or Databricks directly). Every request is
 // prefixed with EXPO_PUBLIC_API_BASE and carries the anonymous X-Device-Id.
+import { File } from "expo-file-system";
 import { getDeviceId } from "@/lib/device";
 import type {
   ApiError,
@@ -106,11 +107,14 @@ export async function createReport(params: {
   form.append("lat", String(params.lat));
   form.append("lng", String(params.lng));
   if (params.note) form.append("note", params.note);
-  // React Native's FormData accepts { uri, name, type } for file parts.
+  // Since SDK 57 the global fetch is Expo's, which rejects React Native's { uri, name, type }
+  // file parts. It accepts any part that has bytes(), so read the file with expo-file-system
+  // and state the filename and MIME type explicitly (the API requires image/jpeg).
+  const file = new File(params.photoUri);
   form.append("photo", {
-    uri: params.photoUri,
     name: "report.jpg",
     type: "image/jpeg",
+    bytes: () => file.bytes(),
   } as unknown as Blob);
 
   const res = await fetch(`${requireBase()}/api/reports`, {
