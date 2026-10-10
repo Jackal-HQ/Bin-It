@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { mocks, useMocks } from "@/lib/mocks";
+import { mocks, mocksEnabled } from "@/lib/mocks";
 
 export async function POST() {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     return NextResponse.json(mocks.scenarioCreate, { status: 201 });
   }
   return NextResponse.json(
