@@ -1,12 +1,25 @@
-import { promises as fs } from "fs";
-import path from "path";
+import cities from "../../../mocks/cities.json";
+import health from "../../../mocks/health.json";
+import reportsCreate from "../../../mocks/reports-create.json";
+import reportsNearby from "../../../mocks/reports-nearby.json";
+import report from "../../../mocks/report.json";
+import tickets from "../../../mocks/tickets.json";
+import ticketPatch from "../../../mocks/ticket-patch.json";
+import cells from "../../../mocks/cells.json";
+import recommendations from "../../../mocks/recommendations.json";
+import scenarioCreate from "../../../mocks/scenario-create.json";
 
 export const useMocks = () => process.env.USE_MOCKS === "1";
 
-// mocks/ lives at the repo root, two levels above apps/web.
-const MOCKS_DIR = path.join(process.cwd(), "..", "..", "mocks");
-
-export async function readMock<T>(filename: string): Promise<T> {
-  const raw = await fs.readFile(path.join(MOCKS_DIR, filename), "utf-8");
-  return JSON.parse(raw) as T;
-}
+export const mocks = {
+  cities,
+  health,
+  reportsCreate,
+  reportsNearby,
+  report,
+  tickets,
+  ticketPatch,
+  cells,
+  recommendations,
+  scenarioCreate,
+};

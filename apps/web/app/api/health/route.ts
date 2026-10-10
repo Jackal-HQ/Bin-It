@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { readMock, useMocks } from "@/lib/mocks";
+import { mocks, useMocks } from "@/lib/mocks";
 
 export async function GET() {
   if (useMocks()) {
-    return NextResponse.json(await readMock("health.json"));
+    return NextResponse.json(mocks.health);
   }
   return NextResponse.json(
     { error: { code: "not_implemented", message: "Real health check not implemented yet" } },
