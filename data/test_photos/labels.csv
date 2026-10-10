@@ -1,21 +1,21 @@
 filename,city,label,severity,source,notes
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+360_F_437378692_brIfBel0KUPsbS9VRF5sVFjmyvZb29QU.webp,orlando,bag_pile,3,stock (web; license unverified),Row of green dumpsters buried in bags and boxes; huge pile spreading across ground
+360_F_454496849_rgn2IEJgUex33sBSOdTUclZCnhVUGgec.webp,nyc,overflowing_can,2,stock (web; license unverified),Open bin heaped well above rim next to the sea; person's arm visible at right (no face)
+4e9699c7d9557d19532201554427e91f.webp,chicago,overflowing_can,2,stock (Science Photo Library watermark; license unverified),Metal can piled high with litter and debris around base; watermarked
+a-trash-bin-is-pictured-at-night-in-harlem-in-new-york-city-on-august-14-2024.webp,nyc,overflowing_can,2,news/stock photo (web; license unverified),Night shot; mesh can overflowing with litter on top and scattered at base; NYC fine sign
+black-trash-can-with-black-plastic-bag-it_1249303-8640.webp,orlando,overflowing_can,1,stock (web; license unverified),Studio shot on white background; looks AI-generated or staged; not a street scene
+concrete-trash-can-with-black-bag-inside-photo.webp,nyc,overflowing_can,1,stock (web; license unverified),Concrete can with takeaway bags and cups heaped on top; little litter on ground
+free-photo-of-pile-of-trash-with-discarded-mattress-outdoors.webp,chicago,illegal_dumping,3,stock (Pexels; license unverified),Mattress/seat cushion and bags dumped beside a wall; no bin involved
+garbage-mountain-ecological-problem-free-photo.webp,orlando,bag_pile,3,stock (web; license unverified),Large heap of black bags around a dumpster; bags well beyond bin capacity
+lots-waste-bin-recycle-garbage-plastic-bags-fence-home-many-trash-front-house-pollution-junk-dump-environment-123970910.webp,nyc,bag_pile,2,stock (web; license unverified),Bags and boxes stacked in front of overflowing bins at a house gate
+over-filled-trash-can.webp,chicago,overflowing_can,3,stock (web; license unverified),Mesh can overflowing and heavy litter (cups; bottles) strewn across sidewalk
+overflowing-dark-gray-trash-can-filled-with-plastic-bottles-paper-other-waste-against-wall_908344-249527.webp,orlando,overflowing_can,2,stock (web; license unverified),Lid propped open; bottles and paper heaped above rim; likely AI-generated
+overflowing-garbage-bin-street-with-scattered-trash-plastic-bottles-debris_908344-251015.webp,nyc,overflowing_can,3,stock (web; license unverified),Wheelie bin heaped high with litter spread over street; likely AI-generated
+overflowing-garbage-can.webp,chicago,overflowing_can,1,stock (web; license unverified),Lidded can with food wrappers on top and a little litter at base
+overflowing-trash-bin-filled-with-plastic-bottles-cans-paper-debris-cracked-concrete_908344-251585.webp,orlando,overflowing_can,2,stock (web; license unverified),Wheelie bin heaped above rim with some litter on ground; likely AI-generated
+piles-of-household-waste-that-exceed-the-capacity-of-the-trash-cans-so-they-smell-bad-photo.webp,nyc,bag_pile,2,stock (web; license unverified),Red bags and boxes piled in front of three bins
+hf_overflow_000.jpg,orlando,bag_pile,3,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: large pile of bags beside a dumpster, not a can overflowing; night street scene, no faces"
+hf_overflow_001.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: two park trash cans heaped above rim, gulls around; distant person too small to be identifiable"
+hf_overflow_004.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: street dumpster lid open with trash heaped above rim plus a spill on the ground; no faces"
+hf_overflow_005.jpg,orlando,illegal_dumping,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: discarded couch cushions plus bags dumped at a curb next to a bin; distant person, back turned, not identifiable"
 binsandbags.jpg,Orlando,bag_pile,2,stock(Getty Images),

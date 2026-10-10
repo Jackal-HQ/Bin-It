@@ -49,6 +49,7 @@ def main():
     label_correct = 0
     severity_exact = 0
     severity_within_1 = 0
+    unscored_severity = 0
     mismatches = []
 
     headers = {"X-Classifier-Key": classifier_key} if classifier_key else {}
@@ -58,6 +59,9 @@ def main():
         photo_path = PHOTOS_DIR / filename
         if not photo_path.exists():
             print(f"skip {filename}: file not found in {PHOTOS_DIR}")
+            continue
+        if not row["label"].strip():
+            print(f"skip {filename}: no label yet (unreviewed)")
             continue
 
         with open(photo_path, "rb") as photo:
@@ -77,21 +81,28 @@ def main():
         total += 1
 
         expected_label = row["label"]
-        expected_severity = int(row["severity"])
+        expected_severity_raw = row["severity"].strip()
         pred_label = predicted["label"]
         pred_severity = predicted["severity"]
 
         if pred_label == expected_label:
             label_correct += 1
-        diff = abs(pred_severity - expected_severity)
-        if diff == 0:
-            severity_exact += 1
-        if diff <= 1:
-            severity_within_1 += 1
 
-        if pred_label != expected_label or diff > 1:
+        diff = None
+        if expected_severity_raw == "":
+            unscored_severity += 1
+        else:
+            expected_severity = int(expected_severity_raw)
+            diff = abs(pred_severity - expected_severity)
+            if diff == 0:
+                severity_exact += 1
+            if diff <= 1:
+                severity_within_1 += 1
+
+        if pred_label != expected_label or (diff is not None and diff > 1):
+            expected_severity_display = expected_severity_raw or "?"
             mismatches.append(
-                f"  {filename}: expected label={expected_label} severity={expected_severity}, "
+                f"  {filename}: expected label={expected_label} severity={expected_severity_display}, "
                 f"got label={pred_label} ({predicted['label_confidence']:.2f}) severity={pred_severity}"
             )
 
@@ -99,10 +110,15 @@ def main():
         print("No photos could be evaluated (all skipped — see messages above).")
         return
 
+    scored = total - unscored_severity
+
     print(f"\nEvaluated {total} photo(s) against {classifier_url}")
     print(f"  label accuracy:       {label_correct}/{total} ({100 * label_correct / total:.0f}%)")
-    print(f"  severity exact match: {severity_exact}/{total} ({100 * severity_exact / total:.0f}%)")
-    print(f"  severity within ±1:   {severity_within_1}/{total} ({100 * severity_within_1 / total:.0f}%)")
+    if scored:
+        print(f"  severity exact match: {severity_exact}/{scored} ({100 * severity_exact / scored:.0f}%)")
+        print(f"  severity within ±1:   {severity_within_1}/{scored} ({100 * severity_within_1 / scored:.0f}%)")
+    if unscored_severity:
+        print(f"  ({unscored_severity} photo(s) skipped severity scoring - no ground-truth severity in labels.csv yet)")
 
     if mismatches:
         print(f"\nMismatches ({len(mismatches)}):")
