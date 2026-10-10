@@ -31,9 +31,10 @@ LABEL_PROMPTS = {
         "a mattress or couch dumped on the side of the road",
     ],
     "clean": [
-        "a photo of an empty, tidy sidewalk",
-        "a closed, empty trash can on a clean street",
-        "a well-maintained park or street corner",
+        "a photo of a public trash can with its lid closed and nothing around it",
+        "an empty trash bin in a park that is not full",
+        "a tidy litter basket or recycling bin on a clean sidewalk",
+        "a row of closed wheelie bins standing neatly",
     ],
     "not_trash": [
         "a photo of something unrelated to trash, like people, buildings, or nature",
