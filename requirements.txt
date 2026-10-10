@@ -1,0 +1,8 @@
+# Local dev tooling for data/*.py and db/*.py (eval, seed, fetch).
+# The classifier container has its own pinned list in classifier/requirements.txt.
+requests
+pyyaml
+boto3
+psycopg[binary]
+pillow
+python-dotenv
