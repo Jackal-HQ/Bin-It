@@ -1,0 +1,7 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+fastapi
+uvicorn
+python-multipart
+pillow
+torch
+transformers>=4.40,<5
