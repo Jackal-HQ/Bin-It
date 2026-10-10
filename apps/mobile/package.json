@@ -15,6 +15,7 @@
     "expo": "^57",
     "expo-constants": "~57.0.21",
     "expo-crypto": "~57.0.3",
+    "expo-file-system": "~57.0.7",
     "expo-image-manipulator": "~57.0.21",
     "expo-image-picker": "~57.0.20",
     "expo-linking": "~57.0.12",
@@ -27,7 +28,8 @@
     "react-native": "0.86.3",
     "react-native-maps": "1.27.2",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.0"
+    "react-native-screens": "~4.26.0",
+    "react-native-webview": "13.16.1"
   },
   "devDependencies": {
     "@expo/ngrok": "^4.1.3",
