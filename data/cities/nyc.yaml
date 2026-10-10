@@ -1,0 +1,18 @@
+slug: nyc
+name: New York City, NY
+center: { lat: 40.7128, lng: -74.0060 }
+bbox: [-74.26, 40.49, -73.70, 40.92]      # rough, check on a map
+census: { state_fips: "36", county_fips: ["005", "047", "061", "081", "085"] }
+osm: { bins_tag: "amenity=waste_basket" }
+complaints:
+  source: socrata
+  domain: data.cityofnewyork.us
+  dataset_id: erm2-nwe9                   # 311 Service Requests from 2020 to Present
+  date_field: created_date
+  type_field: complaint_type
+  geo_fields: [latitude, longitude]
+  category_map:                           # fill after listing the distinct complaint types (see below)
+    overflowing_can: ["<overflow type>"]
+    bin_request: ["<litter basket request type>"]
+    litter_other: ["<dirty or litter condition type>"]
+bins: { source: osm }                     # DSNY Litter Basket Inventory (8znf-7b2c) is a better list; fetch_city.py does not download it yet

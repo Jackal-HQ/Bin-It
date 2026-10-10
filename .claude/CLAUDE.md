@@ -99,7 +99,11 @@ Scenario flow: create a Neon branch of main via the Neon API, insert proposed bi
 
 ## City adapter
 
-One YAML per city in `data/cities/`: slug, name, center, bbox (four numbers: west, south, east, north), census FIPS codes, osm bins tag, complaints source (socrata | none), bins source. Adding a city = config + data load, no code changes. Dataset facts checked: NYC 311 (id erm2-nwe9) and DSNY Litter Basket Inventory (id 8znf-7b2c) exist; Chicago has "311 Sanitation Code Complaints" (dumpsters/alley garbage, not street baskets). Confirm field names and complaint-type strings with a `SELECT DISTINCT` before relying on them.
+One YAML per city in `data/cities/`: slug, name, center, bbox (four numbers: west, south, east, north), census FIPS codes, osm bins tag, complaints source (socrata | none), bins source. Adding a city = config + data load, no code changes. Dataset facts checked 2026-10-10: NYC 311 "Service Requests from 2020 to Present" (id erm2-nwe9; fields `complaint_type`, `created_date`, `latitude`, `longitude`) and DSNY Litter Basket Inventory (id 8znf-7b2c) exist. Chicago: use "311 Service Requests" (id v6vf-nfxy, updated daily; fields `sr_type`, `created_date`, `latitude`, `longitude`). The older Chicago "Sanitation Code Complaints" dataset (me59-5fac) is historical-only (data stops ~2019): do not use it. Verified Chicago `sr_type` values include "Sanitation Code Violation", "Fly Dumping Complaint", "Street Cleaning Request", "Wire Basket Request" (meaning of the last unverified). NYC complaint-type strings are NOT yet verified: list them with a SoQL group-by before filling `category_map`. Neither city has a confirmed overflow-only type, so the model target is litter-related complaint density; say that, not "bin overflow". The three city files are in the Backend Setup tab, Step 4.
+
+## Test photos
+
+No ready-made dataset fits our classes. The team shoots 60-100 photos (`data/test_photos_raw/`), labels them in `data/test_photos/labels.csv` (filename,label,severity,staged) with the 0-3 severity rubric from the doc, and runs `data/prep_photos.py` (rotate, resize to 1600 px, strip EXIF). Staged photos must be marked and disclosed. No faces or license plates. Keep one photo named `overflow1.jpg` (the smoke test uses it). The same photos feed `data/eval.py` (accuracy for the slide), `db/seed.py` (demo reports, flagged synthetic) and the public Hugging Face dataset (EXIF stripped first).
 
 ## Environment variables (`.env.local`, never commit)
 
