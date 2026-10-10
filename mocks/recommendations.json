@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    { "rank": 1, "lat": 28.5400, "lng": -81.3810, "gain": 0.18, "nearest_bin_m": 410, "nearby_reports": 6, "rationale": "High foot traffic near a transit stop with no bin within 400m and repeated overflow reports." },
+    { "rank": 2, "lat": 28.5425, "lng": -81.3830, "gain": 0.14, "nearest_bin_m": 520, "nearby_reports": 4, "rationale": "Under-reported cell with elevated expected overflow and sparse existing coverage." },
+    { "rank": 3, "lat": 28.5360, "lng": -81.3780, "gain": 0.09, "nearest_bin_m": 300, "nearby_reports": 2, "rationale": "Moderate demand cell adjacent to a park entrance." }
+  ]
+}

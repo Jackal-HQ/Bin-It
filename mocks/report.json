@@ -1,0 +1,15 @@
+{
+  "report": {
+    "id": "r_01",
+    "ticket_id": "t_01",
+    "city": "orlando",
+    "lat": 28.5383,
+    "lng": -81.3792,
+    "label": "overflowing_can",
+    "severity": 2,
+    "note": null,
+    "photo_url": "https://example-storage.invalid/report-photos/r_01.jpg",
+    "is_synthetic": true,
+    "created_at": "2026-10-10T12:00:00Z"
+  }
+}

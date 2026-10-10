@@ -1,0 +1,7 @@
+{
+  "tickets": [
+    { "id": "t_03", "lat": 28.5420, "lng": -81.3820, "label": "overflowing_can", "max_severity": 3, "report_count": 5, "status": "received", "first_seen": "2026-10-08T09:00:00Z", "last_seen": "2026-10-10T11:00:00Z", "is_synthetic": true },
+    { "id": "t_01", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "max_severity": 2, "report_count": 3, "status": "received", "first_seen": "2026-10-09T14:00:00Z", "last_seen": "2026-10-10T08:00:00Z", "is_synthetic": true },
+    { "id": "t_02", "lat": 28.5401, "lng": -81.3755, "label": "illegal_dumping", "max_severity": 1, "report_count": 1, "status": "reviewed", "first_seen": "2026-10-07T10:00:00Z", "last_seen": "2026-10-07T10:00:00Z", "is_synthetic": true }
+  ]
+}
