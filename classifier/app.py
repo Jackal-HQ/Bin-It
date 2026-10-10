@@ -27,24 +27,23 @@ LABEL_PROMPTS = {
     ],
     "illegal_dumping": [
         "a photo of illegally dumped furniture and junk at a curb",
-        "a photo of loose trash or debris dumped on the ground away from any bin",
-        "a pile of construction debris or household junk abandoned outdoors",
-        "a landfill-like heap of mixed waste and litter dumped in an open area",
+        "a pile of construction debris or old appliances abandoned outdoors",
+        "a mattress or couch dumped on the side of the road",
     ],
     "clean": [
-        "a photo of a clean, empty street corner with no litter",
-        "a tidy, nearly empty public trash can with no garbage around it",
-        "a well-maintained sidewalk or street with no visible trash",
+        "a photo of an empty, tidy sidewalk",
+        "a closed, empty trash can on a clean street",
+        "a well-maintained park or street corner",
     ],
     "not_trash": [
         "a photo of something unrelated to trash, like people, buildings, or nature",
     ],
 }
 SEVERITY = [
-    "a clean street with no trash",
-    "a trash can that is nearly full",
-    "a trash can overflowing with litter around it",
-    "a huge pile of trash covering the sidewalk",
+    "a clean street",
+    "a few pieces of litter",
+    "a lot of trash spread over the ground",
+    "a huge heap of trash covering the area",
 ]
 # Labels whose severity is pinned to 0 regardless of the severity prompts'
 # own guess - label and severity are scored independently below, so without
