@@ -1,1 +1,66 @@
+# Env / secrets
+.env
 .env*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js (apps/web)
+.next/
+out/
+apps/web/.next/
+apps/web/out/
+
+# Expo / React Native (apps/mobile)
+.expo/
+apps/mobile/.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Python (classifier/, db/, data/)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+
+# Data artifacts (generated, not source)
+data/raw/
+data/gold/
+data/test_photos/
+*.csv
+!data/cities/*.csv
+
+# Databricks / MLflow
+mlruns/
+
+# Docker
+*.pid
+
+# Build output / caches
+dist/
+build/
+.cache/
+.turbo/
+
+# Logs
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
