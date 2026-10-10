@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Text, type ColorValue } from "react-native";
 
-function TabIcon({ icon, color }: { icon: string; color: string }) {
+function TabIcon({ icon, color }: { icon: string; color: ColorValue }) {
   return <Text style={{ fontSize: 20, color }}>{icon}</Text>;
 }
 
