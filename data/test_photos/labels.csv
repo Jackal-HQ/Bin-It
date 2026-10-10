@@ -1,21 +1,74 @@
 filename,city,label,severity,source,notes
 360_F_437378692_brIfBel0KUPsbS9VRF5sVFjmyvZb29QU.webp,orlando,bag_pile,3,stock (web; license unverified),Row of green dumpsters buried in bags and boxes; huge pile spreading across ground
-360_F_454496849_rgn2IEJgUex33sBSOdTUclZCnhVUGgec.webp,nyc,overflowing_can,2,stock (web; license unverified),Open bin heaped well above rim next to the sea; person's arm visible at right (no face)
 4e9699c7d9557d19532201554427e91f.webp,chicago,overflowing_can,2,stock (Science Photo Library watermark; license unverified),Metal can piled high with litter and debris around base; watermarked
 a-trash-bin-is-pictured-at-night-in-harlem-in-new-york-city-on-august-14-2024.webp,nyc,overflowing_can,2,news/stock photo (web; license unverified),Night shot; mesh can overflowing with litter on top and scattered at base; NYC fine sign
-black-trash-can-with-black-plastic-bag-it_1249303-8640.webp,orlando,overflowing_can,1,stock (web; license unverified),Studio shot on white background; looks AI-generated or staged; not a street scene
 concrete-trash-can-with-black-bag-inside-photo.webp,nyc,overflowing_can,1,stock (web; license unverified),Concrete can with takeaway bags and cups heaped on top; little litter on ground
 free-photo-of-pile-of-trash-with-discarded-mattress-outdoors.webp,chicago,illegal_dumping,3,stock (Pexels; license unverified),Mattress/seat cushion and bags dumped beside a wall; no bin involved
 garbage-mountain-ecological-problem-free-photo.webp,orlando,bag_pile,3,stock (web; license unverified),Large heap of black bags around a dumpster; bags well beyond bin capacity
 lots-waste-bin-recycle-garbage-plastic-bags-fence-home-many-trash-front-house-pollution-junk-dump-environment-123970910.webp,nyc,bag_pile,2,stock (web; license unverified),Bags and boxes stacked in front of overflowing bins at a house gate
 over-filled-trash-can.webp,chicago,overflowing_can,3,stock (web; license unverified),Mesh can overflowing and heavy litter (cups; bottles) strewn across sidewalk
-overflowing-dark-gray-trash-can-filled-with-plastic-bottles-paper-other-waste-against-wall_908344-249527.webp,orlando,overflowing_can,2,stock (web; license unverified),Lid propped open; bottles and paper heaped above rim; likely AI-generated
-overflowing-garbage-bin-street-with-scattered-trash-plastic-bottles-debris_908344-251015.webp,nyc,overflowing_can,3,stock (web; license unverified),Wheelie bin heaped high with litter spread over street; likely AI-generated
 overflowing-garbage-can.webp,chicago,overflowing_can,1,stock (web; license unverified),Lidded can with food wrappers on top and a little litter at base
-overflowing-trash-bin-filled-with-plastic-bottles-cans-paper-debris-cracked-concrete_908344-251585.webp,orlando,overflowing_can,2,stock (web; license unverified),Wheelie bin heaped above rim with some litter on ground; likely AI-generated
 piles-of-household-waste-that-exceed-the-capacity-of-the-trash-cans-so-they-smell-bad-photo.webp,nyc,bag_pile,2,stock (web; license unverified),Red bags and boxes piled in front of three bins
-hf_overflow_000.jpg,orlando,bag_pile,3,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: large pile of bags beside a dumpster, not a can overflowing; night street scene, no faces"
-hf_overflow_001.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: two park trash cans heaped above rim, gulls around; distant person too small to be identifiable"
-hf_overflow_004.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: street dumpster lid open with trash heaped above rim plus a spill on the ground; no faces"
-hf_overflow_005.jpg,orlando,illegal_dumping,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)","Reviewed by eye: discarded couch cushions plus bags dumped at a curb next to a bin; distant person, back turned, not identifiable"
-binsandbags.jpg,Orlando,bag_pile,2,stock(Getty Images),
+hf_overflow_004.jpg,orlando,overflowing_can,2,"https://huggingface.co/datasets/Akhila-9849/Garbage_Bin_overflow_images (CC-BY-4.0, credit Akhila-9849)",Reviewed by eye: street dumpster lid open with trash heaped above rim plus a spill on the ground; no faces
+binsandbags.jpg,orlando,bag_pile,2,stock(Getty Images),
+bags1.jpg,orlando,bag_pile,2,stock (web; license unverified),Pile of ~12 black bags on grass at roadside; no bin
+bags2.jpg,nyc,bag_pile,3,stock (Alamy watermark; license unverified),Large heap of black bags against a wall; Alamy watermark
+bags4.jpg,chicago,bag_pile,2,stock (Dreamstime watermark; license unverified),Black bags piled on grass beside a path; Dreamstime watermark
+bags5.jpg,orlando,bag_pile,2,stock (web; license unverified),Translucent dark bags stacked along a wall; no bin
+bags6.jpg,nyc,bag_pile,3,stock (Alamy watermark; license unverified),Bags and cardboard piled in front of a metal dumpster; Alamy watermark
+bags7.jpg,chicago,bag_pile,1,stock (web; license unverified),Four black bags against a fence; small pile
+bags8.webp,orlando,bag_pile,2,stock (web; license unverified),About 10 grey bags with red ties along a park path
+bags9.jpg,nyc,bag_pile,3,stock (web; license unverified),Very large heap of clear bags at roadside with debris; looks like a cleanup collection
+bags10.jpg,chicago,bag_pile,3,stock (web; license unverified),Long row of clear bags and cardboard along a mural wall; looks like a cleanup collection
+bags11.jpg,orlando,bag_pile,3,stock (web; license unverified),Heap of clear bags at a street corner plus burnt debris
+bags12.jpg,nyc,illegal_dumping,3,stock (web; license unverified),"Clear bags plus burnt electronics and boxes at a fence; mixed dumping, bags dominate - could also be bag_pile"
+220_F_421223807_xHoYZ7nVFQBgNmTpMnlwT0AH2SfYWHqK.webp,orlando,bag_pile,3,stock (Adobe Stock preview; license unverified),"Blue dumpster overflowing with bags, large mixed pile around it; very low resolution"
+a-large-landfill-is-overflowing-with-plastic-trash-and-various-debris-highlighting-the-pollution-problem-affecting-the-local-ecology-photo.webp,orlando,illegal_dumping,3,stock (web; license unverified),Open dump / landfill-scale debris; not a typical street scene
+a-trash-can-overflowing-with-crumpled-paper-waste-found-in-an-office-environment-needing.webp,nyc,overflowing_can,1,stock (web; license unverified),Indoor office bin with paper heaped above rim; not an outdoor scene
+clean1.webp,chicago,clean,0,stock (web; license unverified),"Three lidded city bins (trash, paper, metal/glass) closed and tidy"
+clean2.jpg,orlando,clean,0,stock (web; license unverified),"Two Clearwater park bins (trash and recycling), nothing around them"
+clean3.webp,nyc,clean,0,news/web photo (license unverified),"NYC Sanitation litter basket on a lot, empty; not a street scene"
+clean5.jpg,nyc,clean,0,stock (web; license unverified),"Black park bin on a concrete pad, lid shut, no litter"
+clean6.jpg,chicago,clean,0,stock (web; license unverified),"Brown trash and recycling bins in a plaza, no litter"
+clean7.jpg,chicago,clean,0,news/web photo (license unverified),"Blue North Lawndale can at a Chicago corner, empty"
+clean8.webp,orlando,clean,0,stock (web; license unverified),"Black street bin at an intersection, closed, no litter"
+clean9.jpg,nyc,clean,0,stock (web; license unverified),"Green park can on a post with bag liner, empty"
+clean11.jpg,orlando,clean,0,stock (web; license unverified),"Two black trash and recycle cans on a paved walk, no litter"
+clean12.webp,nyc,clean,0,news/web photo (license unverified),Three grey wheelie bins (SD Trash) lined up with lids shut
+clean14.webp,nyc,clean,0,news/web photo (license unverified),"Two NYC betterbin litter and recycle baskets, empty"
+clean15.webp,chicago,clean,0,stock (web; license unverified),"Black slatted can with rain cover beside a fence, empty"
+clean16.jpg,orlando,clean,0,news/web photo (license unverified),"Park trash, bottles and pizza-box recycling bins, none overfull"
+clean17.avif,nyc,clean,0,stock (web; license unverified),Tiny 200px close-up of an empty blue recycle can top; low value test image
+clean18.jpg,nyc,clean,0,news/web photo (license unverified),"Two NYC litter baskets (wire mesh and new design), empty"
+discarded-pillows-and-trash-bins-on-roadside-surrounded-by-green-foliage-evoking-sense-of-neglect-photo.webp,chicago,illegal_dumping,1,stock (web; license unverified),Three bins in order with a few pillows dumped beside them
+flytipping.webp,orlando,bag_pile,2,stock (web; license unverified),Clear bags piled around a litter bin at a street corner (UK)
+garbage.webp,nyc,illegal_dumping,3,stock (web; license unverified),Dense litter and debris dumped into a waterway; not a street scene
+iStock-1279787757-scaled-e1673998664882.webp,chicago,illegal_dumping,2,stock (iStock; license unverified),"Furniture, bulk bag and household items piled along a kerb; may be hard-rubbish collection day"
+illegal-dumping-479x400.webp,orlando,illegal_dumping,3,stock (web; license unverified),"Large mixed heap on a forest road, bags, boxes and a yellow panel"
+illegal-dumping-of-rubbish-by-roadside.webp,nyc,illegal_dumping,2,stock (web; license unverified),"Toys, bags and household items scattered on a roadside verge"
+illegal-household-dumping-at-the-sydney-street.webp,chicago,illegal_dumping,1,stock (web; license unverified),Small pile of furniture and boxes on a verge outside a residential building
+illegaldumping-trash-fairhill-crop.webp,orlando,illegal_dumping,3,news/web photo (license unverified),Long stretch of mixed debris along a wall and kerb on a city street
+illlegal-fly-tipping.webp,nyc,illegal_dumping,3,stock (web; license unverified),"Sofa, pallets, bags and boards dumped in woodland"
+leeds-england-overflowing-refuse-bins-litter-the-streets-in-the-headingley-area-of-leeds-on.webp,chicago,bag_pile,3,news/web photo (license unverified),Rows of black bags and full wheelie bins along a terraced street during a bin strike
+mounds-trash-illegal-dumping-los-angeles-fashion-district-illegal-dumping-221688295.webp,orlando,illegal_dumping,3,stock (web; license unverified),"Large mounds of bags, cardboard and debris in an alley"
+old-technology-on-street.webp,nyc,illegal_dumping,1,stock (web; license unverified),"Old TVs, a monitor and a PC left on a roadside"
+overflowing-bins-in-a-park-of-ciudad-universitaria-madrid.webp,chicago,overflowing_can,3,stock (web; license unverified),Mesh park bins crammed with bottles and cans; litter and bags covering the grass
+overflowing-garbage-can-2J83P5J.webp,orlando,overflowing_can,1,stock (Alamy watermark; license unverified),Small bucket bin with bottles and cans spilling onto the ground; Alamy watermark
+overflowing-garbage-containers.webp,nyc,overflowing_can,2,stock (web; license unverified),Dumpster with lid propped open by bags; more bags and a box on the pavement
+overflowing-outdoor-garbage-bin.webp,chicago,bag_pile,2,stock (web; license unverified),"Night shot; clear and black bags piled around a post, no bin visible"
+overflowing-park-bin-in-edinburgh-during-bin-strike.webp,orlando,overflowing_can,3,news/web photo (license unverified),Graffiti-covered bin overflowing with bottles and litter scattered around in a park
+overflowing-rubbish-containers-and-garbage-bags.webp,nyc,bag_pile,3,stock (web; license unverified),Mound of 40+ black bags in front of and above green containers
+overflowing-trash-can-in-the-park-in-4k-slow-motion-60fps.webp,orlando,clean,0,stock video still (web; license unverified),Concrete park bin with liner visible and not overfull; a few cups on grass; filename says overflowing but photo does not show it
+overflowing-trash-can-on-the-street-in-4k-slow-motion-60fps.webp,nyc,overflowing_can,1,stock video still (web; license unverified),Partly obscured bin with bag and cup heaped above lid; video still
+overflowing-trash-dumpster-vertical.webp,chicago,illegal_dumping,3,stock (web; license unverified),Skip full of bags with chairs and furniture dumped in front; could also be bag_pile
+overflowing-waste-bins-and-cardboard-on-the-street-for-recyclign.webp,orlando,overflowing_can,2,stock (web; license unverified),Bins stuffed with black bags and a stack of cardboard on the pavement
+the-trash-bin-and-a-black-bag-to-hold-garbage-that-overflows-out-free-photo.webp,nyc,bag_pile,2,stock (web; license unverified),"Blue barrel and bins overflowing, ten black bags on the ground around them"
+depositphotos_513390864-stock-photo-overflowing-trash-can-rubbish-lying.webp,orlando,overflowing_can,3,stock (Depositphotos; license unverified),Mesh park can heaped with bottles; litter and bottles spread across the grass
+garden-recycling-bin.webp,nyc,not_trash,0,stock (web; license unverified),"Brown garden-waste bin full of clippings; green waste, not litter"
+keeping-filling-a-full-litter-bin.webp,chicago,overflowing_can,2,stock (web; license unverified),Park bin with liner bulging and cups and cans on top; tissues scattered on grass
+new-york-ny-trash-sits-on-the-tracks-at-the-clark-street-subway-station-february-22-2018-in.webp,nyc,illegal_dumping,2,news photo (Getty; license unverified),"Bottles, cans and wrappers on subway tracks; not a street scene, nearest class is illegal_dumping"
+overflowing-bin-in-public-park.webp,orlando,overflowing_can,2,stock (web; license unverified),Black litter bin with bottles and boxes on top; bags and litter spread around on a park path
+overflowing-green-garbage-bin-260nw-223640851.webp,nyc,overflowing_can,3,stock (Shutterstock; license unverified),Green barrel bin brimming with bags; bottles and plastic heaped at its base
+overflowing-trash-can-in-the-park.webp,chicago,overflowing_can,2,stock (web; license unverified),Green wire bin heaped with bottles and cans; a bag hung on the post is also full
+waste-bin-and-overflowing-garbage-on-street.webp,orlando,overflowing_can,3,stock (web; license unverified),Green wheelie bin heaped with bags and cups; large litter pile spread across the kerb
+waste-overstuffed-bin-with-general-waste.webp,nyc,overflowing_can,1,stock (web; license unverified),"Cups, cans and wrappers stacked on top of a street bin"
