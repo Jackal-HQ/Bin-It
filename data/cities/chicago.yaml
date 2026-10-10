@@ -1,0 +1,18 @@
+slug: chicago
+name: Chicago, IL
+center: { lat: 41.8781, lng: -87.6298 }
+bbox: [-87.94, 41.64, -87.52, 42.02]      # rough, check on a map
+census: { state_fips: "17", county_fips: ["031"] }
+osm: { bins_tag: "amenity=waste_basket" }
+complaints:
+  source: socrata
+  domain: data.cityofchicago.org
+  dataset_id: v6vf-nfxy                   # 311 Service Requests (new system, updated daily)
+  date_field: created_date
+  type_field: sr_type
+  geo_fields: [latitude, longitude]
+  category_map:                           # these sr_type values exist; Chicago has no overflow-only type
+    illegal_dumping: ["Fly Dumping Complaint"]
+    litter_other: ["Sanitation Code Violation", "Street Cleaning Request"]
+    bin_request: ["Wire Basket Request"]  # exact meaning unverified; check a few rows
+bins: { source: osm }

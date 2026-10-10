@@ -39,9 +39,11 @@ venv/
 # Data artifacts (generated, not source)
 data/raw/
 data/gold/
-data/test_photos/
+data/test_photos/*
+!data/test_photos/labels.csv
+!data/test_photos/README.md
 *.csv
-!data/cities/*.csv
+!data/test_photos/labels.csv
 
 # Databricks / MLflow
 mlruns/
@@ -67,4 +69,5 @@ Thumbs.db
 
 #Claude
 .claude/
+Claude.md
 .agents/
