@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { mocks, useMocks } from "@/lib/mocks";
+import { mocks, mocksEnabled } from "@/lib/mocks";
 
 export async function GET() {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     return NextResponse.json(mocks.report);
   }
   return NextResponse.json(

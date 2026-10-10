@@ -9,7 +9,7 @@ import cells from "../../../mocks/cells.json";
 import recommendations from "../../../mocks/recommendations.json";
 import scenarioCreate from "../../../mocks/scenario-create.json";
 
-export const useMocks = () => process.env.USE_MOCKS === "1";
+export const mocksEnabled = () => process.env.USE_MOCKS === "1";
 
 export const mocks = {
   cities,

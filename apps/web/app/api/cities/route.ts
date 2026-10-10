@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
-import { mocks, useMocks } from "@/lib/mocks";
+import { mocks, mocksEnabled } from "@/lib/mocks";
+import { query } from "@/lib/server";
 
 export async function GET() {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     return NextResponse.json(mocks.cities);
   }
-  return NextResponse.json(
-    { error: { code: "not_implemented", message: "Real cities lookup not implemented yet" } },
-    { status: 501 },
+  const rows = await query(
+    `SELECT slug, name, ST_Y(center::geometry) AS lat, ST_X(center::geometry) AS lng, bbox
+       FROM cities ORDER BY name`,
   );
+  return NextResponse.json({
+    cities: rows.map((r) => ({
+      slug: r.slug,
+      name: r.name,
+      center: { lat: Number(r.lat), lng: Number(r.lng) },
+      bbox: (r.bbox as unknown[]).map(Number),
+    })),
+  });
 }

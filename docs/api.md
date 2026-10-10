@@ -58,13 +58,20 @@ Response `201`:
 
 If the classifier does not answer in ~10s: save with `label: "unclassified"`, `severity: 1`.
 
+Merging: a report joins an existing ticket when it is in the same city, within 50 m, from the last
+7 days, on a ticket that is not `resolved`, and its photo embedding has cosine similarity >= 0.85.
+Unclassified reports (no embedding) never merge. Errors: `400` invalid fields / unknown city /
+missing or non-JPEG photo, `413` photo over 5 MB, `502` photo storage failed.
+
 Mock: `mocks/reports-create.json`
 
 ### GET /api/reports/nearby
 
 Used by: mobile. Tickets + bins around a point, or inside `bbox`.
 
-Query: `city`, either (`lat`, `lng`, `radius_m`) or `bbox`.
+Query: `city`, either (`lat`, `lng`, optional `radius_m`, default 500, max 5000) or
+`bbox=west,south,east,north`. Resolved tickets are left out; `proposed` bins are never returned.
+Up to 200 tickets and 200 bins.
 
 Response `200`:
 ```json
@@ -107,6 +114,7 @@ Mock: `mocks/tickets.json`
 ### PATCH /api/tickets/{id}
 
 Used by: web. Change status (staff key required). Headers: `X-Staff-Key`.
+`401` when the key is missing/wrong (or `STAFF_KEY` is unset), `404` for an unknown ticket.
 
 Request:
 ```json

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { useMocks } from "@/lib/mocks";
+import { mocksEnabled } from "@/lib/mocks";
 
 export async function DELETE() {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     return new NextResponse(null, { status: 204 });
   }
   return NextResponse.json(
