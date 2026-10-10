@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Bin-It",
+    "slug": "bin-it",
+    "scheme": "binit",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Bin-It uses the camera to photograph overflowing bins you report.",
+        "NSPhotoLibraryUsageDescription": "Bin-It lets you attach a photo of an overflowing bin from your library.",
+        "NSLocationWhenInUseUsageDescription": "Bin-It tags your report with its location so staff know where the overflow is."
+      }
+    },
+    "android": {
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Bin-It uses the camera to photograph overflowing bins you report.",
+          "photosPermission": "Bin-It lets you attach a photo of an overflowing bin from your library."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Bin-It tags your report with its location so staff know where the overflow is."
+        }
+      ],
+      "expo-status-bar"
+    ],
+    "extra": {
+      "router": {}
+    }
+  }
+}
