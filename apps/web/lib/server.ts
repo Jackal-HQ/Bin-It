@@ -32,6 +32,13 @@ export async function findCity(slug: string | null | undefined) {
 export const TICKET_SYNTHETIC =
   "COALESCE((SELECT bool_and(r.is_synthetic) FROM reports r WHERE r.ticket_id = t.id), false)";
 
+/** SQL fragment: the photo of the ticket's most severe (then most recent) report, or NULL. */
+export const TICKET_PHOTO = `(SELECT r.photo_url
+     FROM reports r
+    WHERE r.ticket_id = t.id AND r.photo_url IS NOT NULL
+    ORDER BY r.severity DESC, r.created_at DESC
+    LIMIT 1)`;
+
 export function ticketJson(r: Row, withTimes: boolean) {
   const t: Record<string, unknown> = {
     id: r.id,

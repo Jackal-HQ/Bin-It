@@ -104,11 +104,14 @@ Used by: web. Queue; filter `city`/`status`/`label`; sorted by severity, then re
 
 Query: `city`, `status` (optional), `label` (optional).
 
+Each ticket carries `photo_url`, chosen the same way as in `/api/reports/nearby` (the photo of its
+most severe, then most recent, report), or `null` when no report on it has a stored photo.
+
 Response `200`:
 ```json
 {
   "tickets": [
-    { "id": "t_01", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "max_severity": 3, "report_count": 5, "status": "received", "first_seen": "2026-10-08T09:00:00Z", "last_seen": "2026-10-10T11:00:00Z", "is_synthetic": true }
+    { "id": "t_01", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "max_severity": 3, "report_count": 5, "status": "received", "first_seen": "2026-10-08T09:00:00Z", "last_seen": "2026-10-10T11:00:00Z", "photo_url": "https://.../report-photos/r_05.jpg", "is_synthetic": true }
   ]
 }
 ```

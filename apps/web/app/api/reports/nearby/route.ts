@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { mocks, mocksEnabled } from "@/lib/mocks";
-import { TICKET_SYNTHETIC, apiError, findCity, query, ticketJson } from "@/lib/server";
+import { TICKET_PHOTO, TICKET_SYNTHETIC, apiError, findCity, query, ticketJson } from "@/lib/server";
 
 const DEFAULT_RADIUS_M = 500;
 const MAX_RADIUS_M = 5000;
@@ -50,12 +50,7 @@ export async function GET(request: Request) {
       // ticket, so the client can show a thumbnail without another request.
       `SELECT t.id, ST_Y(t.centroid::geometry) AS lat, ST_X(t.centroid::geometry) AS lng,
               t.label, t.max_severity, t.report_count, t.status,
-              ${TICKET_SYNTHETIC} AS is_synthetic,
-              (SELECT r.photo_url
-                 FROM reports r
-                WHERE r.ticket_id = t.id AND r.photo_url IS NOT NULL
-                ORDER BY r.severity DESC, r.created_at DESC
-                LIMIT 1) AS photo_url
+              ${TICKET_SYNTHETIC} AS is_synthetic, ${TICKET_PHOTO} AS photo_url
          FROM tickets t
         WHERE t.city_id = $1 AND t.status <> 'resolved' AND ${ticketArea}
         ORDER BY t.max_severity DESC, t.report_count DESC
