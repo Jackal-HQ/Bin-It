@@ -33,11 +33,18 @@ export default function Legend({ layers, anyUnderReported, ratesLoaded }: Props)
       onToggle={(e) => {
         if (e.currentTarget.open !== open) setUserOpen(e.currentTarget.open);
       }}
-      className="group max-h-full min-h-0 max-w-[260px] overflow-y-auto rounded-lg bg-white/95 p-3 text-xs text-zinc-700 shadow-md dark:bg-zinc-900/95 dark:text-zinc-300">
-      <summary className="cursor-pointer list-none font-semibold text-zinc-900 dark:text-zinc-100">
-        Legend <span className="font-normal text-zinc-500 group-open:hidden">(show)</span>
+      className="max-h-full min-h-0 max-w-[260px] overflow-y-auto rounded-lg bg-white/95 px-3 text-xs open:pb-3 text-zinc-700 shadow-md dark:bg-zinc-900/95 dark:text-zinc-300">
+      {/* stays pinned while the legend scrolls, so Hide is always reachable */}
+      <summary className="sticky top-0 -mx-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-t-lg bg-white px-3 py-2 font-semibold text-zinc-900 select-none dark:bg-zinc-900 dark:text-zinc-100 [&::-webkit-details-marker]:hidden">
+        <span>Legend</span>
+        <span className="flex items-center gap-1 rounded-md border border-zinc-300 px-2 py-0.5 text-[11px] font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+          {open ? "Hide" : "Show"}
+          <svg aria-hidden viewBox="0 0 12 12" className={`h-3 w-3 transition-transform ${open ? "" : "rotate-180"}`}>
+            <path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
       </summary>
-      <div className="mt-2 space-y-2">
+      <div className="mt-1 space-y-2">
         {layers.pins && (
           <div>
             <div className="font-semibold text-zinc-900 dark:text-zinc-100">Reports (size and color = severity)</div>
