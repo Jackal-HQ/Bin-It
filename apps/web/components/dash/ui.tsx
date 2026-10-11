@@ -100,12 +100,16 @@ export function Led({ severity, size = 8, onDark = false }: { severity: number; 
   );
 }
 
-/** Dot bar: `filled` of `total` dots (8 px pitch). Pair with the number it stands for. */
-export function DotBar({ filled, total = 14 }: { filled: number; total?: number }) {
+/** Dot bar: `filled` of `total` dots (8 px pitch). Pair with the number it stands for.
+ *  `tone="sun"` is for the amount that was gained or reported, charcoal for the baseline. */
+export function DotBar({ filled, total = 14, tone = "charcoal" }: { filled: number; total?: number; tone?: "charcoal" | "sun" }) {
   const n = Math.max(0, Math.min(total, Math.round(filled)));
   return (
     <span aria-hidden className="dot-track relative block h-2" style={{ width: total * 8 }}>
-      <span className="dot-fill absolute left-0 top-0 block h-2" style={{ width: n * 8 }} />
+      <span
+        className={`${tone === "sun" ? "dot-fill-sun" : "dot-fill"} absolute left-0 top-0 block h-2`}
+        style={{ width: n * 8 }}
+      />
     </span>
   );
 }

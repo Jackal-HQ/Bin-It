@@ -1,5 +1,8 @@
-// Decorative H3-style hexagon grid. Intensity comes from a deterministic smooth function so
-// server and client render the same markup. Illustrative only: it never shows real scores.
+// Decorative H3-style hexagon grid in the dashboard map's own colors: the blue risk ramp for
+// expected overflow, pink dashed rings for under-reported cells, white discs with a green ring
+// for ranked sites. Intensity comes from a deterministic smooth function so server and client
+// render the same markup. Illustrative only: it never shows real scores.
+import { riskColor, rgb } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
 type Cell = [col: number, row: number];
@@ -19,11 +22,13 @@ type Props = {
 
 const R = 14; // hex radius in viewBox units
 const W = Math.sqrt(3) * R;
+const SITE_GREEN = "#166534";
+const UNDER_PINK = "#E7298A";
 
 function hexPath(cx: number, cy: number) {
   const pts = Array.from({ length: 6 }, (_, i) => {
     const a = ((60 * i - 30) * Math.PI) / 180;
-    return `${(cx + R * 0.94 * Math.cos(a)).toFixed(1)},${(cy + R * 0.94 * Math.sin(a)).toFixed(1)}`;
+    return `${(cx + R * 0.98 * Math.cos(a)).toFixed(1)},${(cy + R * 0.98 * Math.sin(a)).toFixed(1)}`;
   });
   return `M${pts.join("L")}Z`;
 }
@@ -55,29 +60,20 @@ export function HexGrid({ cols = 14, rows = 8, seed = 1, cover = false, pins = [
         Array.from({ length: cols }, (_, c) => {
           const { x, y } = center(c, r);
           const v = intensity(c, r, seed);
-          return (
-            <path
-              key={`${c}-${r}`}
-              d={hexPath(x, y)}
-              fill={`rgba(255,99,99,${(0.06 + 0.62 * v * v).toFixed(3)})`}
-              stroke="rgba(255,255,255,0.07)"
-              strokeWidth="0.6"
-            />
-          );
+          return <path key={`${c}-${r}`} d={hexPath(x, y)} fill={rgb(riskColor(v))} fillOpacity="0.62" />;
         }),
       )}
       {flags.map(([c, r]) => {
         const { x, y } = center(c, r);
         return (
-          <circle
+          <path
             key={`f-${c}-${r}`}
-            cx={x}
-            cy={y}
-            r={R * 0.95}
+            d={hexPath(x, y)}
             fill="none"
-            stroke="rgba(255,255,255,0.7)"
-            strokeWidth="1"
-            strokeDasharray="3 3"
+            stroke={UNDER_PINK}
+            strokeWidth="1.7"
+            strokeLinejoin="round"
+            strokeDasharray="3.5 2.5"
           />
         );
       })}
@@ -85,14 +81,14 @@ export function HexGrid({ cols = 14, rows = 8, seed = 1, cover = false, pins = [
         const { x, y } = center(c, r);
         return (
           <g key={`p-${c}-${r}`}>
-            <circle cx={x} cy={y} r={R * 0.62} fill="#040506" stroke="#e6e6e6" strokeWidth="1.2" />
+            <circle cx={x} cy={y} r={R * 0.66} fill="#ffffff" stroke={SITE_GREEN} strokeWidth="1.6" />
             <text
               x={x}
               y={y + 3.4}
               textAnchor="middle"
               fontSize="9.5"
               fontWeight="600"
-              fill="#ffffff"
+              fill={SITE_GREEN}
               fontFamily="var(--font-geist-mono), monospace"
             >
               {i + 1}

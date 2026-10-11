@@ -1,31 +1,46 @@
 // "How it works" as a bento: report, rank, place, and the reporting-bias idea.
+import { DotBar } from "@/components/dash/ui";
 import { HexGrid } from "@/components/landing/HexGrid";
 import { SpotlightCard } from "@/components/landing/SpotlightCard";
 
 const Eyebrow = ({ children }: { children: string }) => (
-  <p className="font-mono text-[11px] uppercase tracking-[0.073em] text-smoke">{children}</p>
+  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-quiet">{children}</p>
 );
 
-const Chip = ({ children, tone = "neutral" }: { children: string; tone?: "neutral" | "coral" }) => (
-  <span
-    className={`rounded-[6px] px-2 py-1 font-mono text-[11px] ${
-      tone === "coral" ? "bg-coral-pulse/15 text-coral-pulse" : "bg-graphite text-ash"
-    }`}
-  >
-    {children}
-  </span>
+/** Neutral chips on a well; the "sun" tone marks the outcome (a merged ticket); pink marks under-reported. */
+const Chip = ({ children, tone = "neutral" }: { children: string; tone?: "neutral" | "sun" | "pink" }) => {
+  if (tone === "sun")
+    return (
+      <span className="inline-flex h-[26px] items-center gap-2 rounded-full bg-sun-wash px-3 font-mono text-[11px] text-sun-ink">
+        <span className="size-[7px] rounded-full bg-sun ring-1 ring-sun-deep" />
+        {children}
+      </span>
+    );
+  if (tone === "pink")
+    return (
+      <span className="inline-flex h-[22px] items-center rounded-full border-[1.5px] border-dashed border-[#E7298A] px-2.5 font-mono text-[10px] uppercase tracking-[0.07em] text-pink-ink">
+        {children}
+      </span>
+    );
+  return <span className="inline-flex h-[26px] items-center rounded-full bg-well px-3 font-mono text-[11px] text-soft">{children}</span>;
+};
+
+const H3 = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="mt-3 text-[24px] font-extrabold leading-[1.15] tracking-[-0.015em]">{children}</h3>
 );
+
+const DOTS = 20;
 
 const SITES = [
-  { n: 1, w: "100%" },
-  { n: 2, w: "88%" },
-  { n: 3, w: "71%" },
-  { n: 4, w: "58%" },
+  { n: 1, dots: 20 },
+  { n: 2, dots: 18 },
+  { n: 3, dots: 14 },
+  { n: 4, dots: 12 },
 ];
 
 const AREAS = [
-  { name: "Area A", expected: "78%", reported: "70%", flag: false },
-  { name: "Area B", expected: "74%", reported: "18%", flag: true },
+  { name: "Area A", expected: 16, reported: 14, flag: false },
+  { name: "Area B", expected: 15, reported: 4, flag: true },
 ];
 
 export function Bento() {
@@ -34,30 +49,30 @@ export function Bento() {
       {/* 1 Report */}
       <SpotlightCard className="md:col-span-2">
         <Eyebrow>01 · Report</Eyebrow>
-        <h3 className="mt-3 text-[24px] font-normal leading-[1.15]">A photo becomes a ticket.</h3>
-        <p className="mt-2 max-w-md text-[16px] leading-[1.5] text-ash">
+        <H3>A photo becomes a ticket.</H3>
+        <p className="mt-2 max-w-md text-[16px] leading-[1.55] text-soft">
           Residents photograph an overflowing bin. The photo is classified, scored for severity and
           merged with reports of the same spot, so staff see one ticket and not ten.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-2">
           <Chip>photo</Chip>
-          <span aria-hidden className="text-smoke">
+          <span aria-hidden className="text-quiet">
             →
           </span>
           <Chip>overflowing_can</Chip>
           <Chip>severity 3</Chip>
-          <span aria-hidden className="text-smoke">
+          <span aria-hidden className="text-quiet">
             →
           </span>
-          <Chip tone="coral">merged into 1 ticket · 5 reports</Chip>
+          <Chip tone="sun">merged into 1 ticket · 5 reports</Chip>
         </div>
       </SpotlightCard>
 
       {/* 2 Rank */}
       <SpotlightCard>
         <Eyebrow>02 · Rank</Eyebrow>
-        <h3 className="mt-3 text-[24px] font-normal leading-[1.15]">Expected, not just reported.</h3>
-        <div className="mt-4 h-[120px] overflow-hidden rounded-[8px] bg-void-black p-2">
+        <H3>Expected, not just reported.</H3>
+        <div className="mt-4 h-[120px] overflow-hidden rounded-tile bg-[#f4f0e8]">
           <HexGrid
             cover
             cols={9}
@@ -69,7 +84,7 @@ export function Bento() {
             ]}
           />
         </div>
-        <p className="mt-3 text-[14px] leading-[1.6] text-ash">
+        <p className="mt-3 text-[14px] leading-[1.6] text-soft">
           Hexagons score expected overflow from places, transit and nearby bins.
         </p>
       </SpotlightCard>
@@ -77,18 +92,18 @@ export function Bento() {
       {/* 3 Place */}
       <SpotlightCard>
         <Eyebrow>03 · Place</Eyebrow>
-        <h3 className="mt-3 text-[24px] font-normal leading-[1.15]">Sites ranked by coverage gain.</h3>
-        <ul className="mt-4 flex flex-col gap-2">
+        <H3>Sites ranked by coverage gain.</H3>
+        <ul className="mt-4 flex flex-col gap-2.5">
           {SITES.map((s) => (
             <li key={s.n} className="flex items-center gap-3">
-              <span className="w-4 font-mono text-[11px] text-smoke">{s.n}</span>
-              <span className="h-2 flex-1 rounded-full bg-graphite">
-                <span className="block h-2 rounded-full bg-mist/80" style={{ width: s.w }} />
+              <span className="flex size-7 flex-none items-center justify-center rounded-full border-2 border-[#166534] bg-white font-mono text-[12px] font-medium text-[#166534]">
+                {s.n}
               </span>
+              <DotBar filled={s.dots} total={DOTS} />
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[14px] leading-[1.6] text-ash">
+        <p className="mt-3 text-[14px] leading-[1.6] text-soft">
           Greedy picks the site that serves the most demand next, with a reason for each.
         </p>
       </SpotlightCard>
@@ -96,37 +111,26 @@ export function Bento() {
       {/* 4 Bias */}
       <SpotlightCard className="md:col-span-2">
         <Eyebrow>Why it matters</Eyebrow>
-        <h3 className="mt-3 text-[24px] font-normal leading-[1.15]">
-          Complaint counts show who calls, not where the trash is.
-        </h3>
-        <p className="mt-2 max-w-lg text-[16px] leading-[1.5] text-ash">
+        <H3>Complaint counts show who calls, not where the trash is.</H3>
+        <p className="mt-2 max-w-lg text-[16px] leading-[1.55] text-soft">
           Two areas can have the same overflow and very different reporting. Bin-It flags the quiet
           one, so the plan does not only serve the neighborhoods that already speak up.
         </p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           {AREAS.map((a) => (
-            <div key={a.name} className="rounded-[8px] border border-rc-border p-3">
-              <div className="flex items-center justify-between text-[13px]">
-                <span className="font-medium text-white">{a.name}</span>
-                {a.flag && <Chip tone="coral">under-reported</Chip>}
+            <div key={a.name} className="rounded-tile bg-well p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[14px] font-bold">{a.name}</span>
+                {a.flag && <Chip tone="pink">under-reported</Chip>}
               </div>
-              {[
-                { l: "Expected overflow", w: a.expected, c: "bg-mist/80" },
-                { l: "Reports", w: a.reported, c: "bg-coral-pulse" },
-              ].map((b) => (
-                <div key={b.l} className="mt-3">
-                  <p className="mb-1 font-mono text-[11px] text-smoke">{b.l}</p>
-                  <span className="block h-2 rounded-full bg-graphite">
-                    <span className={`block h-2 rounded-full ${b.c}`} style={{ width: b.w }} />
-                  </span>
-                </div>
-              ))}
+              <p className="mb-1.5 mt-3.5 font-mono text-[11px] text-quiet">Expected overflow</p>
+              <DotBar filled={a.expected} total={DOTS} />
+              <p className="mb-1.5 mt-3.5 font-mono text-[11px] text-quiet">Reports</p>
+              <DotBar filled={a.reported} total={DOTS} tone="sun" />
             </div>
           ))}
         </div>
-        <p className="mt-3 font-mono text-[11px] text-smoke">
-          Illustrative bars for the idea, not measured data.
-        </p>
+        <p className="mt-3 font-mono text-[11px] text-quiet">Illustrative bars for the idea, not measured data.</p>
       </SpotlightCard>
     </div>
   );

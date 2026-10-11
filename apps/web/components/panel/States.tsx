@@ -1,5 +1,6 @@
 import { ApiError } from "@/lib/api";
 import { Tooltip } from "@/components/ui/tooltip-card";
+import { cn } from "@/lib/utils";
 import { BinIcon, DotSpinner, HexOutline } from "@/components/dash/icons";
 import { btnSecondary } from "@/components/dash/ui";
 
@@ -38,7 +39,7 @@ export function ErrorRetry({ error, onRetry }: { error: unknown; onRetry?: () =>
       <div className="min-w-0">
         <p className="mt-0.5 text-[14px] font-semibold leading-[1.5] text-[#5a1f1a]">{message}</p>
         {onRetry && (
-          <button onClick={onRetry} className={`${btnSecondary} mt-2.5 h-[34px] px-4 text-[13px]`}>
+          <button onClick={onRetry} className={cn(btnSecondary, "mt-2.5 h-[34px] px-4 text-[13px]")}>
             Retry
           </button>
         )}

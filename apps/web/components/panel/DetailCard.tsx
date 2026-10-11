@@ -20,6 +20,7 @@ import {
 import type { Selection } from "@/lib/selection";
 import type { Recommendation, Status, Ticket } from "@/lib/types";
 import { Tooltip } from "@/components/ui/tooltip-card";
+import { cn } from "@/lib/utils";
 import { CloseIcon, ExternalIcon, MergeIcon } from "@/components/dash/icons";
 import { Led, Segmented, btnPrimary, btnSecondary, eyebrow, inputPill, tile, tileLabel } from "@/components/dash/ui";
 import { DemoBadge, UnderReportedBadge, isUnauthorized } from "./States";
@@ -207,7 +208,7 @@ function StreetViewLink({ lat, lng }: { lat: number; lng: number }) {
         href={streetViewUrl(lat, lng)}
         target="_blank"
         rel="noopener noreferrer"
-        className={`${btnSecondary} px-4`}
+        className={cn(btnSecondary, "px-4")}
       >
         Open in Street View <ExternalIcon size={14} />
       </a>
@@ -271,7 +272,7 @@ function StatusControl({ ticket }: { ticket: Ticket }) {
             aria-label="Staff key"
             className={`${inputPill} flex-1 ${message ? "border-coral-pulse" : ""}`}
           />
-          <button className={`${btnPrimary} h-11 px-5 text-[14px]`}>Save</button>
+          <button className={cn(btnPrimary, "h-11 px-5 text-[14px]")}>Save</button>
         </form>
         {note}
       </div>

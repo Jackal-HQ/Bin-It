@@ -6,6 +6,7 @@ import type { TicketFilters } from "@/lib/api";
 import { LABEL_OPTIONS, STATUS_OPTIONS, STATUS_TEXT, labelText, severityText, timeAgo } from "@/lib/labels";
 import type { Label, Status, Ticket } from "@/lib/types";
 import { Tooltip } from "@/components/ui/tooltip-card";
+import { cn } from "@/lib/utils";
 import { ChevronIcon } from "@/components/dash/icons";
 import { Led, btnSecondary, card, eyebrow, meta, selectPill } from "@/components/dash/ui";
 import { DemoBadge, Empty, ErrorRetry, Loading } from "./States";
@@ -168,7 +169,7 @@ export default function QueueTab({ city, cityName, query, filters, onFilters, se
           <Empty
             action={
               filtered ? (
-                <button onClick={() => onFilters({})} className={`${btnSecondary} h-9 text-[13px]`}>
+                <button onClick={() => onFilters({})} className={cn(btnSecondary, "h-9 text-[13px]")}>
                   Clear filters
                 </button>
               ) : undefined

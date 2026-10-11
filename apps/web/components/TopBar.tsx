@@ -8,6 +8,7 @@ import { BIN_COLOR, RISK_GRADIENT, SEVERITY_COLOR, SITE_COLOR, rgb } from "@/lib
 import { LAYER_NAMES, type LayerToggles } from "@/lib/selection";
 import type { City } from "@/lib/types";
 import { Tooltip } from "@/components/ui/tooltip-card";
+import { cn } from "@/lib/utils";
 import { ChevronIcon, CloseIcon, HexMark, HexOutline, KeyIcon, LayersIcon } from "@/components/dash/icons";
 import { btnPrimary, inputPill } from "@/components/dash/ui";
 import CitySwitcher from "./CitySwitcher";
@@ -201,7 +202,7 @@ function StaffKeyChip() {
         placeholder="Staff key"
         className={`${inputPill} w-40`}
       />
-      <button className={`${btnPrimary} h-11 px-5 text-[14px]`}>Save</button>
+      <button className={cn(btnPrimary, "h-11 px-5 text-[14px]")}>Save</button>
     </form>
   );
 }

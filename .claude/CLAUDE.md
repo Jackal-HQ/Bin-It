@@ -4,7 +4,7 @@ Hackathon project. Residents photo-report overflowing trash bins from a phone; c
 
 Main design doc (source of truth for intent): https://claude.ai/code/artifact/7fdca1aa-285e-4713-b72d-5fc4db5563be (tabs: Spec, Backend Setup, Mobile App, Web Dashboard). If this file and the doc disagree, ask the user.
 
-Design: Daylight is the main design for the project (warm paper ground, frosted rounded cards, pill controls, charcoal for the one action, sun yellow for selection, dot-matrix numerals). Every web page follows `.claude/DESIGN.md`: read its "Daylight guide" section first. Reference implementation: `apps/web/components/Dashboard.tsx` and `apps/web/components/dash/` (shared recipes in `dash/ui.tsx`; tokens in `app/globals.css`). Use the tokens, never hardcoded hex, and keep the map's data colors as in `lib/labels.ts`. The landing page, `/privacy` and `/terms` still use the older dark "Midnight guide" in the same file until migrated; do not use Midnight for new work.
+Design: Daylight is the design for the whole project (warm paper ground, frosted rounded cards, pill controls, charcoal for the one action, sun yellow for selection, dot-matrix numerals). Every web page, the dashboard included, follows `.claude/DESIGN.md`: read its "Daylight guide" section first. Reference implementations: `apps/web/components/Dashboard.tsx` and `apps/web/components/dash/` for the app (shared recipes in `dash/ui.tsx`), `apps/web/app/page.tsx` with `components/site/` for marketing and prose pages; tokens in `app/globals.css`. Use the tokens, never hardcoded hex, and keep the map's data colors as in `lib/labels.ts`. There is no dark theme.
 
 ## Hackathon tracks (why things are built this way)
 
