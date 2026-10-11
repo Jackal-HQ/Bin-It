@@ -31,3 +31,38 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Thin, rounded scrollbars that follow the theme (side panel, legend, tables). */
+:root {
+  --scrollbar-thumb: rgb(0 0 0 / 0.22);
+  --scrollbar-thumb-hover: rgb(0 0 0 / 0.38);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --scrollbar-thumb: rgb(255 255 255 / 0.18);
+    --scrollbar-thumb-hover: rgb(255 255 255 / 0.32);
+  }
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
