@@ -10,6 +10,7 @@ import {
   TextInput,
 } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCity } from "@/lib/city";
@@ -22,6 +23,7 @@ import { useTheme } from "@/lib/theme";
 import { CitySelector } from "@/components/CitySelector";
 import { Call311Button } from "@/components/Call311Button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FadeInUp } from "@/components/FadeInUp";
 import { addMyReport, getMyReports, type MyReport } from "@/lib/myReports";
 
 const MAX_EDGE = 1600; // contract: JPEG, longest side <= 1600 px
@@ -130,9 +132,13 @@ export default function ReportScreen() {
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
-      <Card mode="contained" style={styles.card}>
-        <Card.Content style={styles.cardContent}>
-          <Text variant="titleMedium">New report</Text>
+      <FadeInUp delay={0}>
+        <Card mode="elevated" style={styles.card}>
+          <Card.Content style={styles.cardContent}>
+          <View style={styles.sectionHeader}>
+            <MaterialCommunityIcons name="trash-can" size={20} color={t.brand} />
+            <Text variant="titleMedium">New report</Text>
+          </View>
 
           <Text variant="labelLarge" style={styles.label}>
             City
@@ -184,44 +190,60 @@ export default function ReportScreen() {
             stored at a public URL — avoid faces and license plates.
           </HelperText>
         </Card.Content>
-      </Card>
+        </Card>
+      </FadeInUp>
 
       {myReports.length > 0 ? (
-        <Card mode="contained" style={styles.card}>
-          <Card.Title title="Your reports" />
-          <Card.Content>
-            {myReports.map((r) => (
-              <List.Item
-                key={r.id}
-                title={labelText(r.label)}
-                description={`${r.city} · severity ${r.severity} · ${new Date(
-                  r.created_at,
-                ).toLocaleDateString()}`}
-                onPress={() => router.push(`/report/${r.id}`)}
-                left={(props) => (
-                  <List.Icon {...props} icon="circle" color={severityColor(r.severity)} />
-                )}
-                right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              />
-            ))}
-          </Card.Content>
-        </Card>
+        <FadeInUp delay={80}>
+          <Card mode="elevated" style={styles.card}>
+            <Card.Title
+              title="Your reports"
+              left={(props) => <List.Icon {...props} icon="history" color={t.brand} />}
+            />
+            <Card.Content>
+              {myReports.map((r) => (
+                <List.Item
+                  key={r.id}
+                  title={labelText(r.label)}
+                  description={`${r.city} · severity ${r.severity} · ${new Date(
+                    r.created_at,
+                  ).toLocaleDateString()}`}
+                  onPress={() => router.push(`/report/${r.id}`)}
+                  left={(props) => (
+                    <List.Icon {...props} icon="circle" color={severityColor(r.severity)} />
+                  )}
+                  right={(props) => <List.Icon {...props} icon="chevron-right" />}
+                />
+              ))}
+            </Card.Content>
+          </Card>
+        </FadeInUp>
       ) : null}
 
-      <Card mode="contained" style={styles.card}>
-        <Card.Title title="Prefer to call?" />
-        <Card.Content>
-          <Divider style={styles.hiddenDivider} />
-          <Call311Button />
-        </Card.Content>
-      </Card>
+      <FadeInUp delay={160}>
+        <Card mode="elevated" style={styles.card}>
+          <Card.Title
+            title="Prefer to call?"
+            left={(props) => <List.Icon {...props} icon="phone" color={t.brand} />}
+          />
+          <Card.Content>
+            <Divider style={styles.hiddenDivider} />
+            <Call311Button />
+          </Card.Content>
+        </Card>
+      </FadeInUp>
 
-      <Card mode="contained" style={styles.card}>
-        <Card.Title title="Appearance" />
-        <Card.Content>
-          <ThemeToggle />
-        </Card.Content>
-      </Card>
+      <FadeInUp delay={240}>
+        <Card mode="elevated" style={styles.card}>
+          <Card.Title
+            title="Appearance"
+            left={(props) => <List.Icon {...props} icon="theme-light-dark" color={t.brand} />}
+          />
+          <Card.Content>
+            <ThemeToggle />
+          </Card.Content>
+        </Card>
+      </FadeInUp>
     </ScrollView>
   );
 }
@@ -230,6 +252,7 @@ const styles = StyleSheet.create({
   container: { padding: 12, gap: 12, paddingBottom: 32 },
   card: { borderRadius: 16 },
   cardContent: { gap: 8, paddingVertical: 8 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
   label: { marginTop: 8 },
   preview: { width: "100%", height: 220, borderRadius: 12 },
   previewEmpty: { alignItems: "center", justifyContent: "center" },

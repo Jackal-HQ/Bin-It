@@ -320,7 +320,12 @@ export default function NearbyScreen() {
               />
             )}
             ListEmptyComponent={
-              <Text style={[styles.empty, { color: t.textMuted }]}>Nothing nearby yet.</Text>
+              <View style={styles.emptyWrap}>
+                <List.Icon icon="map-marker-off" color={t.textMuted} />
+                <Text style={[styles.empty, { color: t.textMuted }]}>
+                  Nothing nearby yet. Pull down to refresh.
+                </Text>
+              </View>
             }
           />
         </Surface>
@@ -403,6 +408,7 @@ function makeStyles(t: Palette) {
     },
     sheetActions: { flexDirection: "row", alignItems: "center" },
     empty: { textAlign: "center", padding: 24 },
+    emptyWrap: { alignItems: "center", paddingVertical: 32 },
     dot: {
       width: 32,
       height: 32,

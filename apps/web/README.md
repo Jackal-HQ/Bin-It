@@ -44,7 +44,8 @@ The contract is `docs/api.md` (and `mocks/`); this folder implements it.
 | `POST /api/reports` | live: validate → upload photo → classify → duplicate check → attach or create ticket |
 | `GET /api/reports/nearby`, `GET /api/reports/{id}` | live |
 | `GET /api/tickets`, `PATCH /api/tickets/{id}` | live |
-| `GET /api/cells`, `GET /api/recommendations`, `POST/DELETE /api/scenarios` | mock only; `501` when `USE_MOCKS=0` |
+| `GET /api/cells`, `GET /api/recommendations` | live (read `cell_scores`, `bin_candidates`) |
+| `POST/DELETE /api/scenarios` | mock only; `501` when `USE_MOCKS=0` |
 
 Every handler keeps the `if (mocksEnabled()) return mocks...` branch first. Shared server
 code is in `lib/server.ts` (Neon query helper, error helper, photo upload, classifier call).

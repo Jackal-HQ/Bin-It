@@ -57,7 +57,7 @@ export type Cell = {
   lat: number;
   lng: number;
   expected_overflow: number;
-  reports_per_1k: number;
+  reports_per_1k: number | null; // null until population/311 data is joined
   under_reported: boolean;
   demand: number;
 };
