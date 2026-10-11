@@ -43,18 +43,24 @@ echo "  base:   $BASE"
 echo "  city:   $CITY"
 echo "  device: $DEVICE_ID"
 
-# GET helper: $1 path. Echoes body; sets $HTTP to status code.
+# GET helper: $1 path. Echoes body. The status code can't be returned via a global here
+# (callers use command substitution, which runs in a subshell), so it's written to
+# $STATUS_FILE and read back with `last_http` in the parent.
+STATUS_FILE="$(mktemp)"
 getj() {
-  local body
-  body="$(curl -sS -w $'\n%{http_code}' -H "ngrok-skip-browser-warning: 1" "$BASE$1")"
-  HTTP="${body##*$'\n'}"
-  echo "${body%$'\n'*}"
+  local tmp
+  tmp="$(mktemp)"
+  curl -sS -o "$tmp" -w '%{http_code}' -H "ngrok-skip-browser-warning: 1" "$BASE$1" >"$STATUS_FILE" 2>/dev/null || echo "000" >"$STATUS_FILE"
+  cat "$tmp"
+  rm -f "$tmp"
 }
+# Read the status written by the most recent getj/curl call.
+last_http() { cat "$STATUS_FILE" 2>/dev/null || echo "000"; }
 
 # ---- GET /api/health ----
 head "GET /api/health"
 resp="$(getj "/api/health")"
-if [ "$HTTP" = "200" ]; then ok "status 200"; else bad "status $HTTP"; fi
+if [ "$(last_http)" = "200" ]; then ok "status 200"; else bad "status $(last_http)"; fi
 db="$(echo "$resp" | jq -r '.database // empty')"
 [ -n "$db" ] && ok "database: $db" || bad "missing .database" "$resp"
 echo "$resp" | jq -e 'has("use_mocks")' >/dev/null 2>&1 && \
@@ -63,7 +69,7 @@ echo "$resp" | jq -e 'has("use_mocks")' >/dev/null 2>&1 && \
 # ---- GET /api/cities ----
 head "GET /api/cities"
 resp="$(getj "/api/cities")"
-[ "$HTTP" = "200" ] && ok "status 200" || bad "status $HTTP"
+[ "$(last_http)" = "200" ] && ok "status 200" || bad "status $(last_http)"
 ncities="$(echo "$resp" | jq -r '.cities | length' 2>/dev/null || echo 0)"
 [ "${ncities:-0}" -ge 1 ] && ok "$ncities cities" || bad "no cities" "$resp"
 echo "$resp" | jq -e --arg c "$CITY" '.cities[] | select(.slug==$c)' >/dev/null 2>&1 \
@@ -72,7 +78,7 @@ echo "$resp" | jq -e --arg c "$CITY" '.cities[] | select(.slug==$c)' >/dev/null 
 # ---- GET /api/reports/nearby ----
 head "GET /api/reports/nearby"
 resp="$(getj "/api/reports/nearby?city=$CITY&lat=28.5383&lng=-81.3792&radius_m=5000")"
-[ "$HTTP" = "200" ] && ok "status 200" || bad "status $HTTP" "$resp"
+[ "$(last_http)" = "200" ] && ok "status 200" || bad "status $(last_http)" "$resp"
 echo "$resp" | jq -e 'has("tickets") and has("bins")' >/dev/null 2>&1 \
   && ok "tickets=$(echo "$resp" | jq '.tickets|length') bins=$(echo "$resp" | jq '.bins|length')" \
   || bad "missing tickets/bins arrays"
@@ -80,7 +86,7 @@ echo "$resp" | jq -e 'has("tickets") and has("bins")' >/dev/null 2>&1 \
 # ---- GET /api/tickets ----
 head "GET /api/tickets"
 resp="$(getj "/api/tickets?city=$CITY")"
-[ "$HTTP" = "200" ] && ok "status 200" || bad "status $HTTP"
+[ "$(last_http)" = "200" ] && ok "status 200" || bad "status $(last_http)"
 echo "$resp" | jq -e '.tickets | type=="array"' >/dev/null 2>&1 \
   && ok "$(echo "$resp" | jq '.tickets|length') tickets" || bad "missing .tickets array"
 first_ticket="$(echo "$resp" | jq -r '.tickets[0].id // empty')"
@@ -88,14 +94,14 @@ first_ticket="$(echo "$resp" | jq -r '.tickets[0].id // empty')"
 # ---- GET /api/cells ----
 head "GET /api/cells"
 resp="$(getj "/api/cells?city=$CITY")"
-[ "$HTTP" = "200" ] && ok "status 200" || bad "status $HTTP"
+[ "$(last_http)" = "200" ] && ok "status 200" || bad "status $(last_http)"
 echo "$resp" | jq -e '.cells | type=="array"' >/dev/null 2>&1 \
   && ok "$(echo "$resp" | jq '.cells|length') cells" || bad "missing .cells array" "$resp"
 
 # ---- GET /api/recommendations ----
 head "GET /api/recommendations"
 resp="$(getj "/api/recommendations?city=$CITY")"
-[ "$HTTP" = "200" ] && ok "status 200" || bad "status $HTTP"
+[ "$(last_http)" = "200" ] && ok "status 200" || bad "status $(last_http)"
 nrec="$(echo "$resp" | jq -r '.recommendations | length' 2>/dev/null || echo 0)"
 ok "$nrec recommendations"
 if [ "${nrec:-0}" -ge 1 ]; then
@@ -129,11 +135,12 @@ if [ "${SKIP_WRITE:-0}" = "1" ]; then
 elif [ ! -f "$PHOTO" ]; then
   bad "photo not found: $PHOTO" "set PHOTO=... or run from the repo root"
 else
-  resp="$(curl -sS -w $'\n%{http_code}' -X POST \
+  tmp="$(mktemp)"
+  code="$(curl -sS -o "$tmp" -w '%{http_code}' -X POST \
     -H "X-Device-Id: $DEVICE_ID" -H "ngrok-skip-browser-warning: 1" \
     -F "city=$CITY" -F "lat=28.5383" -F "lng=-81.3792" -F "note=smoke test" \
-    -F "photo=@$PHOTO;type=image/jpeg" "$BASE/api/reports")"
-  code="${resp##*$'\n'}"; body="${resp%$'\n'*}"
+    -F "photo=@$PHOTO;type=image/jpeg" "$BASE/api/reports" 2>/dev/null || echo 000)"
+  body="$(cat "$tmp")"; rm -f "$tmp"
   if [ "$code" = "201" ]; then
     ok "status 201"
     rid="$(echo "$body" | jq -r '.report.id // empty')"
@@ -143,7 +150,7 @@ else
     # fetch it back
     if [ -n "$rid" ]; then
       resp="$(getj "/api/reports/$rid")"
-      [ "$HTTP" = "200" ] && ok "GET /api/reports/$rid -> 200" || bad "report lookup $HTTP"
+      [ "$(last_http)" = "200" ] && ok "GET /api/reports/$rid -> 200" || bad "report lookup $(last_http)"
       echo "$resp" | jq -e '.report | has("label") and has("status")' >/dev/null 2>&1 \
         && ok "report has label+status" || bad "report detail shape"
     fi
@@ -157,11 +164,12 @@ head "POST /api/scenarios (+ DELETE)"
 if [ "${SKIP_WRITE:-0}" = "1" ]; then
   echo "  ${DIM}skip (SKIP_WRITE=1)${RESET}"
 else
-  resp="$(curl -sS -w $'\n%{http_code}' -X POST \
+  tmp="$(mktemp)"
+  code="$(curl -sS -o "$tmp" -w '%{http_code}' -X POST \
     -H "Content-Type: application/json" -H "ngrok-skip-browser-warning: 1" \
     -d "{\"city\":\"$CITY\",\"proposed_bins\":[{\"lat\":28.5400,\"lng\":-81.3810}]}" \
-    "$BASE/api/scenarios")"
-  code="${resp##*$'\n'}"; body="${resp%$'\n'*}"
+    "$BASE/api/scenarios" 2>/dev/null || echo 000)"
+  body="$(cat "$tmp")"; rm -f "$tmp"
   if [ "$code" = "201" ]; then
     ok "status 201"
     sid="$(echo "$body" | jq -r '.scenario.id // empty')"
@@ -179,5 +187,6 @@ fi
 
 # ---- summary ----
 head "Summary"
+rm -f "$STATUS_FILE"
 echo "  ${GREEN}$pass passed${RESET}, $([ "$fail" -gt 0 ] && echo "${RED}$fail failed${RESET}" || echo "0 failed")"
 [ "$fail" -eq 0 ] || exit 1
