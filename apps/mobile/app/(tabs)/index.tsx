@@ -1,44 +1,57 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
+  Button,
+  Card,
+  Divider,
+  HelperText,
+  List,
   Text,
   TextInput,
-  View,
-} from "react-native";
+} from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCity } from "@/lib/city";
 import { useCities, useCreateReport } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
+import { isInCityArea } from "@/lib/geo";
 import { labelText } from "@/lib/types";
 import { ApiRequestError } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
+import { CitySelector } from "@/components/CitySelector";
+import { Call311Button } from "@/components/Call311Button";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { addMyReport, getMyReports, type MyReport } from "@/lib/myReports";
 
 const MAX_EDGE = 1600; // contract: JPEG, longest side <= 1600 px
 
 export default function ReportScreen() {
   const router = useRouter();
-  const { city, setCity } = useCity();
+  const t = useTheme();
+  const { city } = useCity();
   const { data: cities } = useCities();
   const createReport = useCreateReport();
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [myReports, setMyReports] = useState<MyReport[]>([]);
 
-  // Resize/compress to a <=1600px JPEG so uploads are small and match the contract.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getMyReports().then((r) => active && setMyReports(r));
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
+
   async function processImage(uri: string): Promise<string> {
     const ctx = ImageManipulator.manipulate(uri).resize({ width: MAX_EDGE });
     const image = await ctx.renderAsync();
-    const result = await image.saveAsync({
-      compress: 0.7,
-      format: SaveFormat.JPEG,
-    });
+    const result = await image.saveAsync({ compress: 0.7, format: SaveFormat.JPEG });
     return result.uri;
   }
 
@@ -53,10 +66,7 @@ export default function ReportScreen() {
   }
 
   async function pickPhoto() {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 1,
-    });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
     if (!res.canceled) setPhotoUri(await processImage(res.assets[0].uri));
   }
 
@@ -68,6 +78,19 @@ export default function ReportScreen() {
     setBusy(true);
     try {
       const coords = await getCurrentCoords();
+
+      // Only accept reports from inside the selected city's area. Reports are tied to
+      // their GPS location, so an out-of-area report would land nowhere useful.
+      const cityObj = cities?.find((c) => c.slug === city);
+      if (!isInCityArea(coords, cityObj)) {
+        Alert.alert(
+          "You're outside the city",
+          `Your location isn't within ${cityObj?.name ?? "the selected city"}. ` +
+            "Move into the city, or switch the city picker to where you are, then try again.",
+        );
+        return;
+      }
+
       const out = await createReport.mutateAsync({
         city,
         lat: coords.lat,
@@ -77,6 +100,14 @@ export default function ReportScreen() {
       });
       setPhotoUri(null);
       setNote("");
+      const saved = await addMyReport({
+        id: out.report.id,
+        city: out.report.city,
+        label: out.report.label,
+        severity: out.report.severity,
+        created_at: out.report.created_at,
+      });
+      setMyReports(saved);
       const merged = out.ticket.merged ? " (merged with a nearby report)" : "";
       Alert.alert(
         "Report sent",
@@ -91,99 +122,121 @@ export default function ReportScreen() {
     }
   }
 
+  const severityColor = (s: number) => (s >= 3 ? t.sev3 : s >= 2 ? t.sev2 : t.sev1);
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>City</Text>
-      <View style={styles.cityRow}>
-        {(cities ?? []).map((c) => (
-          <Pressable
-            key={c.slug}
-            onPress={() => setCity(c.slug)}
-            style={[styles.chip, city === c.slug && styles.chipActive]}
+    <ScrollView
+      style={{ backgroundColor: t.bg }}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Card mode="contained" style={styles.card}>
+        <Card.Content style={styles.cardContent}>
+          <Text variant="titleMedium">New report</Text>
+
+          <Text variant="labelLarge" style={styles.label}>
+            City
+          </Text>
+          <CitySelector />
+
+          <Text variant="labelLarge" style={styles.label}>
+            Photo
+          </Text>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.preview} />
+          ) : (
+            <View style={[styles.preview, styles.previewEmpty, { backgroundColor: t.cardAlt }]}>
+              <Text style={{ color: t.textMuted }}>No photo yet</Text>
+            </View>
+          )}
+          <View style={styles.buttonRow}>
+            <Button mode="contained-tonal" icon="camera" onPress={takePhoto} style={styles.flexBtn}>
+              Take photo
+            </Button>
+            <Button mode="contained-tonal" icon="image" onPress={pickPhoto} style={styles.flexBtn}>
+              Choose
+            </Button>
+          </View>
+
+          <TextInput
+            label="Note (optional)"
+            mode="outlined"
+            value={note}
+            onChangeText={setNote}
+            multiline
+            style={styles.input}
+            placeholder="Anything staff should know?"
+          />
+
+          <Button
+            mode="contained"
+            icon="send"
+            onPress={submit}
+            loading={busy}
+            disabled={busy}
+            style={styles.submit}
           >
-            <Text style={[styles.chipText, city === c.slug && styles.chipTextActive]}>
-              {c.name}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+            Send report
+          </Button>
 
-      <Text style={styles.label}>Photo</Text>
-      {photoUri ? (
-        <Image source={{ uri: photoUri }} style={styles.preview} />
-      ) : (
-        <View style={[styles.preview, styles.previewEmpty]}>
-          <Text style={styles.previewHint}>No photo yet</Text>
-        </View>
-      )}
-      <View style={styles.buttonRow}>
-        <Pressable style={[styles.btn, styles.btnSecondary]} onPress={takePhoto}>
-          <Text style={styles.btnSecondaryText}>Take photo</Text>
-        </Pressable>
-        <Pressable style={[styles.btn, styles.btnSecondary]} onPress={pickPhoto}>
-          <Text style={styles.btnSecondaryText}>Choose photo</Text>
-        </Pressable>
-      </View>
+          <HelperText type="info" visible style={styles.privacy}>
+            No account needed. Your report is anonymous. Photos may show public areas and are
+            stored at a public URL — avoid faces and license plates.
+          </HelperText>
+        </Card.Content>
+      </Card>
 
-      <Text style={styles.label}>Note (optional)</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Anything staff should know?"
-        value={note}
-        onChangeText={setNote}
-        multiline
-      />
+      {myReports.length > 0 ? (
+        <Card mode="contained" style={styles.card}>
+          <Card.Title title="Your reports" />
+          <Card.Content>
+            {myReports.map((r) => (
+              <List.Item
+                key={r.id}
+                title={labelText(r.label)}
+                description={`${r.city} · severity ${r.severity} · ${new Date(
+                  r.created_at,
+                ).toLocaleDateString()}`}
+                onPress={() => router.push(`/report/${r.id}`)}
+                left={(props) => (
+                  <List.Icon {...props} icon="circle" color={severityColor(r.severity)} />
+                )}
+                right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              />
+            ))}
+          </Card.Content>
+        </Card>
+      ) : null}
 
-      <Pressable
-        style={[styles.btn, styles.btnPrimary, busy && styles.btnDisabled]}
-        onPress={submit}
-        disabled={busy}
-      >
-        {busy ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.btnPrimaryText}>Send report</Text>
-        )}
-      </Pressable>
+      <Card mode="contained" style={styles.card}>
+        <Card.Title title="Prefer to call?" />
+        <Card.Content>
+          <Divider style={styles.hiddenDivider} />
+          <Call311Button />
+        </Card.Content>
+      </Card>
 
-      <Text style={styles.privacy}>
-        No account needed. Your report is anonymous. Photos may show public areas and
-        are stored at a public URL — avoid faces and license plates.
-      </Text>
+      <Card mode="contained" style={styles.card}>
+        <Card.Title title="Appearance" />
+        <Card.Content>
+          <ThemeToggle />
+        </Card.Content>
+      </Card>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: "#374151", marginTop: 8 },
-  cityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: "#e5e7eb",
-  },
-  chipActive: { backgroundColor: "#166534" },
-  chipText: { color: "#374151", fontSize: 13 },
-  chipTextActive: { color: "#fff" },
-  preview: { width: "100%", height: 220, borderRadius: 12, backgroundColor: "#f3f4f6" },
+  container: { padding: 12, gap: 12, paddingBottom: 32 },
+  card: { borderRadius: 16 },
+  cardContent: { gap: 8, paddingVertical: 8 },
+  label: { marginTop: 8 },
+  preview: { width: "100%", height: 220, borderRadius: 12 },
   previewEmpty: { alignItems: "center", justifyContent: "center" },
-  previewHint: { color: "#9ca3af" },
   buttonRow: { flexDirection: "row", gap: 8 },
-  btn: { borderRadius: 10, paddingVertical: 12, alignItems: "center", justifyContent: "center" },
-  btnSecondary: { flex: 1, backgroundColor: "#e5e7eb" },
-  btnSecondaryText: { color: "#166534", fontWeight: "600" },
-  btnPrimary: { backgroundColor: "#166534", marginTop: 12 },
-  btnPrimaryText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  btnDisabled: { opacity: 0.6 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    padding: 12,
-    minHeight: 60,
-    textAlignVertical: "top",
-  },
-  privacy: { fontSize: 12, color: "#6b7280", marginTop: 16, lineHeight: 18 },
+  flexBtn: { flex: 1 },
+  input: { marginTop: 4 },
+  submit: { marginTop: 12 },
+  privacy: { paddingHorizontal: 0 },
+  hiddenDivider: { height: 0, opacity: 0 },
 });

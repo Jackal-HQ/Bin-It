@@ -45,10 +45,17 @@ export async function GET(request: Request) {
 
   const [tickets, bins] = await Promise.all([
     query(
-      // resolved tickets are no longer a problem on the map
+      // resolved tickets are no longer a problem on the map.
+      // photo_url: the photo of the most severe (then most recent) report on the
+      // ticket, so the client can show a thumbnail without another request.
       `SELECT t.id, ST_Y(t.centroid::geometry) AS lat, ST_X(t.centroid::geometry) AS lng,
               t.label, t.max_severity, t.report_count, t.status,
-              ${TICKET_SYNTHETIC} AS is_synthetic
+              ${TICKET_SYNTHETIC} AS is_synthetic,
+              (SELECT r.photo_url
+                 FROM reports r
+                WHERE r.ticket_id = t.id AND r.photo_url IS NOT NULL
+                ORDER BY r.severity DESC, r.created_at DESC
+                LIMIT 1) AS photo_url
          FROM tickets t
         WHERE t.city_id = $1 AND t.status <> 'resolved' AND ${ticketArea}
         ORDER BY t.max_severity DESC, t.report_count DESC
@@ -65,7 +72,10 @@ export async function GET(request: Request) {
   ]);
 
   return NextResponse.json({
-    tickets: tickets.map((r) => ticketJson(r, false)),
+    tickets: tickets.map((r) => ({
+      ...ticketJson(r, false),
+      photo_url: (r.photo_url as string | null) ?? null,
+    })),
     bins: bins.map((r) => ({
       id: `b_${r.id}`,
       lat: Number(r.lat),

@@ -64,19 +64,22 @@ export async function getCities(): Promise<City[]> {
   return body.cities;
 }
 
-// GET /api/reports/nearby?city=&lat=&lng=&radius_m=
+// GET /api/reports/nearby?city=&lat=&lng=&radius_m=   or   ?city=&bbox=west,south,east,north
 export async function getNearby(params: {
   city: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
   radiusM?: number;
+  bbox?: [number, number, number, number];
 }): Promise<NearbyResponse> {
-  const q = new URLSearchParams({
-    city: params.city,
-    lat: String(params.lat),
-    lng: String(params.lng),
-    radius_m: String(params.radiusM ?? 1500),
-  });
+  const q = new URLSearchParams({ city: params.city });
+  if (params.bbox) {
+    q.set("bbox", params.bbox.join(","));
+  } else {
+    q.set("lat", String(params.lat));
+    q.set("lng", String(params.lng));
+    q.set("radius_m", String(params.radiusM ?? 1500));
+  }
   const res = await fetch(`${requireBase()}/api/reports/nearby?${q}`, {
     headers: await headers(),
   });

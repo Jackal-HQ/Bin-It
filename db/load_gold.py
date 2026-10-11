@@ -59,6 +59,13 @@ def number(value, where):
         fail(f"{where}: expected a number, got {value!r}")
 
 
+def optional_number(value, where):
+    """Blank or NaN means unknown (stored as NULL); anything else must be a number."""
+    if str(value).strip().lower() in ("", "nan", "none", "null"):
+        return None
+    return number(value, where)
+
+
 def boolean(value, where):
     v = str(value).strip().lower()
     if v in ("true", "1", "t", "yes"):
@@ -81,7 +88,7 @@ def main():
     score_rows = [
         (r["h3_cell"], number(r["lng"], f"cell_scores row {i}"), number(r["lat"], f"cell_scores row {i}"),
          number(r["expected_overflow"], f"cell_scores row {i}"),
-         number(r["reports_per_1k"], f"cell_scores row {i}"),
+         optional_number(r["reports_per_1k"], f"cell_scores row {i}"),
          boolean(r["under_reported"], f"cell_scores row {i}"),
          number(r["demand"], f"cell_scores row {i}"))
         for i, r in enumerate(scores, start=2)
@@ -99,6 +106,9 @@ def main():
          int(number(r["nearby_reports"], f"bin_candidates row {i}")))
         for i, r in enumerate(candidates, start=2)
     ]
+    if all(r[4] is None for r in score_rows):
+        print("warning: reports_per_1k is blank for every cell; loading it as NULL "
+              "(the under-reported layer needs population data from the pipeline)")
     ids = [r[0] for r in score_rows]
     if len(ids) != len(set(ids)):
         fail("cell_scores.csv has duplicate h3_cell values")

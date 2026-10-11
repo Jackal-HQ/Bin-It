@@ -11,8 +11,8 @@ complaints:
   date_field: created_date
   type_field: complaint_type
   geo_fields: [latitude, longitude]
-  category_map:                           # fill after listing the distinct complaint types (see below)
-    overflowing_can: ["<overflow type>"]
-    bin_request: ["<litter basket request type>"]
-    litter_other: ["<dirty or litter condition type>"]
+  category_map:                           # complaint_type values checked 2026-10-10 via $select=complaint_type,descriptor,count(*)
+    overflowing_can: ["Litter Basket Complaint"]    # descriptors: Overflowing (~84%), Misuse
+    bin_request: ["Litter Basket Request"]          # descriptors: New Basket, Replacement Basket
+    litter_other: ["Dirty Condition", "Illegal Dumping"]  # Dirty Condition also covers dog waste, syringes, glass
 bins: { source: osm }                     # DSNY Litter Basket Inventory (8znf-7b2c) is a better list; fetch_city.py does not download it yet

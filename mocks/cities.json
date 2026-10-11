@@ -1,6 +1,6 @@
 {
   "cities": [
-    { "slug": "orlando", "name": "Orlando, FL", "center": { "lat": 28.5383, "lng": -81.3792 }, "bbox": [-81.51, 28.40, -81.25, 28.65] },
+    { "slug": "orlando", "name": "Orlando, FL", "center": { "lat": 28.5383, "lng": -81.3792 }, "bbox": [-81.5075, 28.3481, -81.1241, 28.6143] },
     { "slug": "nyc", "name": "New York, NY", "center": { "lat": 40.7128, "lng": -74.0060 }, "bbox": [-74.26, 40.49, -73.70, 40.92] },
     { "slug": "chicago", "name": "Chicago, IL", "center": { "lat": 41.8781, "lng": -87.6298 }, "bbox": [-87.94, 41.64, -87.52, 42.02] }
   ]
