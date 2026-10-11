@@ -1,128 +1,81 @@
-// Centralized colors + light/dark palettes. Screens call useTheme(), which follows
-// the user's theme preference (System/Light/Dark via lib/themePref), defaulting to the
-// OS appearance.
+// Daylight design tokens for the mobile app. SOURCE OF TRUTH: .claude/DESIGN.md ("Daylight
+// guide"); the values match apps/web/app/globals.css. Light only: there is no dark theme.
 //
-// SOURCE OF TRUTH: .claude/DESIGN.md (the Raycast "midnight command center, coral neon"
-// system also used by the web landing page). Dark is the canonical Raycast look
-// (void-black canvas #040506, coral accent #ff6363, Raycast neutrals). Light is an
-// on-brand counterpart that keeps the same coral accent so the theme toggle still works.
-import {
-  MD3DarkTheme,
-  MD3LightTheme,
-  type MD3Theme,
-} from "react-native-paper";
-import { useResolvedScheme } from "@/lib/themePref";
+// React Native has no CSS variables or backdrop blur, so surfaces that are frosted on the web
+// are near-opaque here, and shadows are the RN equivalents of the web shadow tokens.
+import type { ViewStyle } from "react-native";
 
-export type Palette = {
-  mode: "light" | "dark";
-  brand: string;
-  brandFg: string;
-  bg: string;
-  card: string;
-  cardAlt: string;
-  text: string;
-  textMuted: string;
-  border: string;
-  danger: string;
-  // severity scale (shared with the map)
-  sev1: string;
-  sev2: string;
-  sev3: string;
-  bin: string;
-  demoBg: string;
-  demoFg: string;
-  // header
-  headerBg: string;
-  headerFg: string;
+export const colors = {
+  // ground: a 135 degree gradient behind every screen (see Ground in components/ui.tsx)
+  paper: "#E9E8E3",
+  paperWarm: "#F1EEE3",
+  paperSun: "#F8EEBC",
+  // text
+  strong: "#1E1D1A",
+  soft: "#57544C",
+  quiet: "#6E6B62",
+  // surfaces
+  card: "#FBFAF5", // web: white 74% over the ground, flattened so Android shadows stay clean
+  float: "#FEFDFA", // web: glass-strong; used over the map
+  well: "rgba(60,52,28,0.06)",
+  rim: "rgba(60,52,28,0.14)",
+  ledOff: "rgba(60,52,28,0.16)",
+  // charcoal: the one action and the result that matters
+  charcoal: "#2A2926",
+  charcoalRaised: "#3B3A36",
+  onCharcoal: "#F6F3EA",
+  onCharcoalQuiet: "#BDB9AC",
+  // sun: selection and gain
+  sun: "#F6C944",
+  sunWash: "#FCEFC2",
+  sunDeep: "#C99410",
+  sunInk: "#4A3C0B",
+  // signals
+  coral: "#FF6363", // brand dot, errors. Never text
+  coralWash: "#FFE7E3",
+  coralInk: "#B8322B",
+  moss: "#1F7A4F",
+  mossWash: "#DDF2E4",
+  pink: "#E7298A", // the map's under-reported outline
+  pinkInk: "#9C1D5E",
+  // map data colors: same as apps/web/lib/labels.ts, so phone and dashboard read as one
+  sev: ["#9CA3AF", "#FDAE61", "#F46D43", "#A50026"] as const,
+  bin: "#374151",
+  site: "#166534",
+} as const;
+
+export const radius = {
+  map: 32,
+  card: 28,
+  float: 26,
+  notice: 24,
+  row: 22,
+  tile: 20,
+  thumb: 18,
+  pill: 999,
+} as const;
+
+// Font families are registered in app/_layout.tsx. With custom fonts React Native picks the
+// face by family name, so there is one entry per weight and no fontWeight on text.
+export const font = {
+  ui400: "Manrope_400Regular",
+  ui500: "Manrope_500Medium",
+  ui600: "Manrope_600SemiBold",
+  ui700: "Manrope_700Bold",
+  ui800: "Manrope_800ExtraBold",
+  mono400: "GeistMono_400Regular",
+  mono500: "GeistMono_500Medium",
+  // Doto Bold with round dots (a static instance of the variable font, assets/fonts/)
+  dot: "DotoRound",
+} as const;
+
+const shade = "#463708";
+export const shadow: Record<"card" | "float" | "primary", ViewStyle> = {
+  card: { shadowColor: shade, shadowOpacity: 0.16, shadowRadius: 22, shadowOffset: { width: 0, height: 12 }, elevation: 4 },
+  float: { shadowColor: shade, shadowOpacity: 0.24, shadowRadius: 26, shadowOffset: { width: 0, height: 16 }, elevation: 8 },
+  primary: { shadowColor: "#2A2926", shadowOpacity: 0.35, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
 };
 
-// Coral is the single accent across the whole product (DESIGN.md: Coral Pulse #ff6363).
-const CORAL = "#ff6363";
-
-const light: Palette = {
-  mode: "light",
-  brand: CORAL,
-  brandFg: "#ffffff",
-  bg: "#ffffff",
-  card: "#f7f7f8",
-  cardAlt: "#eeeeef",
-  text: "#040506",
-  textMuted: "#6a6b6c",
-  border: "#e4e4e6",
-  danger: "#c2410c",
-  // keep severity semantic (warm scale) but tuned to the system
-  sev1: "#eab308",
-  sev2: "#f97316",
-  sev3: "#dc2626",
-  bin: "#59d499", // DESIGN.md Success Green, used only as a map accent
-  demoBg: "#452324", // Ember Hush tint
-  demoFg: "#ff6363",
-  headerBg: "#040506",
-  headerFg: "#ffffff",
-};
-
-const dark: Palette = {
-  mode: "dark",
-  brand: CORAL,
-  brandFg: "#ffffff",
-  bg: "#040506", // Void Black — the canonical Raycast canvas
-  card: "#07080a", // Ink
-  cardAlt: "#111214", // Obsidian
-  text: "#ffffff", // Pure White
-  textMuted: "#9c9c9d", // Ash
-  border: "#363739", // Raycast hairline border
-  danger: "#ff6363",
-  sev1: "#eab308",
-  sev2: "#fb923c",
-  sev3: "#ef4444",
-  bin: "#59d499", // Success Green
-  demoBg: "#452324", // Ember Hush
-  demoFg: "#ff8f8f",
-  headerBg: "#040506",
-  headerFg: "#ffffff",
-};
-
-export function useTheme(): Palette {
-  return useResolvedScheme() === "dark" ? dark : light;
-}
-
-export const palettes = { light, dark };
-
-// Build a React Native Paper MD3 theme from our palette so Paper components inherit
-// the brand green + dark mode with no duplication.
-function paperTheme(p: Palette): MD3Theme {
-  const base = p.mode === "dark" ? MD3DarkTheme : MD3LightTheme;
-  return {
-    ...base,
-    dark: p.mode === "dark",
-    colors: {
-      ...base.colors,
-      primary: p.brand,
-      onPrimary: p.brandFg,
-      secondary: p.brand,
-      onSecondary: p.brandFg,
-      background: p.bg,
-      onBackground: p.text,
-      surface: p.bg,
-      onSurface: p.text,
-      surfaceVariant: p.cardAlt,
-      onSurfaceVariant: p.textMuted,
-      outline: p.border,
-      outlineVariant: p.border,
-      error: p.danger,
-      elevation: {
-        ...base.colors.elevation,
-        level0: "transparent",
-        level1: p.card,
-        level2: p.card,
-        level3: p.cardAlt,
-        level4: p.cardAlt,
-        level5: p.cardAlt,
-      },
-    },
-  };
-}
-
-export function usePaperTheme(): MD3Theme {
-  return paperTheme(useTheme());
-}
+/** Severity 0..3 to the map's pin color. */
+export const severityColor = (s: number): string => colors.sev[Math.max(0, Math.min(3, Math.round(s)))];
+export const severityText = (s: number): string => ["Clean", "Low", "Medium", "High"][Math.max(0, Math.min(3, Math.round(s)))];

@@ -30,7 +30,7 @@ Expo Go).
 - Pins post a message back to the app (`MapMessage` in `lib/mapHtml.ts`). **Open in Street
   View** launches Google Maps through a plain `maps/@?api=1&map_action=pano` URL, which needs
   no key. Coverage varies; where none exists Google shows the map instead.
-- Dark mode darkens the canvas with a CSS filter (the style has no dark variant).
+- The app is light only (Daylight, see `.claude/DESIGN.md`); the page has no dark variant.
 - OpenFreeMap is a free public service provided as-is. OSM's tile policy suits demo traffic only.
 
 ### What Nearby asks the API for
@@ -80,17 +80,17 @@ secrets here. The app adds an anonymous `X-Device-Id` (a random UUID stored with
 ## Where things live
 
 ```text
-app/_layout.tsx        providers (TanStack Query, city, theme, safe area) + navigation stack
+app/_layout.tsx        fonts, paper-gradient ground, providers (TanStack Query, city, safe area) + navigation stack
 app/(tabs)/            Report + Nearby tabs
 app/ticket/[id].tsx    ticket detail (from the Nearby map/list)
 app/report/[id].tsx    report detail
-components/            CitySelector, Call311Button
+components/            ui.tsx (Daylight primitives), TabBar, ScreenHeader, CitySelector, Call311Button
 lib/types.ts           types mirroring docs/api.md (keep in sync with apps/web/lib/types.ts)
 lib/api.ts             the only network module (base URL + X-Device-Id + error handling)
 lib/hooks.ts           TanStack Query hooks
 lib/mapHtml.ts         the MapLibre page + Street View URL + WebView message types
 lib/cityInfo.ts        per-city 311 contact (config only)
-lib/theme.ts           light/dark palettes
+lib/theme.ts           Daylight tokens (colors, radius, fonts, shadows)
 lib/device.ts          anonymous device id
 lib/city.tsx           selected-city context, persisted
 lib/location.ts        location permission + current coords (high accuracy)

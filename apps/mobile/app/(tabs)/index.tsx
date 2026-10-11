@@ -1,30 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
-import {
-  Button,
-  Card,
-  Chip,
-  Divider,
-  HelperText,
-  List,
-  Text,
-  TextInput,
-} from "react-native-paper";
+import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { useFocusEffect, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCity } from "@/lib/city";
 import { useCities, useCreateReport } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
 import { isInCityArea } from "@/lib/geo";
 import { labelText, statusText } from "@/lib/types";
 import { ApiRequestError } from "@/lib/api";
-import { useTheme } from "@/lib/theme";
+import { colors, font, radius } from "@/lib/theme";
 import { CitySelector } from "@/components/CitySelector";
 import { Call311Button } from "@/components/Call311Button";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { FadeInUp } from "@/components/FadeInUp";
+import { TAB_BAR_SPACE } from "@/components/TabBar";
+import { Brand, Button, Card, Led, Notice, Photo, StatusPill, T } from "@/components/ui";
 import {
   addMyReport,
   getMyReports,
@@ -37,7 +28,7 @@ const REFRESH_COOLDOWN_MS = 60_000; // status refresh limited to once per minute
 
 export default function ReportScreen() {
   const router = useRouter();
-  const t = useTheme();
+  const insets = useSafeAreaInsets();
   const { city } = useCity();
   const { data: cities } = useCities();
   const createReport = useCreateReport();
@@ -162,154 +153,116 @@ export default function ReportScreen() {
     }
   }
 
-  const severityColor = (s: number) => (s >= 3 ? t.sev3 : s >= 2 ? t.sev2 : t.sev1);
-  // Status chip background: Pending (received) muted, Reviewed brand-ish, Resolved green.
-  const statusBg = (s: MyReport["status"]) =>
-    s === "resolved" ? t.bin : s === "reviewed" ? t.sev2 : t.cardAlt;
+  const cityName = (slug: string) => cities?.find((c) => c.slug === slug)?.name.split(",")[0] ?? slug;
 
   return (
     <ScrollView
-      style={{ backgroundColor: t.bg }}
-      contentContainerStyle={styles.container}
+      style={styles.flex}
+      contentContainerStyle={[styles.container, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + TAB_BAR_SPACE }]}
       keyboardShouldPersistTaps="handled"
     >
+      <View style={styles.header}>
+        <Brand />
+      </View>
+
       <FadeInUp delay={0}>
-        <Card mode="outlined" style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-          <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="trash-can" size={20} color={t.brand} />
-            <Text variant="titleMedium">New report</Text>
+        <Card style={styles.cardGap}>
+          <View>
+            <T v="eyebrow">New report</T>
+            <T v="heading" style={styles.cardTitle}>
+              Photograph the overflow
+            </T>
           </View>
 
-          <Text variant="labelLarge" style={styles.label}>
-            City
-          </Text>
-          <CitySelector />
+          <View style={styles.field}>
+            <T v="eyebrow">City</T>
+            <CitySelector fill />
+          </View>
 
-          <Text variant="labelLarge" style={styles.label}>
-            Photo
-          </Text>
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.preview} />
-          ) : (
-            <View style={[styles.preview, styles.previewEmpty, { backgroundColor: t.cardAlt }]}>
-              <Text style={{ color: t.textMuted }}>No photo yet</Text>
+          <View style={styles.field}>
+            <T v="eyebrow">Photo</T>
+            <Photo uri={photoUri} style={styles.preview} emptyText="No photo yet" />
+            <View style={styles.buttonRow}>
+              <Button icon="camera-outline" label="Take photo" onPress={takePhoto} style={styles.flexBtn} />
+              <Button icon="image-outline" label="Choose" onPress={pickPhoto} style={styles.flexBtn} />
             </View>
-          )}
-          <View style={styles.buttonRow}>
-            <Button mode="contained-tonal" icon="camera" onPress={takePhoto} style={styles.flexBtn}>
-              Take photo
-            </Button>
-            <Button mode="contained-tonal" icon="image" onPress={pickPhoto} style={styles.flexBtn}>
-              Choose
-            </Button>
           </View>
 
-          <TextInput
-            label="Note (optional)"
-            mode="outlined"
-            value={note}
-            onChangeText={setNote}
-            multiline
-            style={styles.input}
-            placeholder="Anything staff should know?"
-          />
+          <View style={styles.field}>
+            <T v="eyebrow">Note (optional)</T>
+            <TextInput
+              value={note}
+              onChangeText={setNote}
+              multiline
+              placeholder="Anything staff should know?"
+              placeholderTextColor={colors.quiet}
+              style={styles.input}
+            />
+          </View>
 
-          <Button
-            mode="contained"
-            icon="send"
-            onPress={submit}
-            loading={busy}
-            disabled={busy}
-            style={styles.submit}
-          >
-            Send report
-          </Button>
+          <Button kind="primary" icon="send" label="Send report" onPress={submit} loading={busy} disabled={!photoUri} />
 
-          <HelperText type="info" visible style={styles.privacy}>
-            No account needed. Your report is anonymous. Photos may show public areas and are
-            stored at a public URL — avoid faces and license plates.
-          </HelperText>
-        </Card.Content>
+          <Notice>
+            <T v="meta" color="#3E3B33" style={styles.noticeText}>
+              No account needed. Your report is anonymous. Photos may show public areas and are stored at a public URL: avoid
+              faces and license plates.
+            </T>
+          </Notice>
         </Card>
       </FadeInUp>
 
       {myReports.length > 0 ? (
         <FadeInUp delay={80}>
-          <Card mode="outlined" style={styles.card}>
-            <Card.Title
-              title="Your reports"
-              left={(props) => <List.Icon {...props} icon="history" color={t.brand} />}
-              right={() => (
-                <Button
-                  mode="text"
-                  compact
-                  icon="refresh"
-                  onPress={refreshStatuses}
-                  loading={refreshing}
-                  disabled={refreshing || cooldown > 0}
-                  style={styles.refreshBtn}
-                >
-                  {cooldown > 0 ? `${cooldown}s` : "Refresh"}
-                </Button>
-              )}
-            />
-            <Card.Content>
-              {myReports.map((r) => (
-                <List.Item
-                  key={r.id}
-                  title={labelText(r.label)}
-                  description={`${r.city} · severity ${r.severity} · ${new Date(
-                    r.created_at,
-                  ).toLocaleDateString()}`}
-                  onPress={() => router.push(`/report/${r.id}`)}
-                  left={(props) => (
-                    <List.Icon {...props} icon="circle" color={severityColor(r.severity)} />
-                  )}
-                  right={(props) => (
-                    <View {...props} style={styles.rowRight}>
-                      <Chip
-                        compact
-                        style={{ backgroundColor: statusBg(r.status) }}
-                        textStyle={{
-                          color: !r.status || r.status === "received" ? t.text : "#fff",
-                          fontWeight: "700",
-                          fontSize: 11,
-                        }}
-                      >
-                        {statusText(r.status)}
-                      </Chip>
-                    </View>
-                  )}
-                />
-              ))}
-            </Card.Content>
+          <Card style={styles.listCard}>
+            <View style={styles.listHeader}>
+              <View>
+                <T v="eyebrow">History</T>
+                <T v="heading" style={styles.cardTitle}>
+                  Your reports
+                </T>
+              </View>
+              <Button
+                kind="ghost"
+                compact
+                icon="refresh"
+                label={cooldown > 0 ? `${cooldown}s` : "Refresh"}
+                onPress={refreshStatuses}
+                loading={refreshing}
+                disabled={refreshing || cooldown > 0}
+              />
+            </View>
+            {myReports.map((r) => (
+              <Pressable
+                key={r.id}
+                accessibilityRole="button"
+                onPress={() => router.push(`/report/${r.id}`)}
+                style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.well }]}
+              >
+                <View style={styles.rowMain}>
+                  <T v="row">{labelText(r.label)}</T>
+                  <View style={styles.rowMeta}>
+                    <Led severity={r.severity} />
+                    <T v="meta">
+                      {cityName(r.city)} · severity {r.severity} · {new Date(r.created_at).toLocaleDateString()}
+                    </T>
+                  </View>
+                </View>
+                <StatusPill status={r.status} text={statusText(r.status)} />
+              </Pressable>
+            ))}
           </Card>
         </FadeInUp>
       ) : null}
 
       <FadeInUp delay={160}>
-        <Card mode="outlined" style={styles.card}>
-          <Card.Title
-            title="Prefer to call?"
-            left={(props) => <List.Icon {...props} icon="phone" color={t.brand} />}
-          />
-          <Card.Content>
-            <Divider style={styles.hiddenDivider} />
-            <Call311Button />
-          </Card.Content>
-        </Card>
-      </FadeInUp>
-
-      <FadeInUp delay={240}>
-        <Card mode="outlined" style={styles.card}>
-          <Card.Title
-            title="Appearance"
-            left={(props) => <List.Icon {...props} icon="theme-light-dark" color={t.brand} />}
-          />
-          <Card.Content>
-            <ThemeToggle />
-          </Card.Content>
+        <Card style={styles.cardGap}>
+          <View>
+            <T v="eyebrow">Prefer to call?</T>
+            <T v="heading" style={styles.cardTitle}>
+              Reach city services
+            </T>
+          </View>
+          <Call311Button />
         </Card>
       </FadeInUp>
     </ScrollView>
@@ -317,19 +270,33 @@ export default function ReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 12, gap: 12, paddingBottom: 32 },
-  card: { borderRadius: 16 },
-  cardContent: { gap: 8, paddingVertical: 8 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
-  refreshBtn: { marginRight: 4 },
-  rowRight: { justifyContent: "center" },
-  label: { marginTop: 8 },
-  preview: { width: "100%", height: 220, borderRadius: 12 },
-  previewEmpty: { alignItems: "center", justifyContent: "center" },
+  flex: { flex: 1 },
+  container: { paddingHorizontal: 16, gap: 12 },
+  header: { height: 48, flexDirection: "row", alignItems: "center", paddingHorizontal: 4 },
+  cardGap: { gap: 16, padding: 18 },
+  cardTitle: { marginTop: 4 },
+  field: { gap: 8 },
+  preview: { width: "100%", height: 220, borderRadius: radius.tile },
   buttonRow: { flexDirection: "row", gap: 8 },
   flexBtn: { flex: 1 },
-  input: { marginTop: 4 },
-  submit: { marginTop: 12 },
-  privacy: { paddingHorizontal: 0 },
-  hiddenDivider: { height: 0, opacity: 0 },
+  input: {
+    minHeight: 84,
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    paddingBottom: 14,
+    borderRadius: radius.row,
+    borderWidth: 1,
+    borderColor: colors.rim,
+    backgroundColor: "#FFFFFF",
+    fontFamily: font.ui500,
+    fontSize: 15,
+    color: colors.strong,
+    textAlignVertical: "top",
+  },
+  noticeText: { lineHeight: 19 },
+  listCard: { padding: 10 },
+  listHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 8, paddingTop: 8, paddingBottom: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: radius.row },
+  rowMain: { flex: 1, gap: 6 },
+  rowMeta: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
 });

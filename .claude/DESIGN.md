@@ -1,9 +1,9 @@
 # Bin-It Design Reference: Daylight
 > Warm paper, frosted glass, dot-matrix numerals
 
-**Theme:** light. Daylight is the design for the whole project: the staff dashboard, the landing page, the legal pages and the 404 page are all built on it, and every new page follows it. The earlier dark Raycast-derived guide ("Midnight") has been retired; it lives in git history only.
+**Theme:** light. Daylight is the design for the whole project: the staff dashboard, the landing page, the legal pages, the 404 page and the mobile app are all built on it, and every new page or screen follows it. The earlier dark Raycast-derived guide ("Midnight") has been retired; it lives in git history only.
 
-Source: the Daylight canvas (Queue, Ticket, Bins, Scenario, Components and states, Tokens and rules) designed in Claude Design on 2026-10-11, ported to `apps/web`. The marketing pages were then carried over with the same tokens. Where this file and the code disagree, the code wins and this file gets fixed in the same change.
+Source: the Daylight canvas (Queue, Ticket, Bins, Scenario, Components and states, Tokens and rules) designed in Claude Design on 2026-10-11, ported to `apps/web`. The marketing pages and then the Expo app were carried over with the same tokens. Where this file and the code disagree, the code wins and this file gets fixed in the same change.
 
 ## Daylight guide (read this first)
 
@@ -16,9 +16,10 @@ Daylight reads as a daylight instrument panel: a warm paper ground, frosted roun
 | Staff dashboard `/dashboard` | Daylight. Reference implementation: `apps/web/components/Dashboard.tsx` plus `components/dash/` |
 | Landing page `/`, `/privacy`, `/terms`, the 404 page | Daylight (marketing and prose recipes below): `app/page.tsx`, `components/site/`, `components/landing/` |
 | Any new web page | Daylight |
-| Mobile app (`apps/mobile`) | Its own theme (`lib/theme.ts`); this guide does not apply |
+| Mobile app (`apps/mobile`) | Daylight, same tokens as React Native values (`lib/theme.ts`, `components/ui.tsx`); see "Mobile app (Expo)" below |
+| Any new mobile screen | Daylight |
 
-Every page is light, whatever the OS theme: `.daylight` sets `color-scheme: light`. There is no dark variant. Do not add one without asking.
+Every page and screen is light, whatever the OS theme: `.daylight` sets `color-scheme: light` on the web, and the app has no theme switch. There is no dark variant. Do not add one without asking.
 
 ### Tokens (defined in `apps/web/app/globals.css`, use the Tailwind names)
 
@@ -197,6 +198,23 @@ Same tokens, same root (`daylight font-ui antialiased` on the page's outer eleme
 
 On a phone the nav keeps the mark, wordmark and button (anchor links hide below `sm`), the bento and city grids go to one column, and the stat card to two columns.
 
+### Mobile app (Expo)
+
+Same system, expressed as React Native values. Tokens live in `apps/mobile/lib/theme.ts` (`colors`, `radius`, `font`, `shadow`, `severityColor`) and carry the same names and hex values as the table above; primitives live in `apps/mobile/components/ui.tsx`. Use them, never inline hex. The app is light only: there is no theme toggle and no Appearance setting.
+
+| Part | Recipe |
+| --- | --- |
+| Ground | `Ground` (in `app/_layout.tsx`): `expo-linear-gradient`, 135 degrees, `paper` to `paperWarm` (42%) to `paperSun`. The navigation theme is made transparent (`ThemeProvider` with `background: "transparent"`) so every screen sits on it; never give a screen its own background color |
+| Type | Manrope 400-800 and Geist Mono 400/500 through `@expo-google-fonts`, Doto for numerals and the wordmark. React Native cannot use variable axes or `fontWeight` on custom fonts, so every weight is its own family name (`font.ui700`, `font.mono500`, `font.dot`). `font.dot` is `assets/fonts/DotoRound-Bold.ttf`, a static instance of Doto with round dots (SIL OFL, license beside it). Use `T` for text (variants title, heading, row, body, meta, eyebrow, chip, tile) and `DotNum` for numerals; never set sentences in Doto |
+| Surfaces | `Card` (radius 28, `card` fill, `shadow.card`), `Tile` in `TileGrid` (radius 20, `well` fill, mono label over a value), `Notice` (dotted sun, radius 24). The Nearby map sits in a radius 32 card with its own shadow wrapper |
+| Controls | `Button`: `primary` is charcoal with a sun disc icon (one per screen, "Send report"), `secondary` is a white pill with a rim, `ghost` is bare text. `Segmented` is the pill group (city picker; `fill` stretches it in a card, `floating` lifts it over the map). `IconButton` is a 44 px round well. Pill radius everywhere |
+| Navigation | Floating pill `TabBar` (charcoal pill marks the active tab, `TAB_BAR_SPACE` is the room screens leave under it). Detail screens use `ScreenHeader`: a round back button and a mono eyebrow, no native header |
+| Dots | `Led` is severity (filled dots in the severity color, empty ones `ledOff`), `StatusPill` is status (ring for pending, sun for reviewed, moss for resolved), `DemoChip` is the dotted "Demo data" outline. Severity and status are always paired with a word |
+| Photos | `Photo` shows the image or a sand gradient with a bin icon; `OverlayChip` puts the merge count and severity on it in white on translucent charcoal |
+| Map page | `lib/mapHtml.ts` is its own HTML document, so it repeats the values: pins `#FDAE61` / `#F46D43` / `#A50026` (the dashboard's severity ramp), demo reports ringed dark, bins `#374151`, popup radius 22 with a charcoal "View report" pill and a white "Open in Street View" pill, pill zoom control at the top right, pill legend at the bottom left. Keep it in step with `lib/theme.ts` by hand |
+
+Narrow phones: the city pills and buttons shrink (`adjustsFontSizeToFit`), and below 360 pt the map's 311 button becomes icon-only. Check 340 pt wide when changing the Report or Nearby header.
+
 ### Maintenance
 
-When a new pattern is needed (form, table, chart), build it from the tokens above, add its recipe to Components, and note it here in the same change. Reference implementation files: `apps/web/components/Dashboard.tsx`, `apps/web/components/dash/*`, `apps/web/components/panel/*`, `apps/web/components/site/*`, `apps/web/components/landing/*`, `apps/web/app/globals.css`.
+When a new pattern is needed (form, table, chart), build it from the tokens above, add its recipe to Components, and note it here in the same change. Reference implementation files: `apps/web/components/Dashboard.tsx`, `apps/web/components/dash/*`, `apps/web/components/panel/*`, `apps/web/components/site/*`, `apps/web/components/landing/*`, `apps/web/app/globals.css`; mobile: `apps/mobile/lib/theme.ts`, `apps/mobile/components/ui.tsx`, `apps/mobile/app/(tabs)/index.tsx`.
