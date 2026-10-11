@@ -8,7 +8,11 @@ import { useEffect, useRef, useState } from "react";
 import { ApiError, api, cachedMode } from "@/lib/api";
 import type { Recommendation, Scenario } from "@/lib/types";
 import { Empty, ErrorRetry } from "./States";
+import { Tooltip } from "@/components/ui/tooltip-card";
 import TopNControl from "./TopNControl";
+
+const KEY_SHADOW =
+  "rgba(255,255,255,0.05) 0px 1px 0px 0px inset, rgba(255,255,255,0.25) 0px 0px 0px 1px, rgba(0,0,0,0.2) 0px -1px 0px 0px inset";
 
 type Props = {
   city: string;
@@ -113,15 +117,15 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
           <button
             onClick={run}
             disabled={busy || phase === "done"}
-            className="flex items-center gap-2 rounded-md bg-brand px-4 py-1.5 text-sm font-medium text-brand-fg hover:opacity-90 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-[8px] bg-mist px-4 py-1.5 text-[13px] font-medium text-iron transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {phase === "running" && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+            {phase === "running" && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-iron/30 border-t-iron" />}
             {phase === "running" ? "Running on a Neon branch…" : `Add top ${n} bins`}
           </button>
           <button
             onClick={reset}
             disabled={busy || (phase !== "done" && phase !== "error")}
-            className="rounded-md border border-zinc-300 px-4 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 hover:border-zinc-400 disabled:opacity-50 dark:border-rc-border dark:hover:bg-white/[0.04] dark:hover:border-smoke"
+            className="rounded-[8px] border border-rc-border px-4 py-1.5 text-[13px] font-medium text-ash transition-colors hover:text-white disabled:opacity-50"
           >
             {phase === "deleting" ? "Deleting branch…" : "Reset"}
           </button>
@@ -129,12 +133,13 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
       </div>
 
       {phase === "error" && <ErrorRetry error={error} onRetry={run} />}
-      {warning && <p className="rounded-md bg-amber-50 p-2 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">{warning}</p>}
+      {warning && <p className="rounded-[12px] border border-coral-pulse/30 bg-ember-hush/60 p-3 text-sm text-white">{warning}</p>}
 
       {result && (
         <div className="grid grid-cols-2 gap-3">
           <Figure
             title="Average distance to nearest bin"
+            hint="Demand-weighted average distance from each area to its nearest bin, before and after adding the sites. Lower is better."
             before={`${Math.round(result.before.avg_distance_m)} m`}
             after={`${Math.round(result.after.avg_distance_m)} m`}
             delta={result.after.avg_distance_m - result.before.avg_distance_m}
@@ -143,6 +148,7 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
           />
           <Figure
             title="Demand within 150 m of a bin"
+            hint="Share of expected demand that sits within 150 m of a bin. 150 m is an assumption, not a measured walking threshold. Higher is better."
             before={`${Math.round(result.before.coverage_150m_pct)}%`}
             after={`${Math.round(result.after.coverage_150m_pct)}%`}
             delta={result.after.coverage_150m_pct - result.before.coverage_150m_pct}
@@ -151,9 +157,9 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
         </div>
       )}
 
-      <div className="rounded-xl bg-zinc-50 p-3 text-xs text-zinc-600 dark:bg-obsidian dark:text-ash">
-        <p className="font-semibold text-zinc-800 dark:text-zinc-200">Assumptions</p>
-        <ul className="mt-1 list-disc space-y-0.5 pl-4">
+      <div className="rounded-[12px] bg-obsidian p-3 text-xs leading-[1.5] text-ash">
+        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.073em] text-smoke">Assumptions</p>
+        <ul className="mt-2 list-disc space-y-1 pl-4">
           <li>Results are estimates from a model, not measured outcomes.</li>
           <li>&quot;Covered&quot; means within 150 m of a bin. 150 m is an assumption.</li>
           <li>Distances are weighted by expected demand per H3 cell.</li>
@@ -164,19 +170,21 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
   );
 }
 
-function Figure(props: { title: string; before: string; after: string; delta: number; unit: string; lowerIsBetter?: boolean }) {
-  const { title, before, after, delta, unit, lowerIsBetter } = props;
+function Figure(props: { title: string; hint: string; before: string; after: string; delta: number; unit: string; lowerIsBetter?: boolean }) {
+  const { title, hint, before, after, delta, unit, lowerIsBetter } = props;
   const better = lowerIsBetter ? delta < 0 : delta > 0;
   const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
   return (
-    <div className="rounded-xl border border-zinc-200 p-3 shadow-sm dark:border-rc-border dark:shadow-[rgba(255,255,255,0.05)_0px_1px_0px_0px_inset]">
-      <p className="text-xs text-zinc-500">{title} (estimated)</p>
-      <p className="mt-1 flex items-baseline gap-1.5 text-sm">
-        <span className="text-zinc-500">{before}</span>
-        <span aria-hidden>→</span>
-        <span className="text-lg font-semibold">{after}</span>
+    <div className="rounded-[16px] bg-ink/60 p-3" style={{ boxShadow: KEY_SHADOW }}>
+      <Tooltip content={hint}>
+        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.073em] text-smoke">{title} (estimated)</p>
+      </Tooltip>
+      <p className="mt-2 flex items-baseline gap-1.5 text-sm">
+        <span className="text-smoke">{before}</span>
+        <span aria-hidden className="text-smoke">→</span>
+        <span className="text-xl font-medium text-white">{after}</span>
       </p>
-      <p className={`text-sm font-medium ${better ? "text-green-700 dark:text-green-400" : "text-zinc-600"}`}>
+      <p className={`text-sm font-medium ${better ? "text-success-green" : "text-ash"}`}>
         {sign}
         {Math.abs(Math.round(delta))}
         {unit}

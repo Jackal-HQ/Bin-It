@@ -14,6 +14,7 @@ import {
   timeAgo,
 } from "@/lib/labels";
 import type { Label, Status, Ticket } from "@/lib/types";
+import { Tooltip } from "@/components/ui/tooltip-card";
 import { DemoBadge, Empty, ErrorRetry, Loading } from "./States";
 import Thumb from "./Thumb";
 
@@ -48,14 +49,16 @@ function useNewIds(city: string, tickets: Ticket[] | undefined) {
 }
 
 const selectClass =
-  "rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm transition-colors hover:border-zinc-400 dark:border-rc-border dark:bg-obsidian dark:hover:border-smoke";
+  "rounded-[8px] border border-rc-border bg-obsidian px-2.5 py-1 text-[13px] text-white transition-colors hover:border-smoke focus-visible:outline focus-visible:outline-1 focus-visible:outline-mist";
+
+const th = "font-mono text-[10px] font-medium uppercase tracking-[0.073em]";
 
 export default function QueueTab({ city, query, filters, onFilters, selectedId, onSelect }: Props) {
   const fresh = useNewIds(city, query.data);
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 p-3 dark:border-rc-border">
+      <div className="flex flex-wrap items-center gap-2 border-b border-rc-border p-3">
         <select
           aria-label="Filter by label"
           className={selectClass}
@@ -82,7 +85,7 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
             </option>
           ))}
         </select>
-        <span className="ml-auto text-xs text-zinc-500">
+        <span className="ml-auto font-mono text-[11px] text-smoke">
           {query.data ? `${query.data.length} tickets` : ""} · updates every 5 s
         </span>
       </div>
@@ -95,14 +98,24 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
         <Empty>No tickets match these filters.</Empty>
       ) : (
         <table className="w-full text-left text-[13px]">
-          <thead className="bg-zinc-50 text-xs text-zinc-500 dark:bg-obsidian dark:text-ash">
+          <thead className="bg-obsidian text-smoke">
             <tr>
-              <th className="py-2 pl-3 pr-1 font-medium">Severity</th>
-              <th className="px-2 py-2 font-medium">Label</th>
-              <th className="px-1 py-2 text-right font-medium">Count</th>
-              <th className="px-2 py-2 font-medium">Status</th>
-              <th className="hidden px-2 py-2 font-medium @[420px]:table-cell">Last seen</th>
-              <th className="py-2 pl-1 pr-3 font-medium"><span className="sr-only">Photo</span></th>
+              <th className={`py-2 pl-3 pr-1 ${th}`}>
+                <Tooltip content="Highest severity among the reports merged into the ticket, from Low to High.">
+                  <span>Severity</span>
+                </Tooltip>
+              </th>
+              <th className={`px-2 py-2 ${th}`}>Label</th>
+              <th className={`px-1 py-2 text-right ${th}`}>
+                <Tooltip content="Reports merged into this ticket: same place, within 50 m and seven days, with a similar photo.">
+                  <span>Count</span>
+                </Tooltip>
+              </th>
+              <th className={`px-2 py-2 ${th}`}>Status</th>
+              <th className={`hidden px-2 py-2 @[420px]:table-cell ${th}`}>Last seen</th>
+              <th className="py-2 pl-1 pr-3">
+                <span className="sr-only">Photo</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -110,23 +123,28 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
               <tr
                 key={t.id}
                 onClick={() => onSelect(t)}
-                className={`cursor-pointer border-t border-zinc-100 transition-colors duration-200 hover:bg-zinc-50 dark:border-rc-border/50 dark:hover:bg-white/[0.03] ${
-                  t.id === selectedId ? "bg-brand/10 shadow-[inset_3px_0_0_0_var(--brand)]" : ""
-                } ${fresh.has(t.id) ? "bg-yellow-100 dark:bg-yellow-900/40" : ""}`}
+                className={`cursor-pointer border-t border-rc-border/60 transition-colors duration-200 hover:bg-white/[0.04] ${
+                  t.id === selectedId ? "bg-coral-pulse/10 shadow-[inset_2px_0_0_0_var(--color-coral-pulse)]" : ""
+                } ${fresh.has(t.id) ? "bg-white/[0.08]" : ""}`}
               >
                 <td className="py-2 pl-3 pr-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(severityColor(t.max_severity)) }} />
+                  <span className="flex items-center gap-1.5 text-white">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      style={{ background: rgb(severityColor(t.max_severity)) }}
+                    />
                     {severityText(t.max_severity)}
                   </span>
                 </td>
                 <td className="px-2 py-2">
-                  <div>{labelText(t.label)}</div>
+                  <div className="text-white">{labelText(t.label)}</div>
                   {t.is_synthetic && <DemoBadge />}
                 </td>
-                <td className="px-1 py-2 text-right tabular-nums">{t.report_count}</td>
-                <td className="px-2 py-2">{STATUS_TEXT[t.status] ?? t.status}</td>
-                <td className="hidden px-2 py-2 whitespace-nowrap text-zinc-500 @[420px]:table-cell">{timeAgo(t.last_seen)}</td>
+                <td className="px-1 py-2 text-right tabular-nums text-white">{t.report_count}</td>
+                <td className="px-2 py-2 text-ash">{STATUS_TEXT[t.status] ?? t.status}</td>
+                <td className="hidden whitespace-nowrap px-2 py-2 text-smoke @[420px]:table-cell">
+                  {timeAgo(t.last_seen)}
+                </td>
                 <td className="py-1.5 pl-1 pr-3">
                   <Thumb src={t.photo_url} className="h-9 w-9" />
                 </td>

@@ -1,5 +1,7 @@
 "use client";
 
+import { Tooltip } from "@/components/ui/tooltip-card";
+
 /** "Top N" slider shared by the Bins and Scenario tabs (5 to 50, capped by the sites available). */
 export default function TopNControl({
   value,
@@ -16,7 +18,9 @@ export default function TopNControl({
   const shown = Math.min(value, max);
   return (
     <label className="flex items-center gap-3 text-sm">
-      <span className="whitespace-nowrap font-medium">Top sites</span>
+      <Tooltip content="How many of the ranked sites to show on the map and include in a scenario. Sites are ordered by estimated gain.">
+        <span className="whitespace-nowrap font-medium text-white">Top sites</span>
+      </Tooltip>
       <input
         type="range"
         min={min}
@@ -24,9 +28,9 @@ export default function TopNControl({
         value={shown}
         disabled={disabled || max <= min}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="flex-1 cursor-pointer accent-[var(--brand)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex-1 cursor-pointer accent-[var(--color-mist)] disabled:cursor-not-allowed disabled:opacity-50"
       />
-      <span className="min-w-9 rounded-md bg-brand/10 px-2 py-0.5 text-center text-xs font-semibold tabular-nums text-brand">
+      <span className="min-w-9 rounded-[6px] bg-graphite px-2 py-0.5 text-center font-mono text-xs font-medium tabular-nums text-white">
         {shown}
       </span>
     </label>

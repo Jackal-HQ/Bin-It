@@ -23,7 +23,7 @@ import TopBar from "./TopBar";
 
 const MapView = dynamic(() => import("./map/MapView"), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-zinc-100 dark:bg-zinc-900" />,
+  loading: () => <div className="h-full w-full animate-pulse bg-ink" />,
 });
 
 const TABS = [
@@ -127,7 +127,11 @@ export default function Dashboard() {
     // Side by side from 700px wide (laptops with display scaling are often under 768px).
     // Narrower: map on top and the page scrolls, so the panel is never squeezed.
     // With the panel hidden (?panel=hidden) the map fills the window at any width.
-    <div className={panelOpen ? "flex min-h-dvh flex-col min-[700px]:h-dvh" : "flex h-dvh flex-col"}>
+    <div
+      className={`dash bg-void-black font-[family-name:var(--font-inter)] text-white antialiased ${
+        panelOpen ? "flex min-h-dvh flex-col min-[700px]:h-dvh" : "flex h-dvh flex-col"
+      }`}
+    >
       <TopBar
         cities={cities.data}
         city={city}
@@ -172,7 +176,7 @@ export default function Dashboard() {
           {!panelOpen && (
             <button
               onClick={() => setPanel(true)}
-              className="absolute top-3 right-14 z-10 flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white/95 px-3 py-1.5 text-sm font-medium text-zinc-800 shadow-md transition-colors hover:bg-white dark:border-rc-border dark:bg-ink/95 dark:text-zinc-100 dark:hover:bg-obsidian"
+              className="absolute top-3 right-14 z-10 flex items-center gap-1.5 rounded-[8px] border border-rc-border bg-void-black/85 px-3 py-1.5 text-[13px] font-medium text-ash backdrop-blur-[24px] transition-colors hover:text-white"
             >
               <PanelIcon collapsed />
               Show panel
@@ -180,12 +184,12 @@ export default function Dashboard() {
           )}
           <div className="pointer-events-none absolute top-3 bottom-8 left-3 z-10 flex flex-col items-start justify-end gap-2">
             {noScores && (
-              <div className="pointer-events-auto rounded-md bg-white/95 px-3 py-2 text-sm font-medium shadow dark:bg-zinc-900/95">
+              <div className="pointer-events-auto rounded-[12px] border border-rc-border bg-void-black/85 px-3 py-2 text-sm font-medium text-white backdrop-blur-[24px]">
                 No model results loaded for this city.
               </div>
             )}
             {(cells.isError || nearby.isError) && (
-              <div className="pointer-events-auto max-w-xs rounded-md bg-white/95 shadow dark:bg-zinc-900/95">
+              <div className="pointer-events-auto max-w-xs rounded-[12px] border border-rc-border bg-void-black/85 backdrop-blur-[24px]">
                 <ErrorRetry
                   error={cells.error ?? nearby.error}
                   onRetry={() => {
@@ -202,7 +206,7 @@ export default function Dashboard() {
         </div>
 
         {/* side panel: hidden, not unmounted, so a running scenario and its map highlight survive */}
-        <aside className={`@container ${panelOpen ? "" : "hidden"} border-zinc-200 bg-white min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l dark:border-rc-border dark:bg-ink`}>
+        <aside className={`@container ${panelOpen ? "" : "hidden"} border-rc-border bg-ink min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l`}>
           {selection && (
             <DetailCard
               selection={selection}
@@ -215,12 +219,12 @@ export default function Dashboard() {
             />
           )}
           {/* the detail card and tab content scroll together; the tab bar stays pinned */}
-          <nav className="sticky top-0 z-10 flex border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-rc-border dark:bg-ink/90" role="tablist">
+          <nav className="sticky top-0 z-10 flex items-center gap-1 border-b border-rc-border bg-ink/90 p-2 backdrop-blur-[24px]" role="tablist">
             <button
               onClick={() => setPanel(false)}
               aria-label="Hide panel"
               title="Hide panel to see the whole map"
-              className="border-r border-zinc-200 px-3 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-800 dark:border-rc-border dark:hover:bg-white/[0.04] dark:hover:text-zinc-200"
+              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-smoke transition-colors hover:bg-white/[0.06] hover:text-white"
             >
               <PanelIcon collapsed={false} />
             </button>
@@ -230,15 +234,15 @@ export default function Dashboard() {
                 role="tab"
                 aria-selected={tab === t.id}
                 onClick={() => setParams({ tab: t.id })}
-                className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                  tab === t.id ? "text-brand" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                className={`relative flex-1 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                  tab === t.id ? "text-white" : "text-smoke hover:text-white"
                 }`}
               >
-                {t.name}
+                <span className="relative z-10">{t.name}</span>
                 {tab === t.id && (
                   <motion.span
                     layoutId="tab-indicator"
-                    className="absolute inset-x-0 -bottom-px h-0.5 bg-brand"
+                    className="absolute inset-0 rounded-[8px] bg-graphite"
                     transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
@@ -285,7 +289,7 @@ export default function Dashboard() {
         </aside>
       </div>
 
-      <footer className="border-t border-zinc-200 px-4 py-1.5 text-[11px] leading-snug text-zinc-500 dark:border-rc-border">
+      <footer className="border-t border-rc-border bg-void-black px-4 py-1.5 font-mono text-[11px] leading-snug text-smoke">
         Projected changes are model estimates, not measured outcomes. The model target is litter-related complaint density,
         not measured bin overflow. Orlando has no local complaint data: its scores come from a model trained on NYC and
         Chicago and are lightly validated. Rows marked &quot;Demo data&quot; are synthetic.

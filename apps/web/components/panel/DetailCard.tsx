@@ -11,7 +11,11 @@ import { STATUS_OPTIONS, STATUS_TEXT, formatDateTime, labelText, riskText, sever
 import type { Selection } from "@/lib/selection";
 import type { Recommendation, Status, Ticket } from "@/lib/types";
 import { DemoBadge, UnderReportedBadge, isUnauthorized } from "./States";
+import { Tooltip } from "@/components/ui/tooltip-card";
 import Thumb from "./Thumb";
+
+const KEY_SHADOW =
+  "rgba(255,255,255,0.05) 0px 1px 0px 0px inset, rgba(255,255,255,0.25) 0px 0px 0px 1px, rgba(0,0,0,0.2) 0px -1px 0px 0px inset";
 
 type Props = {
   selection: Selection;
@@ -32,13 +36,14 @@ export default function DetailCard({ selection, ticket, site, cell, siteUnderRep
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 320, damping: 30 }}
-      className="relative border-b border-zinc-200 bg-white p-3 dark:border-rc-border dark:bg-ink"
+      className="relative m-3 rounded-[16px] bg-ink/60 p-4"
+      style={{ boxShadow: KEY_SHADOW }}
       aria-label="Details"
     >
       <button
         onClick={onClose}
         aria-label="Close details"
-        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-md text-lg leading-none text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
+        className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-[6px] text-lg leading-none text-smoke transition-colors hover:bg-white/[0.06] hover:text-white"
       >
         ×
       </button>
@@ -56,14 +61,14 @@ export default function DetailCard({ selection, ticket, site, cell, siteUnderRep
 }
 
 function Missing({ what }: { what: string }) {
-  return <p className="pr-6 text-sm text-zinc-500">{what}</p>;
+  return <p className="pr-6 text-sm text-ash">{what}</p>;
 }
 
-function Row({ k, children }: { k: string; children: React.ReactNode }) {
+function Row({ k, hint, children }: { k: string; hint?: string; children: React.ReactNode }) {
   return (
     <>
-      <dt className="text-zinc-500">{k}</dt>
-      <dd className="text-zinc-900 dark:text-zinc-100">{children}</dd>
+      <dt className="text-smoke">{hint ? <Tooltip content={hint}><span>{k}</span></Tooltip> : k}</dt>
+      <dd className="text-white">{children}</dd>
     </>
   );
 }
@@ -72,7 +77,7 @@ function TicketDetail({ ticket }: { ticket: Ticket }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 pr-6">
-        <h2 className="font-semibold">{labelText(ticket.label)}</h2>
+        <h2 className="text-[16px] font-medium text-white">{labelText(ticket.label)}</h2>
         {ticket.is_synthetic && <DemoBadge />}
       </div>
       <Thumb src={ticket.photo_url} alt={`Photo: ${labelText(ticket.label)}`} className="h-48 w-full" emptyText="No photo stored for this ticket" />
@@ -100,11 +105,11 @@ function StreetViewLink({ lat, lng }: { lat: number; lng: number }) {
         href={streetViewUrl(lat, lng)}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 hover:border-zinc-400 dark:border-rc-border dark:hover:bg-white/[0.04] dark:hover:border-smoke"
+        className="inline-flex items-center gap-1.5 rounded-[8px] border border-rc-border px-3 py-1.5 text-[13px] font-medium text-ash transition-colors hover:text-white"
       >
         Open in Street View <span aria-hidden>↗</span>
       </a>
-      <p className="mt-1 text-xs text-zinc-500">Google shows the nearest street-level photo, which may be a short distance away or a few years old.</p>
+      <p className="mt-1 text-xs text-smoke">Google shows the nearest street-level photo, which may be a short distance away or a few years old.</p>
     </div>
   );
 }
@@ -153,11 +158,11 @@ function StatusControl({ ticket }: { ticket: Ticket }) {
             onChange={(e) => setDraftKey(e.target.value)}
             placeholder="Staff key to change status"
             aria-label="Staff key"
-            className="min-w-0 flex-1 rounded-md border border-zinc-300 px-2 py-0.5 text-sm dark:border-rc-border dark:bg-obsidian"
+            className="min-w-0 flex-1 rounded-[8px] border border-rc-border bg-obsidian px-2 py-1 text-sm text-white placeholder:text-smoke focus-visible:outline focus-visible:outline-1 focus-visible:outline-mist"
           />
-          <button className="rounded-md bg-brand px-2 py-0.5 text-xs font-medium text-brand-fg transition-opacity hover:opacity-90">Save</button>
+          <button className="rounded-[8px] bg-mist px-2.5 py-1 text-xs font-medium text-iron transition-opacity hover:opacity-90">Save</button>
         </div>
-        {message && <p className="text-xs text-red-700 dark:text-red-400">{message}</p>}
+        {message && <p className="text-xs text-coral-pulse">{message}</p>}
       </form>
     );
   }
@@ -169,7 +174,7 @@ function StatusControl({ ticket }: { ticket: Ticket }) {
         value={patch.isPending ? patch.variables : ticket.status}
         disabled={patch.isPending}
         onChange={(e) => patch.mutate(e.target.value as Status)}
-        className="rounded-md border border-zinc-300 bg-white px-2 py-0.5 text-sm transition-colors hover:border-zinc-400 dark:border-rc-border dark:bg-obsidian dark:hover:border-smoke"
+        className="rounded-[8px] border border-rc-border bg-obsidian px-2 py-1 text-sm text-white transition-colors hover:border-smoke focus-visible:outline focus-visible:outline-1 focus-visible:outline-mist"
       >
         {STATUS_OPTIONS.map((s) => (
           <option key={s} value={s}>
@@ -177,8 +182,8 @@ function StatusControl({ ticket }: { ticket: Ticket }) {
           </option>
         ))}
       </select>
-      {patch.isPending && <span className="ml-2 text-xs text-zinc-500">Saving…</span>}
-      {message && <p className="text-xs text-red-700 dark:text-red-400">{message}</p>}
+      {patch.isPending && <span className="ml-2 text-xs text-smoke">Saving…</span>}
+      {message && <p className="text-xs text-coral-pulse">{message}</p>}
     </div>
   );
 }
@@ -187,16 +192,16 @@ function SiteDetail({ site, underReported }: { site: Recommendation; underReport
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2 pr-6">
-        <h2 className="font-semibold">Recommended site #{site.rank}</h2>
+        <h2 className="text-[16px] font-medium text-white">Recommended site #{site.rank}</h2>
         {underReported && <UnderReportedBadge />}
       </div>
-      <p className="text-sm">{site.rationale || "No reason written yet."}</p>
+      <p className="text-[13px] leading-[1.5] text-white">{site.rationale || "No reason written yet."}</p>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-        <Row k="Nearest bin now">{Math.round(site.nearest_bin_m)} m</Row>
-        <Row k="Nearby reports">{site.nearby_reports}</Row>
-        <Row k="Estimated gain">{site.gain.toFixed(3)}</Row>
+        <Row k="Nearest bin now" hint="Distance from this site to the closest existing bin (OpenStreetMap or city data).">{Math.round(site.nearest_bin_m)} m</Row>
+        <Row k="Nearby reports" hint="Resident reports close to this site. Zero is common where residents report little.">{site.nearby_reports}</Row>
+        <Row k="Estimated gain" hint="A model estimate of how much closer residents get to a bin, weighted by expected demand. Not a measured outcome.">{site.gain.toFixed(3)}</Row>
       </dl>
-      <p className="text-xs text-zinc-500">Gain is a model estimate of how much closer residents get to a bin, weighted by expected demand.</p>
+      <p className="text-xs text-smoke">Gain is a model estimate of how much closer residents get to a bin, weighted by expected demand.</p>
       <StreetViewLink lat={site.lat} lng={site.lng} />
     </div>
   );
@@ -206,17 +211,17 @@ function CellDetail({ cell, ratesLoaded }: { cell: RankedCell; ratesLoaded: bool
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2 pr-6">
-        <h2 className="font-semibold">Area {cell.h3_cell}</h2>
+        <h2 className="text-[16px] font-medium text-white">Area {cell.h3_cell}</h2>
         {cell.under_reported && <UnderReportedBadge />}
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-        <Row k="Expected overflow">
+        <Row k="Expected overflow" hint="Model score for how much litter this area should produce, ranked within the city.">
           {riskText(cell.risk_rank)} · score {cell.expected_overflow.toFixed(2)}
         </Row>
-        <Row k="Reports per 1,000 residents">{cell.reports_per_1k == null ? "not loaded yet" : cell.reports_per_1k.toFixed(2)}</Row>
-        <Row k="Demand weight">{cell.demand.toFixed(2)}</Row>
+        <Row k="Reports per 1,000 residents" hint="How often residents report here, scaled by population. Compared with expected overflow to find under-reported areas.">{cell.reports_per_1k == null ? "not loaded yet" : cell.reports_per_1k.toFixed(2)}</Row>
+        <Row k="Demand weight" hint="How much this area counts when measuring distance to the nearest bin.">{cell.demand.toFixed(2)}</Row>
       </dl>
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-smoke">
         {!cell.under_reported
           ? "Expected overflow is a model estimate from places, transit, parks, population and existing bins."
           : ratesLoaded

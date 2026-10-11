@@ -16,7 +16,10 @@ import type { Bbox, Bin, Cell, City, Recommendation, Ticket } from "@/lib/types"
 // public/maplibre-gl-worker.mjs is copied from node_modules on postinstall (see scripts/).
 setWorkerUrl("/maplibre-gl-worker.mjs");
 
-const MAP_STYLE = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/liberty";
+// Default: OpenFreeMap Positron (keyless), inverted to a dark map with CSS (see globals.css).
+// A custom NEXT_PUBLIC_MAP_STYLE_URL is used as is and assumed to be dark already.
+const CUSTOM_STYLE = process.env.NEXT_PUBLIC_MAP_STYLE_URL;
+const MAP_STYLE = CUSTOM_STYLE || "https://tiles.openfreemap.org/styles/positron";
 
 export type FlyTarget = { lat: number; lng: number; zoom: number; key: string | number };
 
@@ -91,21 +94,23 @@ export default function MapView(props: Props) {
   }
 
   return (
-    <Map
-      ref={mapRef}
-      initialViewState={{ longitude: city.center.lng, latitude: city.center.lat, zoom: 13 }}
-      mapStyle={MAP_STYLE}
-      style={{ width: "100%", height: "100%" }}
-      cursor={hovering ? "pointer" : "grab"}
-      onLoad={reportBounds}
-      onMoveEnd={reportBounds}
-    >
-      <NavigationControl position="top-right" showCompass={false} />
-      <DeckOverlay
-        layers={layers}
-        onClick={handleClick}
-        onHover={(info: PickingInfo) => setHovering(Boolean(info.object))}
-      />
-    </Map>
+    <div className={`bin-map h-full w-full ${CUSTOM_STYLE ? "" : "bin-map-dark"}`}>
+      <Map
+        ref={mapRef}
+        initialViewState={{ longitude: city.center.lng, latitude: city.center.lat, zoom: 13 }}
+        mapStyle={MAP_STYLE}
+        style={{ width: "100%", height: "100%" }}
+        cursor={hovering ? "pointer" : "grab"}
+        onLoad={reportBounds}
+        onMoveEnd={reportBounds}
+      >
+        <NavigationControl position="top-right" showCompass={false} />
+        <DeckOverlay
+          layers={layers}
+          onClick={handleClick}
+          onHover={(info: PickingInfo) => setHovering(Boolean(info.object))}
+        />
+      </Map>
+    </div>
   );
 }
