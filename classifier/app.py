@@ -23,11 +23,17 @@ LABEL_PROMPTS = {
         "a full bin with trash bags on top and spilling onto the pavement",
         "an overflowing wheelie bin with its lid pushed open by rubbish",
         "a trash can stuffed with paper and litter",
+        "a bin overflowing with rubbish bags on a city street",
+        "a full litter bin with cups and wrappers piled on top",
+        "a dumpster overflowing with trash and cardboard",
     ],
     "bag_pile": [
         "a photo of a pile of trash bags on a sidewalk",
         "several garbage bags stacked on top of each other outdoors",
         "a mound of trash bags left on the street or curb",
+        "a heap of black rubbish bags on a pavement",
+        "white and clear garbage bags piled against a wall",
+        "bags of rubbish left on the street with no bin",
     ],
     "illegal_dumping": [
         "a photo of illegally dumped furniture and junk at a curb",
@@ -36,6 +42,9 @@ LABEL_PROMPTS = {
         "a large heap of mixed garbage and plastic waste dumped on the ground",
         "scattered litter, bottles and plastic waste strewn across the ground",
         "a big pile of junk, furniture and bags dumped next to a dumpster",
+        "furniture and household junk dumped on a grass verge",
+        "litter and trash scattered across a hillside or ditch",
+        "a heap of rubbish dumped in an empty lot",
     ],
     "clean": [
         "a photo of a public trash can with its lid closed and nothing around it",
@@ -46,23 +55,42 @@ LABEL_PROMPTS = {
         "a clean litter bin on a sidewalk with nothing around it",
         "a metal public waste bin with no garbage in it, in daylight",
         "a recycling and trash kiosk on a clean pavement",
+        "closed wheelie bins lined up at the curb waiting for collection",
+        "a single wheelie bin standing on a clean sidewalk",
+        "a row of neat colored wheelie bins on a pavement",
+        "public litter bins with no rubbish around them",
+        "a garbage truck collecting bins on a clean street",
     ],
-    # Specific scenes, not one broad "unrelated" sentence: the broad one also matched
-    # messy-but-real trash photos and sent them here.
+    # Kept to things that are clearly not a bin problem. Generic street-scene prompts
+    # ("a city street", "a building or a car") were removed: clean bins sit in street
+    # scenes, and those prompts pulled them into not_trash (data/eval.py, 119 photos).
     "not_trash": [
-        "a photo of a city street with no trash or bins in it",
-        "a photo of a building, a car or a tree",
-        "a photo of people walking",
         "a photo of garden plants and a flower bed",
         "a bin full of garden clippings and leaves",
+        "a photo of a person",
+        "a photo of a landscape",
     ],
 }
-SEVERITY = [
-    "a clean street",
-    "a few pieces of litter",
-    "a lot of trash spread over the ground",
-    "a huge heap of trash covering the area",
-]
+# Severity applies only to labels that show trash, so there is no "clean" level here
+# (photos called clean/not_trash are pinned to 0 below). Each level averages a few
+# phrasings, like the labels do.
+SEVERITY_PROMPTS = {
+    1: [
+        "a few pieces of litter",
+        "a small amount of litter on the ground",
+        "a little bit of rubbish near a bin",
+    ],
+    2: [
+        "a lot of trash spread over the ground",
+        "a large amount of rubbish scattered around a bin",
+        "plenty of litter and bags on the pavement",
+    ],
+    3: [
+        "a huge heap of trash covering the area",
+        "a massive pile of rubbish and bags blocking the pavement",
+        "an enormous mound of garbage",
+    ],
+}
 # Labels whose severity is pinned to 0 regardless of the severity prompts'
 # own guess - label and severity are scored independently below, so without
 # this a photo correctly called "clean" could still get a nonzero severity.
@@ -88,7 +116,7 @@ def embed_label_prompts(prompt_lists):
     return keys, torch.stack(out)
 
 LABEL_KEYS, LABEL_TEXT = embed_label_prompts(LABEL_PROMPTS)
-SEV_TEXT = embed_text(SEVERITY)
+SEV_LEVELS, SEV_TEXT = embed_label_prompts(SEVERITY_PROMPTS)   # levels 1, 2, 3
 
 app = FastAPI()
 
@@ -108,7 +136,7 @@ async def classify(photo: UploadFile, x_classifier_key: str | None = Header(defa
     sev_p = (100 * img @ SEV_TEXT.T).softmax(dim=-1)[0]
     i = int(label_p.argmax())
     label = LABEL_KEYS[i]
-    severity = 0 if label in ZERO_SEVERITY_LABELS else int(sev_p.argmax())
+    severity = 0 if label in ZERO_SEVERITY_LABELS else SEV_LEVELS[int(sev_p.argmax())]
     return {
         "label": label,
         "label_confidence": float(label_p[i]),

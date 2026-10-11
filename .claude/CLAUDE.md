@@ -157,7 +157,7 @@ In PowerShell, `curl` is an alias for `Invoke-WebRequest`; use `curl.exe` for th
 - `db/load_gold.py` stores a blank `reports_per_1k` as NULL (the column is nullable). The current exports have it blank for every cell, so no cell is flagged `under_reported` yet; the pipeline must join population/311 data before the under-reported layer means anything. Check `demand` is not all zeros too.
 - Hugging Face Inference Providers only serve models listed at `https://router.huggingface.co/v1/models` (query it with the token). `meta-llama/Llama-3.2-3B-Instruct` is NOT served for our token (`model_not_supported`); `data/explain.py` defaults to `meta-llama/Llama-3.1-8B-Instruct`, which answered. Avoid reasoning models (empty content at small `max_tokens`). Template sentences cached in `bin_candidates.rationale` are upgraded to LLM text on a later run automatically; LLM text is kept unless `--force`.
 - Run Python scripts from the repo root with the venv active (system Python lacks psycopg). Use Python 3.12.
-- The classifier's label is stored even when wrong (about 66% label accuracy); `unclassified` reports never merge.
+- The classifier's label is stored even when wrong (about 84% label accuracy on 119 photos at the last eval); `unclassified` reports never merge.
 - Existing prior art: the City of Orlando already runs a "Clean & Safe" app for reporting overflowing cans downtown. Our differentiators: duplicate merging, photo severity, reporting-bias correction, bin placement planning.
 
 ## Working rules for Claude
@@ -260,7 +260,7 @@ Update this section as work lands.
 
 - [x] Neon project, schema, bucket
 - [x] Mock API deployed
-- [x] Classifier container + tunnel (about 66% label accuracy at last eval; prompts in `classifier/app.py`)
+- [x] Classifier container + tunnel (84% label / 59% exact severity on 119 photos at last eval; prompts retuned afterwards, re-measure after rebuild; prompts in `classifier/app.py`)
 - [x] Seed data (Orlando, NYC, Chicago; `db/seed.py`, reset with `db/reset_demo.sql`)
 - [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id}, cells, recommendations, scenarios are all live (scenarios: Neon branch via `lib/scenarios.ts`, falls back to a no-write "calculated" mode; ~5 s on a real branch, numbers identical in both modes)
 - [ ] Databricks pipeline + gold load: `db/load_gold.py` written (expects `data/gold/<slug>/{cell_scores,bins,bin_candidates}.csv`); notebooks and CSV export not in the repo yet; gold CSVs for orlando/nyc/chicago exist under `data/gold/` (`reports_per_1k` blank, so no under-reported flags yet); `data/explain.py` runs (LLM top 20 with `meta-llama/Llama-3.1-8B-Instruct`, templates for the rest); whether gold and rationales are loaded in Neon for all three cities is not confirmed

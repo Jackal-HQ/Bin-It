@@ -233,7 +233,7 @@ as real.
 | --- | --- |
 | Neon project, schema, bucket | done: schema loaded, photos upload to the bucket |
 | Mock API | done: handlers serve `mocks/` behind `USE_MOCKS`, deployed on Vercel |
-| Classifier container + tunnel | done: CLIP zero-shot behind a tunnel (about 66% label accuracy on our 73 photos at last measurement) |
+| Classifier container + tunnel | done: CLIP zero-shot behind a tunnel (84% label accuracy and 59% exact severity on our 119 photos at the last eval; prompts retuned since, re-measure after rebuilding the container) |
 | Seed data | done: Orlando, NYC and Chicago demo reports (`db/seed.py`), flagged synthetic |
 | Real API handlers | partly done: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id} are live; all handlers live |
 | Databricks pipeline + gold load | loader written (`db/load_gold.py`); notebooks and CSV exports not in the repo yet |
