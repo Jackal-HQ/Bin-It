@@ -1,15 +1,14 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
+import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
+  Button,
+  Card,
+  Divider,
+  HelperText,
+  List,
   Text,
   TextInput,
-  View,
-} from "react-native";
+} from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -18,9 +17,10 @@ import { useCreateReport } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
 import { labelText } from "@/lib/types";
 import { ApiRequestError } from "@/lib/api";
-import { useTheme, type Palette } from "@/lib/theme";
+import { useTheme } from "@/lib/theme";
 import { CitySelector } from "@/components/CitySelector";
 import { Call311Button } from "@/components/Call311Button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { addMyReport, getMyReports, type MyReport } from "@/lib/myReports";
 
 const MAX_EDGE = 1600; // contract: JPEG, longest side <= 1600 px
@@ -28,7 +28,6 @@ const MAX_EDGE = 1600; // contract: JPEG, longest side <= 1600 px
 export default function ReportScreen() {
   const router = useRouter();
   const t = useTheme();
-  const styles = useMemo(() => makeStyles(t), [t]);
   const { city } = useCity();
   const createReport = useCreateReport();
 
@@ -37,7 +36,6 @@ export default function ReportScreen() {
   const [busy, setBusy] = useState(false);
   const [myReports, setMyReports] = useState<MyReport[]>([]);
 
-  // Refresh the local history whenever this tab regains focus.
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -48,14 +46,10 @@ export default function ReportScreen() {
     }, []),
   );
 
-  // Resize/compress to a <=1600px JPEG so uploads are small and match the contract.
   async function processImage(uri: string): Promise<string> {
     const ctx = ImageManipulator.manipulate(uri).resize({ width: MAX_EDGE });
     const image = await ctx.renderAsync();
-    const result = await image.saveAsync({
-      compress: 0.7,
-      format: SaveFormat.JPEG,
-    });
+    const result = await image.saveAsync({ compress: 0.7, format: SaveFormat.JPEG });
     return result.uri;
   }
 
@@ -70,10 +64,7 @@ export default function ReportScreen() {
   }
 
   async function pickPhoto() {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 1,
-    });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
     if (!res.canceled) setPhotoUri(await processImage(res.assets[0].uri));
   }
 
@@ -94,7 +85,6 @@ export default function ReportScreen() {
       });
       setPhotoUri(null);
       setNote("");
-      // keep a local record so the resident can find it again (no accounts/API for this)
       const saved = await addMyReport({
         id: out.report.id,
         city: out.report.city,
@@ -117,130 +107,121 @@ export default function ReportScreen() {
     }
   }
 
+  const severityColor = (s: number) => (s >= 3 ? t.sev3 : s >= 2 ? t.sev2 : t.sev1);
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>City</Text>
-      <CitySelector />
+    <ScrollView
+      style={{ backgroundColor: t.bg }}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Card mode="contained" style={styles.card}>
+        <Card.Content style={styles.cardContent}>
+          <Text variant="titleMedium">New report</Text>
 
-      <Text style={styles.label}>Photo</Text>
-      {photoUri ? (
-        <Image source={{ uri: photoUri }} style={styles.preview} />
-      ) : (
-        <View style={[styles.preview, styles.previewEmpty]}>
-          <Text style={styles.previewHint}>No photo yet</Text>
-        </View>
-      )}
-      <View style={styles.buttonRow}>
-        <Pressable style={[styles.btn, styles.btnSecondary]} onPress={takePhoto}>
-          <Text style={styles.btnSecondaryText}>Take photo</Text>
-        </Pressable>
-        <Pressable style={[styles.btn, styles.btnSecondary]} onPress={pickPhoto}>
-          <Text style={styles.btnSecondaryText}>Choose photo</Text>
-        </Pressable>
-      </View>
+          <Text variant="labelLarge" style={styles.label}>
+            City
+          </Text>
+          <CitySelector />
 
-      <Text style={styles.label}>Note (optional)</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Anything staff should know?"
-        placeholderTextColor={t.textMuted}
-        value={note}
-        onChangeText={setNote}
-        multiline
-      />
+          <Text variant="labelLarge" style={styles.label}>
+            Photo
+          </Text>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.preview} />
+          ) : (
+            <View style={[styles.preview, styles.previewEmpty, { backgroundColor: t.cardAlt }]}>
+              <Text style={{ color: t.textMuted }}>No photo yet</Text>
+            </View>
+          )}
+          <View style={styles.buttonRow}>
+            <Button mode="contained-tonal" icon="camera" onPress={takePhoto} style={styles.flexBtn}>
+              Take photo
+            </Button>
+            <Button mode="contained-tonal" icon="image" onPress={pickPhoto} style={styles.flexBtn}>
+              Choose
+            </Button>
+          </View>
 
-      <Pressable
-        style={[styles.btn, styles.btnPrimary, busy && styles.btnDisabled]}
-        onPress={submit}
-        disabled={busy}
-      >
-        {busy ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.btnPrimaryText}>Send report</Text>
-        )}
-      </Pressable>
+          <TextInput
+            label="Note (optional)"
+            mode="outlined"
+            value={note}
+            onChangeText={setNote}
+            multiline
+            style={styles.input}
+            placeholder="Anything staff should know?"
+          />
 
-      <Text style={styles.privacy}>
-        No account needed. Your report is anonymous. Photos may show public areas and
-        are stored at a public URL — avoid faces and license plates.
-      </Text>
+          <Button
+            mode="contained"
+            icon="send"
+            onPress={submit}
+            loading={busy}
+            disabled={busy}
+            style={styles.submit}
+          >
+            Send report
+          </Button>
+
+          <HelperText type="info" visible style={styles.privacy}>
+            No account needed. Your report is anonymous. Photos may show public areas and are
+            stored at a public URL — avoid faces and license plates.
+          </HelperText>
+        </Card.Content>
+      </Card>
 
       {myReports.length > 0 ? (
-        <>
-          <View style={styles.divider} />
-          <Text style={styles.label}>Your reports</Text>
-          {myReports.map((r) => (
-            <Pressable
-              key={r.id}
-              style={styles.historyRow}
-              onPress={() => router.push(`/report/${r.id}`)}
-            >
-              <View
-                style={[
-                  styles.historyDot,
-                  {
-                    backgroundColor:
-                      r.severity >= 3 ? t.sev3 : r.severity >= 2 ? t.sev2 : t.sev1,
-                  },
-                ]}
+        <Card mode="contained" style={styles.card}>
+          <Card.Title title="Your reports" />
+          <Card.Content>
+            {myReports.map((r) => (
+              <List.Item
+                key={r.id}
+                title={labelText(r.label)}
+                description={`${r.city} · severity ${r.severity} · ${new Date(
+                  r.created_at,
+                ).toLocaleDateString()}`}
+                onPress={() => router.push(`/report/${r.id}`)}
+                left={(props) => (
+                  <List.Icon {...props} icon="circle" color={severityColor(r.severity)} />
+                )}
+                right={(props) => <List.Icon {...props} icon="chevron-right" />}
               />
-              <View style={styles.historyBody}>
-                <Text style={styles.historyTitle}>{labelText(r.label)}</Text>
-                <Text style={styles.historySub}>
-                  {r.city} · severity {r.severity} ·{" "}
-                  {new Date(r.created_at).toLocaleDateString()}
-                </Text>
-              </View>
-              <Text style={styles.historyChevron}>›</Text>
-            </Pressable>
-          ))}
-        </>
+            ))}
+          </Card.Content>
+        </Card>
       ) : null}
 
-      <View style={styles.divider} />
-      <Text style={styles.label}>Prefer to call?</Text>
-      <Call311Button />
+      <Card mode="contained" style={styles.card}>
+        <Card.Title title="Prefer to call?" />
+        <Card.Content>
+          <Divider style={styles.hiddenDivider} />
+          <Call311Button />
+        </Card.Content>
+      </Card>
+
+      <Card mode="contained" style={styles.card}>
+        <Card.Title title="Appearance" />
+        <Card.Content>
+          <ThemeToggle />
+        </Card.Content>
+      </Card>
     </ScrollView>
   );
 }
 
-function makeStyles(t: Palette) {
-  return StyleSheet.create({
-    container: { padding: 16, gap: 8, backgroundColor: t.bg, flexGrow: 1 },
-    label: { fontSize: 14, fontWeight: "600", color: t.text, marginTop: 8 },
-    preview: { width: "100%", height: 220, borderRadius: 12, backgroundColor: t.cardAlt },
-    previewEmpty: { alignItems: "center", justifyContent: "center" },
-    previewHint: { color: t.textMuted },
-    buttonRow: { flexDirection: "row", gap: 8 },
-    btn: { borderRadius: 10, paddingVertical: 12, alignItems: "center", justifyContent: "center" },
-    btnSecondary: { flex: 1, backgroundColor: t.cardAlt },
-    btnSecondaryText: { color: t.brand, fontWeight: "600" },
-    btnPrimary: { backgroundColor: t.brand, marginTop: 12 },
-    btnPrimaryText: { color: t.brandFg, fontWeight: "700", fontSize: 16 },
-    btnDisabled: { opacity: 0.6 },
-    input: {
-      borderWidth: 1,
-      borderColor: t.border,
-      borderRadius: 10,
-      padding: 12,
-      minHeight: 60,
-      textAlignVertical: "top",
-      color: t.text,
-      backgroundColor: t.card,
-    },
-    privacy: { fontSize: 12, color: t.textMuted, marginTop: 16, lineHeight: 18 },
-    divider: { height: StyleSheet.hairlineWidth, backgroundColor: t.border, marginVertical: 16 },
-    historyRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      paddingVertical: 10,
-    },
-    historyDot: { width: 12, height: 12, borderRadius: 6 },
-    historyBody: { flex: 1 },
-    historyTitle: { fontSize: 15, fontWeight: "600", color: t.text },
-    historySub: { fontSize: 12, color: t.textMuted, marginTop: 2 },
-    historyChevron: { color: t.brand, fontSize: 20, fontWeight: "700" },
-  });
-}
+const styles = StyleSheet.create({
+  container: { padding: 12, gap: 12, paddingBottom: 32 },
+  card: { borderRadius: 16 },
+  cardContent: { gap: 8, paddingVertical: 8 },
+  label: { marginTop: 8 },
+  preview: { width: "100%", height: 220, borderRadius: 12 },
+  previewEmpty: { alignItems: "center", justifyContent: "center" },
+  buttonRow: { flexDirection: "row", gap: 8 },
+  flexBtn: { flex: 1 },
+  input: { marginTop: 4 },
+  submit: { marginTop: 12 },
+  privacy: { paddingHorizontal: 0 },
+  hiddenDivider: { height: 0, opacity: 0 },
+});

@@ -1,10 +1,6 @@
 import { Tabs } from "expo-router";
-import { Text, type ColorValue } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useTheme } from "@/lib/theme";
-
-function TabIcon({ icon, color }: { icon: string; color: ColorValue }) {
-  return <Text style={{ fontSize: 20, color }}>{icon}</Text>;
-}
 
 export default function TabsLayout() {
   const t = useTheme();
@@ -24,7 +20,13 @@ export default function TabsLayout() {
         options={{
           title: "Report",
           tabBarLabel: "Report",
-          tabBarIcon: ({ color }) => <TabIcon icon="📷" color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "camera" : "camera-outline"}
+              color={color}
+              size={size}
+            />
+          ),
         }}
       />
       <Tabs.Screen
@@ -32,7 +34,13 @@ export default function TabsLayout() {
         options={{
           title: "Nearby",
           tabBarLabel: "Nearby",
-          tabBarIcon: ({ color }) => <TabIcon icon="🗺️" color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "map-marker" : "map-marker-outline"}
+              color={color}
+              size={size}
+            />
+          ),
         }}
       />
     </Tabs>

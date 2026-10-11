@@ -1,64 +1,73 @@
-// Shared city picker (themed chips). Used on both the Report and Nearby screens so
-// the choice is identical and comes from the app-wide useCity() context.
-import { useMemo } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+// Shared city picker. The choice is app-wide via useCity(). Two variants so it fits
+// each surface:
+//   variant="segmented" (default) — Paper SegmentedButtons, for the Report form.
+//   variant="menu" — a compact dropdown Button + Menu, for the Nearby map top bar.
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { Button, Menu, SegmentedButtons } from "react-native-paper";
 import { useCity } from "@/lib/city";
 import { useCities } from "@/lib/hooks";
-import { useTheme, type Palette } from "@/lib/theme";
 
-export function CitySelector({ compact = false }: { compact?: boolean }) {
-  const t = useTheme();
-  const styles = useMemo(() => makeStyles(t), [t]);
+export function CitySelector({
+  variant = "segmented",
+}: {
+  variant?: "segmented" | "menu";
+}) {
   const { city, setCity } = useCity();
   const { data: cities } = useCities();
+  const list = cities ?? [];
+  const current = list.find((c) => c.slug === city);
+  const [open, setOpen] = useState(false);
 
-  const Row = (
-    <View style={styles.row}>
-      {(cities ?? []).map((c) => {
-        const active = city === c.slug;
-        return (
-          <Pressable
-            key={c.slug}
-            onPress={() => setCity(c.slug)}
-            style={[styles.chip, active && styles.chipActive]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active }}
+  if (variant === "menu") {
+    return (
+      <Menu
+        visible={open}
+        onDismiss={() => setOpen(false)}
+        anchor={
+          <Button
+            mode="elevated"
+            icon="map-marker"
+            onPress={() => setOpen(true)}
+            contentStyle={styles.menuBtnContent}
+            compact
           >
-            <Text style={[styles.chipText, active && styles.chipTextActive]}>
-              {compact ? c.name.split(",")[0] : c.name}
-            </Text>
-          </Pressable>
-        );
-      })}
+            {current ? current.name.split(",")[0] : "City"}
+          </Button>
+        }
+      >
+        {list.map((c) => (
+          <Menu.Item
+            key={c.slug}
+            title={c.name}
+            trailingIcon={c.slug === city ? "check" : undefined}
+            onPress={() => {
+              setCity(c.slug);
+              setOpen(false);
+            }}
+          />
+        ))}
+      </Menu>
+    );
+  }
+
+  // segmented (form)
+  return (
+    <View style={styles.wrap}>
+      <SegmentedButtons
+        value={city}
+        onValueChange={setCity}
+        buttons={list.map((c) => ({
+          value: c.slug,
+          // short label (city name before the comma) so three fit without truncation
+          label: c.name.split(",")[0],
+        }))}
+      />
     </View>
   );
-
-  // compact (map top bar) scrolls horizontally; full (form) wraps.
-  return compact ? (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.scroll}
-    >
-      {Row}
-    </ScrollView>
-  ) : (
-    Row
-  );
 }
 
-function makeStyles(t: Palette) {
-  return StyleSheet.create({
-    scroll: { paddingHorizontal: 2 },
-    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-    chip: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 16,
-      backgroundColor: t.cardAlt,
-    },
-    chipActive: { backgroundColor: t.brand },
-    chipText: { color: t.textMuted, fontSize: 13, fontWeight: "500" },
-    chipTextActive: { color: t.brandFg, fontWeight: "700" },
-  });
-}
+const styles = StyleSheet.create({
+  wrap: { marginTop: 4 },
+  menuBtnContent: { flexDirection: "row-reverse" },
+});

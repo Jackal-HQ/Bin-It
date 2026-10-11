@@ -1,15 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Linking,
   Modal,
-  Pressable,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  Divider,
+  IconButton,
+  List,
+  Surface,
+  Text,
+  TouchableRipple,
+} from "react-native-paper";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +26,7 @@ import { getCurrentCoords } from "@/lib/location";
 import { mapHtml, streetViewUrl, type MapMessage, type MapPoint } from "@/lib/mapHtml";
 import { labelText } from "@/lib/types";
 import { useTheme, type Palette } from "@/lib/theme";
+import { useThemePref } from "@/lib/themePref";
 import { CitySelector } from "@/components/CitySelector";
 import { Call311Button } from "@/components/Call311Button";
 
@@ -38,6 +46,7 @@ export default function NearbyScreen() {
   const t = useTheme();
   const styles = useMemo(() => makeStyles(t), [t]);
   const insets = useSafeAreaInsets();
+  const { pref, setPref } = useThemePref();
   const { city } = useCity();
   const { data: cities } = useCities();
   const webRef = useRef<WebView>(null);
@@ -187,36 +196,51 @@ export default function NearbyScreen() {
         javaScriptEnabled
       />
 
-      {/* top bar: city picker (shared) + per-city 311 call, over the map */}
+      {/* top bar: city picker (menu) + per-city 311 call + theme toggle, over the map */}
       <View style={[styles.topBar, { top: insets.top + 8 }]}>
-        <View style={styles.topBarSelector}>
-          <CitySelector compact />
-        </View>
+        <CitySelector variant="menu" />
+        <View style={styles.topBarSpacer} />
         <Call311Button compact />
+        <Surface style={styles.themeBtn} elevation={3}>
+          <IconButton
+            icon={pref === "dark" ? "weather-night" : pref === "light" ? "white-balance-sunny" : "cellphone"}
+            size={20}
+            onPress={() => setPref(pref === "system" ? "light" : pref === "light" ? "dark" : "system")}
+            accessibilityLabel={`Theme: ${pref}. Tap to change.`}
+            style={styles.themeBtnInner}
+          />
+        </Surface>
       </View>
 
       {isLoading ? (
-        <View style={styles.badge}>
-          <ActivityIndicator size="small" color={t.brand} />
+        <Surface style={styles.badge} elevation={3}>
+          <ActivityIndicator size="small" />
           <Text style={styles.badgeText}>Loading nearby…</Text>
-        </View>
+        </Surface>
       ) : error ? (
-        <View style={styles.badge}>
+        <Surface style={styles.badge} elevation={3}>
           <Text style={styles.badgeText}>Could not load nearby reports.</Text>
-        </View>
+        </Surface>
       ) : (
-        <Pressable
-          style={styles.badge}
-          onPress={() => setListOpen(true)}
-          disabled={ticketCount + binCount === 0}
-        >
-          {isRefetching ? <ActivityIndicator size="small" color={t.brand} /> : null}
-          <Text style={styles.badgeText}>
-            {ticketCount} report{ticketCount === 1 ? "" : "s"} · {binCount} bin
-            {binCount === 1 ? "" : "s"}
-          </Text>
-          {ticketCount + binCount > 0 ? <Text style={styles.badgeChevron}>›</Text> : null}
-        </Pressable>
+        <Surface style={styles.badgeSurface} elevation={3}>
+          <TouchableRipple
+            onPress={() => setListOpen(true)}
+            disabled={ticketCount + binCount === 0}
+            style={styles.badge}
+            borderless
+          >
+            <View style={styles.badgeInner}>
+              {isRefetching ? <ActivityIndicator size="small" /> : null}
+              <Text style={styles.badgeText}>
+                {ticketCount} report{ticketCount === 1 ? "" : "s"} · {binCount} bin
+                {binCount === 1 ? "" : "s"}
+              </Text>
+              {ticketCount + binCount > 0 ? (
+                <List.Icon icon="chevron-right" color={t.brand} style={styles.badgeChevron} />
+              ) : null}
+            </View>
+          </TouchableRipple>
+        </Surface>
       )}
 
       <Modal
@@ -225,26 +249,33 @@ export default function NearbyScreen() {
         transparent
         onRequestClose={() => setListOpen(false)}
       >
-        <Pressable style={styles.sheetBackdrop} onPress={() => setListOpen(false)} />
-        <View style={styles.sheet}>
+        <TouchableRipple style={styles.sheetBackdrop} onPress={() => setListOpen(false)}>
+          <View />
+        </TouchableRipple>
+        <Surface style={styles.sheet} elevation={4}>
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>Nearby</Text>
+            <Text variant="titleMedium">Nearby</Text>
             <View style={styles.sheetActions}>
-              <Pressable onPress={() => refetch()} hitSlop={10} disabled={isRefetching}>
-                <Text style={styles.sheetRefresh}>
-                  {isRefetching ? "Refreshing…" : "Refresh"}
-                </Text>
-              </Pressable>
-              <Pressable onPress={() => setListOpen(false)} hitSlop={10}>
-                <Text style={styles.sheetClose}>Close</Text>
-              </Pressable>
+              <Button
+                mode="text"
+                icon="refresh"
+                onPress={() => refetch()}
+                loading={isRefetching}
+                disabled={isRefetching}
+                compact
+              >
+                Refresh
+              </Button>
+              <Button mode="text" onPress={() => setListOpen(false)} compact>
+                Close
+              </Button>
             </View>
           </View>
           <FlatList
             data={points}
             keyExtractor={(p) => `${p.kind}_${p.id}`}
-            ItemSeparatorComponent={() => <View style={styles.sep} />}
+            ItemSeparatorComponent={() => <Divider />}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}
@@ -254,46 +285,40 @@ export default function NearbyScreen() {
               />
             }
             renderItem={({ item, index }) => (
-              <Pressable style={styles.row} onPress={() => focusOnMap(index)}>
-                <View
-                  style={[
-                    styles.dot,
-                    { backgroundColor: dotColor(item, t) },
-                    item.kind === "bin" && styles.dotBin,
-                  ]}
-                >
-                  {item.kind === "ticket" ? (
-                    <Text style={styles.dotText}>{item.count}</Text>
-                  ) : null}
-                </View>
-                <View style={styles.rowBody}>
-                  <Text style={styles.rowTitle}>
-                    {item.title}
-                    {item.demo ? "  · demo" : ""}
-                  </Text>
-                  <Text style={styles.rowDetail}>
-                    {item.kind === "ticket"
-                      ? `Severity ${item.severity} · ${item.detail} · ${item.status}`
-                      : item.detail}
-                  </Text>
-                </View>
-                {item.kind === "ticket" ? (
-                  <Pressable
-                    style={styles.viewBtn}
-                    onPress={() => {
-                      setListOpen(false);
-                      openDetail(item);
-                    }}
-                    hitSlop={8}
-                  >
-                    <Text style={styles.viewBtnText}>View</Text>
-                  </Pressable>
-                ) : null}
-              </Pressable>
+              <List.Item
+                title={`${item.title}${item.demo ? "  · demo" : ""}`}
+                description={
+                  item.kind === "ticket"
+                    ? `Severity ${item.severity} · ${item.detail} · ${item.status}`
+                    : item.detail
+                }
+                onPress={() => focusOnMap(index)}
+                left={() => (
+                  <View style={[styles.dot, { backgroundColor: dotColor(item, t) }, item.kind === "bin" && styles.dotBin]}>
+                    {item.kind === "ticket" ? <Text style={styles.dotText}>{item.count}</Text> : null}
+                  </View>
+                )}
+                right={() =>
+                  item.kind === "ticket" ? (
+                    <Button
+                      mode="contained-tonal"
+                      compact
+                      onPress={() => {
+                        setListOpen(false);
+                        openDetail(item);
+                      }}
+                    >
+                      View
+                    </Button>
+                  ) : null
+                }
+              />
             )}
-            ListEmptyComponent={<Text style={styles.hint}>Nothing nearby yet.</Text>}
+            ListEmptyComponent={
+              <Text style={[styles.empty, { color: t.textMuted }]}>Nothing nearby yet.</Text>
+            }
           />
-        </View>
+        </Surface>
       </Modal>
     </View>
   );
@@ -315,17 +340,9 @@ function makeStyles(t: Palette) {
       alignItems: "center",
       gap: 8,
     },
-    topBarSelector: {
-      flex: 1,
-      backgroundColor: t.mode === "dark" ? "rgba(20,20,20,.9)" : "rgba(255,255,255,.9)",
-      borderRadius: 20,
-      paddingVertical: 6,
-      paddingHorizontal: 6,
-      shadowColor: "#000",
-      shadowOpacity: 0.15,
-      shadowRadius: 4,
-      elevation: 3,
-    },
+    topBarSpacer: { flex: 1 },
+    themeBtn: { borderRadius: 20 },
+    themeBtnInner: { margin: 0 },
     center: {
       flex: 1,
       alignItems: "center",
@@ -336,24 +353,22 @@ function makeStyles(t: Palette) {
     },
     hint: { color: t.textMuted, textAlign: "center", padding: 16 },
     err: { color: t.danger, textAlign: "center" },
-    badge: {
+    badgeSurface: {
       position: "absolute",
       bottom: 16,
       alignSelf: "center",
+      borderRadius: 22,
+    },
+    badge: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 8,
-      backgroundColor: t.mode === "dark" ? "rgba(20,20,20,.95)" : "rgba(255,255,255,.95)",
+      borderRadius: 22,
       paddingHorizontal: 16,
       paddingVertical: 10,
-      borderRadius: 22,
-      shadowColor: "#000",
-      shadowOpacity: 0.2,
-      shadowRadius: 5,
-      elevation: 4,
     },
+    badgeInner: { flexDirection: "row", alignItems: "center", gap: 8 },
     badgeText: { color: t.text, fontSize: 13, fontWeight: "700" },
-    badgeChevron: { color: t.brand, fontSize: 18, fontWeight: "700", marginTop: -2 },
+    badgeChevron: { margin: 0, width: 20, height: 20 },
     sheetBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
     sheet: {
       position: "absolute",
@@ -361,7 +376,6 @@ function makeStyles(t: Palette) {
       left: 0,
       right: 0,
       maxHeight: "70%",
-      backgroundColor: t.bg,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
       paddingBottom: 24,
@@ -380,32 +394,20 @@ function makeStyles(t: Palette) {
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: 16,
-      paddingVertical: 10,
+      paddingVertical: 6,
     },
-    sheetTitle: { fontSize: 18, fontWeight: "700", color: t.text },
-    sheetActions: { flexDirection: "row", alignItems: "center", gap: 16 },
-    sheetRefresh: { fontSize: 15, fontWeight: "600", color: t.brand },
-    sheetClose: { fontSize: 15, fontWeight: "600", color: t.textMuted },
-    sep: { height: StyleSheet.hairlineWidth, backgroundColor: t.border, marginLeft: 60 },
-    row: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
+    sheetActions: { flexDirection: "row", alignItems: "center" },
+    empty: { textAlign: "center", padding: 24 },
     dot: {
       width: 32,
       height: 32,
       borderRadius: 16,
       alignItems: "center",
       justifyContent: "center",
+      alignSelf: "center",
+      marginLeft: 8,
     },
-    dotBin: { width: 22, height: 22, borderRadius: 11, marginHorizontal: 5 },
+    dotBin: { width: 22, height: 22, borderRadius: 11, marginHorizontal: 13 },
     dotText: { color: "#fff", fontWeight: "700", fontSize: 12 },
-    rowBody: { flex: 1 },
-    rowTitle: { fontSize: 15, fontWeight: "600", color: t.text },
-    rowDetail: { fontSize: 13, color: t.textMuted, marginTop: 2 },
-    viewBtn: {
-      backgroundColor: t.brand,
-      paddingHorizontal: 14,
-      paddingVertical: 7,
-      borderRadius: 16,
-    },
-    viewBtnText: { color: t.brandFg, fontWeight: "700", fontSize: 13 },
   });
 }

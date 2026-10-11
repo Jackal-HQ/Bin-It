@@ -173,10 +173,23 @@ city's rows in one transaction (a bad file changes nothing). Required columns:
 | `bin_candidates.csv` | `rank, lat, lng, gain, nearest_bin_m, nearby_reports` |
 
 `lat`/`lng` are the cell centroid for cells. Rerunning clears `bin_candidates.rationale`, so
-rerun `data/explain.py` afterwards. Mobile only shows tickets and bins; cell scores and
+rerun `python data/explain.py <slug>` afterwards (see below). Mobile only shows tickets and bins; cell scores and
 recommendations are dashboard features.
 
-### 8. Mobile app
+### 8. Write bin-site rationales
+
+```powershell
+python data/explain.py orlando             # or: all
+python data/explain.py orlando --no-llm    # template sentences only
+```
+
+Fills `bin_candidates.rationale` for every site. The top 20 sites per city get a one-sentence
+explanation from a small Hugging Face chat model (`HF_TOKEN`, optional `HF_MODEL`); the prompt
+contains only numbers from the database (nearest bin distance, nearby reports, where the cell's
+estimated overflow ranks in the city, under-reported flag). Other sites, and any LLM failure,
+get a template sentence from the same facts. Existing rationales are kept unless `--force`.
+
+### 9. Mobile app
 
 ```powershell
 cd apps/mobile

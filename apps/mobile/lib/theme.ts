@@ -1,7 +1,12 @@
-// Centralized colors + light/dark palettes. Screens call useTheme() so the whole
-// app follows the system appearance (useColorScheme). The brand green matches the
-// web app's accent.
-import { useColorScheme } from "react-native";
+// Centralized colors + light/dark palettes. Screens call useTheme(), which follows
+// the user's theme preference (System/Light/Dark via lib/themePref), defaulting to the
+// OS appearance. The brand green matches the web app's accent.
+import {
+  MD3DarkTheme,
+  MD3LightTheme,
+  type MD3Theme,
+} from "react-native-paper";
+import { useResolvedScheme } from "@/lib/themePref";
 
 export type Palette = {
   mode: "light" | "dark";
@@ -69,7 +74,46 @@ const dark: Palette = {
 };
 
 export function useTheme(): Palette {
-  return useColorScheme() === "dark" ? dark : light;
+  return useResolvedScheme() === "dark" ? dark : light;
 }
 
 export const palettes = { light, dark };
+
+// Build a React Native Paper MD3 theme from our palette so Paper components inherit
+// the brand green + dark mode with no duplication.
+function paperTheme(p: Palette): MD3Theme {
+  const base = p.mode === "dark" ? MD3DarkTheme : MD3LightTheme;
+  return {
+    ...base,
+    dark: p.mode === "dark",
+    colors: {
+      ...base.colors,
+      primary: p.brand,
+      onPrimary: p.brandFg,
+      secondary: p.brand,
+      onSecondary: p.brandFg,
+      background: p.bg,
+      onBackground: p.text,
+      surface: p.bg,
+      onSurface: p.text,
+      surfaceVariant: p.cardAlt,
+      onSurfaceVariant: p.textMuted,
+      outline: p.border,
+      outlineVariant: p.border,
+      error: p.danger,
+      elevation: {
+        ...base.colors.elevation,
+        level0: "transparent",
+        level1: p.card,
+        level2: p.card,
+        level3: p.cardAlt,
+        level4: p.cardAlt,
+        level5: p.cardAlt,
+      },
+    },
+  };
+}
+
+export function usePaperTheme(): MD3Theme {
+  return paperTheme(useTheme());
+}
