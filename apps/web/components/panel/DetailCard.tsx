@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, cachedMode } from "@/lib/api";
 import { setStaffKey, useStaffKey } from "@/lib/hooks";
-import { STATUS_OPTIONS, STATUS_TEXT, formatDateTime, labelText, riskText, severityText, type RankedCell } from "@/lib/labels";
+import { STATUS_OPTIONS, STATUS_TEXT, formatDateTime, labelText, riskText, severityText, streetViewUrl, type RankedCell } from "@/lib/labels";
 import type { Selection } from "@/lib/selection";
 import type { Recommendation, Status, Ticket } from "@/lib/types";
 import { DemoBadge, UnderReportedBadge, isUnauthorized } from "./States";
@@ -73,6 +73,24 @@ function TicketDetail({ ticket }: { ticket: Ticket }) {
           <StatusControl ticket={ticket} />
         </Row>
       </dl>
+      <StreetViewLink lat={ticket.lat} lng={ticket.lng} />
+    </div>
+  );
+}
+
+/** Opens Google Street View at the point in a new tab (plain Maps URL, no API key). */
+function StreetViewLink({ lat, lng }: { lat: number; lng: number }) {
+  return (
+    <div>
+      <a
+        href={streetViewUrl(lat, lng)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+      >
+        Open in Street View <span aria-hidden>↗</span>
+      </a>
+      <p className="mt-1 text-xs text-zinc-500">Google shows the nearest street-level photo, which may be a short distance away or a few years old.</p>
     </div>
   );
 }
@@ -165,6 +183,7 @@ function SiteDetail({ site, underReported }: { site: Recommendation; underReport
         <Row k="Estimated gain">{site.gain.toFixed(3)}</Row>
       </dl>
       <p className="text-xs text-zinc-500">Gain is a model estimate of how much closer residents get to a bin, weighted by expected demand.</p>
+      <StreetViewLink lat={site.lat} lng={site.lng} />
     </div>
   );
 }
