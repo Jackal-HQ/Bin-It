@@ -27,6 +27,8 @@ export type Report = {
   photo_url?: string;
   is_synthetic: boolean;
   created_at: string;
+  // The owning ticket's status. GET /api/reports/{id} populates it; optional elsewhere.
+  status?: Status;
 };
 
 export type Ticket = {

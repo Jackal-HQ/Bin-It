@@ -89,11 +89,12 @@ Mock: `mocks/reports-nearby.json`
 
 ### GET /api/reports/{id}
 
-Used by: mobile. One report.
+Used by: mobile. One report. `status` is the owning ticket's status
+(`received` | `reviewed` | `resolved`), so a resident can track their report.
 
 Response `200`:
 ```json
-{ "report": { "id": "r_01", "ticket_id": "t_01", "city": "orlando", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "severity": 2, "note": null, "photo_url": "https://.../report-photos/r_01.jpg", "is_synthetic": false, "created_at": "2026-10-10T12:00:00Z" } }
+{ "report": { "id": "r_01", "ticket_id": "t_01", "city": "orlando", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "severity": 2, "note": null, "photo_url": "https://.../report-photos/r_01.jpg", "is_synthetic": false, "created_at": "2026-10-10T12:00:00Z", "status": "received" } }
 ```
 
 Mock: `mocks/report.json`

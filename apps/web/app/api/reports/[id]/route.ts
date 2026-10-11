@@ -22,9 +22,11 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/reports/[id
             r.note,
             r.photo_url,
             r.is_synthetic,
-            r.created_at
+            r.created_at,
+            t.status AS status
        FROM reports r
        JOIN cities c ON c.id = r.city_id
+       JOIN tickets t ON t.id = r.ticket_id
       WHERE r.id = $1`,
     [id],
   );
@@ -45,6 +47,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/reports/[id
       photo_url: r.photo_url,
       is_synthetic: Boolean(r.is_synthetic),
       created_at: new Date(r.created_at as string).toISOString(),
+      status: r.status,
     },
   });
 }

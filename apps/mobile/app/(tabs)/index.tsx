@@ -1,8 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import {
   Button,
   Card,
+  Chip,
   Divider,
   HelperText,
   List,
@@ -17,16 +18,22 @@ import { useCity } from "@/lib/city";
 import { useCities, useCreateReport } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
 import { isInCityArea } from "@/lib/geo";
-import { labelText } from "@/lib/types";
+import { labelText, statusText } from "@/lib/types";
 import { ApiRequestError } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
 import { CitySelector } from "@/components/CitySelector";
 import { Call311Button } from "@/components/Call311Button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FadeInUp } from "@/components/FadeInUp";
-import { addMyReport, getMyReports, type MyReport } from "@/lib/myReports";
+import {
+  addMyReport,
+  getMyReports,
+  refreshMyReportStatuses,
+  type MyReport,
+} from "@/lib/myReports";
 
 const MAX_EDGE = 1600; // contract: JPEG, longest side <= 1600 px
+const REFRESH_COOLDOWN_MS = 60_000; // status refresh limited to once per minute
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -39,6 +46,10 @@ export default function ReportScreen() {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [myReports, setMyReports] = useState<MyReport[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  // Seconds left on the once-per-minute cooldown (0 = refresh allowed).
+  const [cooldown, setCooldown] = useState(0);
+  const lastRefreshRef = useRef<number>(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -49,6 +60,32 @@ export default function ReportScreen() {
       };
     }, []),
   );
+
+  // Tick the cooldown down to zero once a refresh has happened.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => {
+      const left = Math.ceil((REFRESH_COOLDOWN_MS - (Date.now() - lastRefreshRef.current)) / 1000);
+      setCooldown(left > 0 ? left : 0);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
+
+  async function refreshStatuses() {
+    const since = Date.now() - lastRefreshRef.current;
+    if (refreshing || since < REFRESH_COOLDOWN_MS) return; // throttled: once per minute
+    setRefreshing(true);
+    try {
+      const updated = await refreshMyReportStatuses();
+      setMyReports(updated);
+      lastRefreshRef.current = Date.now();
+      setCooldown(Math.ceil(REFRESH_COOLDOWN_MS / 1000));
+    } catch {
+      // leave last-known statuses in place
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   async function processImage(uri: string): Promise<string> {
     const ctx = ImageManipulator.manipulate(uri).resize({ width: MAX_EDGE });
@@ -108,6 +145,7 @@ export default function ReportScreen() {
         label: out.report.label,
         severity: out.report.severity,
         created_at: out.report.created_at,
+        status: out.ticket.status,
       });
       setMyReports(saved);
       const merged = out.ticket.merged ? " (merged with a nearby report)" : "";
@@ -125,6 +163,9 @@ export default function ReportScreen() {
   }
 
   const severityColor = (s: number) => (s >= 3 ? t.sev3 : s >= 2 ? t.sev2 : t.sev1);
+  // Status chip background: Pending (received) muted, Reviewed brand-ish, Resolved green.
+  const statusBg = (s: MyReport["status"]) =>
+    s === "resolved" ? t.bin : s === "reviewed" ? t.sev2 : t.cardAlt;
 
   return (
     <ScrollView
@@ -199,6 +240,19 @@ export default function ReportScreen() {
             <Card.Title
               title="Your reports"
               left={(props) => <List.Icon {...props} icon="history" color={t.brand} />}
+              right={() => (
+                <Button
+                  mode="text"
+                  compact
+                  icon="refresh"
+                  onPress={refreshStatuses}
+                  loading={refreshing}
+                  disabled={refreshing || cooldown > 0}
+                  style={styles.refreshBtn}
+                >
+                  {cooldown > 0 ? `${cooldown}s` : "Refresh"}
+                </Button>
+              )}
             />
             <Card.Content>
               {myReports.map((r) => (
@@ -212,7 +266,21 @@ export default function ReportScreen() {
                   left={(props) => (
                     <List.Icon {...props} icon="circle" color={severityColor(r.severity)} />
                   )}
-                  right={(props) => <List.Icon {...props} icon="chevron-right" />}
+                  right={(props) => (
+                    <View {...props} style={styles.rowRight}>
+                      <Chip
+                        compact
+                        style={{ backgroundColor: statusBg(r.status) }}
+                        textStyle={{
+                          color: !r.status || r.status === "received" ? t.text : "#fff",
+                          fontWeight: "700",
+                          fontSize: 11,
+                        }}
+                      >
+                        {statusText(r.status)}
+                      </Chip>
+                    </View>
+                  )}
                 />
               ))}
             </Card.Content>
@@ -253,6 +321,8 @@ const styles = StyleSheet.create({
   card: { borderRadius: 16 },
   cardContent: { gap: 8, paddingVertical: 8 },
   sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
+  refreshBtn: { marginRight: 4 },
+  rowRight: { justifyContent: "center" },
   label: { marginTop: 8 },
   preview: { width: "100%", height: 220, borderRadius: 12 },
   previewEmpty: { alignItems: "center", justifyContent: "center" },
