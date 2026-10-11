@@ -39,6 +39,9 @@ export type Ticket = {
   status: Status;
   first_seen?: string;
   last_seen?: string;
+  // Only GET /api/reports/nearby populates this (the representative report's photo);
+  // the GET /api/tickets queue omits it, so it is optional.
+  photo_url?: string | null;
   is_synthetic: boolean;
 };
 

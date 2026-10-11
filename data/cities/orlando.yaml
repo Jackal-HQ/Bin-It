@@ -1,7 +1,7 @@
 slug: orlando
 name: Orlando, FL
 center: { lat: 28.5383, lng: -81.3792 }
-bbox: [-81.51, 28.35, -81.23, 28.62]      # west, south, east, north; rough, check on a map
+bbox: [-81.5075, 28.3481, -81.1241, 28.6143]  # west, south, east, north; OSM admin boundary (relation 1128379), checked 2026-10-10
 census: { state_fips: "12", county_fips: ["095"] }
 osm: { bins_tag: "amenity=waste_basket" }
 complaints: { source: none }

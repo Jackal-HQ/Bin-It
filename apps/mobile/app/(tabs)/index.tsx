@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,24 +12,41 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCity } from "@/lib/city";
-import { useCities, useCreateReport } from "@/lib/hooks";
+import { useCreateReport } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
 import { labelText } from "@/lib/types";
 import { ApiRequestError } from "@/lib/api";
+import { useTheme, type Palette } from "@/lib/theme";
+import { CitySelector } from "@/components/CitySelector";
+import { Call311Button } from "@/components/Call311Button";
+import { addMyReport, getMyReports, type MyReport } from "@/lib/myReports";
 
 const MAX_EDGE = 1600; // contract: JPEG, longest side <= 1600 px
 
 export default function ReportScreen() {
   const router = useRouter();
-  const { city, setCity } = useCity();
-  const { data: cities } = useCities();
+  const t = useTheme();
+  const styles = useMemo(() => makeStyles(t), [t]);
+  const { city } = useCity();
   const createReport = useCreateReport();
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [myReports, setMyReports] = useState<MyReport[]>([]);
+
+  // Refresh the local history whenever this tab regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getMyReports().then((r) => active && setMyReports(r));
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   // Resize/compress to a <=1600px JPEG so uploads are small and match the contract.
   async function processImage(uri: string): Promise<string> {
@@ -77,6 +94,15 @@ export default function ReportScreen() {
       });
       setPhotoUri(null);
       setNote("");
+      // keep a local record so the resident can find it again (no accounts/API for this)
+      const saved = await addMyReport({
+        id: out.report.id,
+        city: out.report.city,
+        label: out.report.label,
+        severity: out.report.severity,
+        created_at: out.report.created_at,
+      });
+      setMyReports(saved);
       const merged = out.ticket.merged ? " (merged with a nearby report)" : "";
       Alert.alert(
         "Report sent",
@@ -94,19 +120,7 @@ export default function ReportScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.label}>City</Text>
-      <View style={styles.cityRow}>
-        {(cities ?? []).map((c) => (
-          <Pressable
-            key={c.slug}
-            onPress={() => setCity(c.slug)}
-            style={[styles.chip, city === c.slug && styles.chipActive]}
-          >
-            <Text style={[styles.chipText, city === c.slug && styles.chipTextActive]}>
-              {c.name}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <CitySelector />
 
       <Text style={styles.label}>Photo</Text>
       {photoUri ? (
@@ -129,6 +143,7 @@ export default function ReportScreen() {
       <TextInput
         style={styles.input}
         placeholder="Anything staff should know?"
+        placeholderTextColor={t.textMuted}
         value={note}
         onChangeText={setNote}
         multiline
@@ -150,40 +165,82 @@ export default function ReportScreen() {
         No account needed. Your report is anonymous. Photos may show public areas and
         are stored at a public URL — avoid faces and license plates.
       </Text>
+
+      {myReports.length > 0 ? (
+        <>
+          <View style={styles.divider} />
+          <Text style={styles.label}>Your reports</Text>
+          {myReports.map((r) => (
+            <Pressable
+              key={r.id}
+              style={styles.historyRow}
+              onPress={() => router.push(`/report/${r.id}`)}
+            >
+              <View
+                style={[
+                  styles.historyDot,
+                  {
+                    backgroundColor:
+                      r.severity >= 3 ? t.sev3 : r.severity >= 2 ? t.sev2 : t.sev1,
+                  },
+                ]}
+              />
+              <View style={styles.historyBody}>
+                <Text style={styles.historyTitle}>{labelText(r.label)}</Text>
+                <Text style={styles.historySub}>
+                  {r.city} · severity {r.severity} ·{" "}
+                  {new Date(r.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+              <Text style={styles.historyChevron}>›</Text>
+            </Pressable>
+          ))}
+        </>
+      ) : null}
+
+      <View style={styles.divider} />
+      <Text style={styles.label}>Prefer to call?</Text>
+      <Call311Button />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: "#374151", marginTop: 8 },
-  cityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: "#e5e7eb",
-  },
-  chipActive: { backgroundColor: "#166534" },
-  chipText: { color: "#374151", fontSize: 13 },
-  chipTextActive: { color: "#fff" },
-  preview: { width: "100%", height: 220, borderRadius: 12, backgroundColor: "#f3f4f6" },
-  previewEmpty: { alignItems: "center", justifyContent: "center" },
-  previewHint: { color: "#9ca3af" },
-  buttonRow: { flexDirection: "row", gap: 8 },
-  btn: { borderRadius: 10, paddingVertical: 12, alignItems: "center", justifyContent: "center" },
-  btnSecondary: { flex: 1, backgroundColor: "#e5e7eb" },
-  btnSecondaryText: { color: "#166534", fontWeight: "600" },
-  btnPrimary: { backgroundColor: "#166534", marginTop: 12 },
-  btnPrimaryText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  btnDisabled: { opacity: 0.6 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    padding: 12,
-    minHeight: 60,
-    textAlignVertical: "top",
-  },
-  privacy: { fontSize: 12, color: "#6b7280", marginTop: 16, lineHeight: 18 },
-});
+function makeStyles(t: Palette) {
+  return StyleSheet.create({
+    container: { padding: 16, gap: 8, backgroundColor: t.bg, flexGrow: 1 },
+    label: { fontSize: 14, fontWeight: "600", color: t.text, marginTop: 8 },
+    preview: { width: "100%", height: 220, borderRadius: 12, backgroundColor: t.cardAlt },
+    previewEmpty: { alignItems: "center", justifyContent: "center" },
+    previewHint: { color: t.textMuted },
+    buttonRow: { flexDirection: "row", gap: 8 },
+    btn: { borderRadius: 10, paddingVertical: 12, alignItems: "center", justifyContent: "center" },
+    btnSecondary: { flex: 1, backgroundColor: t.cardAlt },
+    btnSecondaryText: { color: t.brand, fontWeight: "600" },
+    btnPrimary: { backgroundColor: t.brand, marginTop: 12 },
+    btnPrimaryText: { color: t.brandFg, fontWeight: "700", fontSize: 16 },
+    btnDisabled: { opacity: 0.6 },
+    input: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 10,
+      padding: 12,
+      minHeight: 60,
+      textAlignVertical: "top",
+      color: t.text,
+      backgroundColor: t.card,
+    },
+    privacy: { fontSize: 12, color: t.textMuted, marginTop: 16, lineHeight: 18 },
+    divider: { height: StyleSheet.hairlineWidth, backgroundColor: t.border, marginVertical: 16 },
+    historyRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingVertical: 10,
+    },
+    historyDot: { width: 12, height: 12, borderRadius: 6 },
+    historyBody: { flex: 1 },
+    historyTitle: { fontSize: 15, fontWeight: "600", color: t.text },
+    historySub: { fontSize: 12, color: t.textMuted, marginTop: 2 },
+    historyChevron: { color: t.brand, fontSize: 20, fontWeight: "700" },
+  });
+}

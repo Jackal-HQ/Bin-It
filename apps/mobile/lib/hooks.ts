@@ -20,12 +20,17 @@ export function useNearby(params: {
   lat: number | null;
   lng: number | null;
   radiusM?: number;
+  // when set, the whole box is queried instead of a circle around lat/lng
+  bbox?: [number, number, number, number] | null;
 }) {
-  const { city, lat, lng, radiusM } = params;
+  const { city, lat, lng, radiusM, bbox } = params;
   return useQuery({
-    queryKey: ["nearby", city, lat, lng, radiusM],
-    enabled: lat !== null && lng !== null,
-    queryFn: () => getNearby({ city, lat: lat as number, lng: lng as number, radiusM }),
+    queryKey: ["nearby", city, bbox ? bbox.join(",") : [lat, lng, radiusM]],
+    enabled: !!bbox || (lat !== null && lng !== null),
+    queryFn: () =>
+      bbox
+        ? getNearby({ city, bbox })
+        : getNearby({ city, lat: lat as number, lng: lng as number, radiusM }),
   });
 }
 

@@ -1,17 +1,21 @@
 import { Tabs } from "expo-router";
 import { Text, type ColorValue } from "react-native";
+import { useTheme } from "@/lib/theme";
 
 function TabIcon({ icon, color }: { icon: string; color: ColorValue }) {
   return <Text style={{ fontSize: 20, color }}>{icon}</Text>;
 }
 
 export default function TabsLayout() {
+  const t = useTheme();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#166534",
-        headerStyle: { backgroundColor: "#166534" },
-        headerTintColor: "#fff",
+        tabBarActiveTintColor: t.brand,
+        tabBarInactiveTintColor: t.textMuted,
+        tabBarStyle: { backgroundColor: t.bg, borderTopColor: t.border },
+        headerStyle: { backgroundColor: t.headerBg },
+        headerTintColor: t.headerFg,
         headerTitleStyle: { fontWeight: "600" },
       }}
     >
