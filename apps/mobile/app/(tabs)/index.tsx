@@ -13,8 +13,9 @@ import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCity } from "@/lib/city";
-import { useCreateReport } from "@/lib/hooks";
+import { useCities, useCreateReport } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
+import { isInCityArea } from "@/lib/geo";
 import { labelText } from "@/lib/types";
 import { ApiRequestError } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
@@ -29,6 +30,7 @@ export default function ReportScreen() {
   const router = useRouter();
   const t = useTheme();
   const { city } = useCity();
+  const { data: cities } = useCities();
   const createReport = useCreateReport();
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -76,6 +78,19 @@ export default function ReportScreen() {
     setBusy(true);
     try {
       const coords = await getCurrentCoords();
+
+      // Only accept reports from inside the selected city's area. Reports are tied to
+      // their GPS location, so an out-of-area report would land nowhere useful.
+      const cityObj = cities?.find((c) => c.slug === city);
+      if (!isInCityArea(coords, cityObj)) {
+        Alert.alert(
+          "You're outside the city",
+          `Your location isn't within ${cityObj?.name ?? "the selected city"}. ` +
+            "Move into the city, or switch the city picker to where you are, then try again.",
+        );
+        return;
+      }
+
       const out = await createReport.mutateAsync({
         city,
         lat: coords.lat,

@@ -51,6 +51,9 @@ export default function NearbyScreen() {
   const { data: cities } = useCities();
   const webRef = useRef<WebView>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  // The phone's real GPS fix (null until/unless we get one). Distinct from `coords`,
+  // which is the map center and may fall back to the city when the phone is far away.
+  const [deviceCoords, setDeviceCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(false);
 
@@ -62,6 +65,7 @@ export default function NearbyScreen() {
     getCurrentCoords()
       .then((c) => {
         if (!active) return;
+        setDeviceCoords(c); // real phone location, used for the "you are here" dot
         // The city bbox in data/cities is rough (UCF falls outside Orlando's), so judge
         // "in the city" by distance from the center instead.
         const nearCity = !cityCenter || distanceKm(c, cityCenter) <= NEAR_CITY_KM;
@@ -69,6 +73,7 @@ export default function NearbyScreen() {
       })
       .catch((e) => {
         if (active) {
+          setDeviceCoords(null);
           setLocationError(String(e?.message ?? e));
           if (cityCenter) setCoords(cityCenter);
         }
@@ -191,7 +196,7 @@ export default function NearbyScreen() {
         ref={webRef}
         style={styles.flex}
         originWhitelist={["*"]}
-        source={{ html: mapHtml(coords, points, t.mode === "dark") }}
+        source={{ html: mapHtml(coords, points, t.mode === "dark", deviceCoords) }}
         onMessage={onMessage}
         javaScriptEnabled
       />

@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 
 load_dotenv(".env.local")
 
-DEFAULT_MODEL = "meta-llama/Llama-3.2-3B-Instruct"   # unverified: set HF_MODEL if unavailable
+DEFAULT_MODEL = "meta-llama/Llama-3.1-8B-Instruct"   # listed by router.huggingface.co/v1/models; override with HF_MODEL
 MAX_FAILURES = 3          # stop calling the LLM after this many failures in a row
 MAX_LEN = 240
 
@@ -131,7 +131,7 @@ def explain_city(conn, slug, client, model, top, force):
                 llm_n += 1
             except Exception as e:   # network, auth, model unavailable, empty answer
                 failures += 1
-                print(f"  rank {rank}: LLM failed ({type(e).__name__}: {str(e)[:120]}), using template")
+                print(f"  rank {rank}: LLM failed ({type(e).__name__}: {" ".join(str(e).split())[-200:]}), using template")
                 if failures == MAX_FAILURES:
                     print("  too many LLM failures in a row; using templates for the rest")
         if text is None:

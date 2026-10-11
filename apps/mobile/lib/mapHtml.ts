@@ -36,9 +36,11 @@ export function mapHtml(
   center: { lat: number; lng: number },
   points: MapPoint[],
   dark = false,
+  device: { lat: number; lng: number } | null = null,
 ) {
   // "<" is escaped so no title can close the script tag.
   const data = JSON.stringify(points).split("<").join(`${BACKSLASH}u003c`);
+  const deviceJson = device ? `[${device.lng}, ${device.lat}]` : "null";
 
   const pageBg = dark ? "#0a0a0a" : "#e5e7eb";
   const popBg = dark ? "#141414" : "#ffffff";
@@ -95,6 +97,7 @@ export function mapHtml(
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>
 var center = [${center.lng}, ${center.lat}];   // MapLibre is [lng, lat]
+var device = ${deviceJson};                     // real phone location, or null
 var points = ${data};
 
 var rasterStyle = {
@@ -130,7 +133,11 @@ function el(tag, cls, text) {
   return e;
 }
 
-new maplibregl.Marker({ element: el("div", "me") }).setLngLat(center).addTo(map);
+// The "you are here" dot is drawn only when we have a real GPS fix, and at that fix —
+// never at the map center (which may be the city fallback).
+if (device) {
+  new maplibregl.Marker({ element: el("div", "me") }).setLngLat(device).addTo(map);
+}
 
 var markers = [];
 var bounds = new maplibregl.LngLatBounds(center, center);

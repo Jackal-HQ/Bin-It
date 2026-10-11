@@ -68,7 +68,7 @@ Thumbs.db
 *.swp
 
 #Claude
-.claude/
-Claude.md
+!.claude/
+!Claude.md
 .agents/
 KIRO.md
