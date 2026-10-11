@@ -48,14 +48,14 @@ function useNewIds(city: string, tickets: Ticket[] | undefined) {
 }
 
 const selectClass =
-  "rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900";
+  "rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm transition-colors hover:border-zinc-400 dark:border-rc-border dark:bg-obsidian dark:hover:border-smoke";
 
 export default function QueueTab({ city, query, filters, onFilters, selectedId, onSelect }: Props) {
   const fresh = useNewIds(city, query.data);
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 p-3 dark:border-zinc-800">
+      <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 p-3 dark:border-rc-border">
         <select
           aria-label="Filter by label"
           className={selectClass}
@@ -95,7 +95,7 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
         <Empty>No tickets match these filters.</Empty>
       ) : (
         <table className="w-full text-left text-[13px]">
-          <thead className="bg-zinc-50 text-xs text-zinc-500 dark:bg-zinc-900">
+          <thead className="bg-zinc-50 text-xs text-zinc-500 dark:bg-obsidian dark:text-ash">
             <tr>
               <th className="py-2 pl-3 pr-1 font-medium">Severity</th>
               <th className="px-2 py-2 font-medium">Label</th>
@@ -110,9 +110,9 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
               <tr
                 key={t.id}
                 onClick={() => onSelect(t)}
-                className={`cursor-pointer border-t border-zinc-100 transition-colors duration-700 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 ${
-                  t.id === selectedId ? "bg-brand/10" : ""
-                } ${fresh.has(t.id) ? "bg-yellow-100 dark:bg-yellow-900" : ""}`}
+                className={`cursor-pointer border-t border-zinc-100 transition-colors duration-200 hover:bg-zinc-50 dark:border-rc-border/50 dark:hover:bg-white/[0.03] ${
+                  t.id === selectedId ? "bg-brand/10 shadow-[inset_3px_0_0_0_var(--brand)]" : ""
+                } ${fresh.has(t.id) ? "bg-yellow-100 dark:bg-yellow-900/40" : ""}`}
               >
                 <td className="py-2 pl-3 pr-1">
                   <span className="flex items-center gap-1.5">

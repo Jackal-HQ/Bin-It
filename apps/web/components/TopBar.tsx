@@ -18,11 +18,9 @@ type Props = {
 
 export default function TopBar({ cities, city, onCity, layers, onLayers }: Props) {
   return (
-    <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+    <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-zinc-200 bg-white/90 px-4 py-2 backdrop-blur dark:border-rc-border dark:bg-ink/90">
       <Link href="/" className="flex items-center gap-2">
-        <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-md bg-brand text-sm font-bold text-brand-fg">
-          B
-        </span>
+        <span aria-hidden className="h-3.5 w-3.5 rotate-45 rounded-[3px] bg-brand" />
         <span className="font-semibold tracking-tight">Bin-It</span>
       </Link>
       <CitySwitcher cities={cities} value={city} onChange={onCity} />
@@ -38,13 +36,13 @@ export default function TopBar({ cities, city, onCity, layers, onLayers }: Props
 function LayerMenu({ layers, onLayers }: { layers: LayerToggles; onLayers: (l: LayerToggles) => void }) {
   return (
     <details className="relative">
-      <summary className="cursor-pointer list-none rounded-md border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700">
+      <summary className="cursor-pointer list-none rounded-md border border-zinc-300 px-2 py-1 text-sm transition-colors hover:border-zinc-400 dark:border-rc-border dark:hover:border-smoke">
         Layers ▾
       </summary>
-      <div className="absolute left-0 z-20 mt-1 w-52 space-y-1 rounded-md border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+      <div className="absolute left-0 z-20 mt-1 w-52 space-y-1 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg dark:border-rc-border dark:bg-ink">
         {(Object.keys(LAYER_NAMES) as (keyof LayerToggles)[]).map((k) => (
-          <label key={k} className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={layers[k]} onChange={(e) => onLayers({ ...layers, [k]: e.target.checked })} />
+          <label key={k} className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.04]">
+            <input type="checkbox" className="accent-[var(--brand)]" checked={layers[k]} onChange={(e) => onLayers({ ...layers, [k]: e.target.checked })} />
             {LAYER_NAMES[k]}
           </label>
         ))}
@@ -89,9 +87,9 @@ function StaffKeyChip() {
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         placeholder="Staff key"
-        className="w-28 rounded border border-zinc-300 px-2 py-0.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+        className="w-28 rounded-md border border-zinc-300 px-2 py-0.5 text-xs dark:border-rc-border dark:bg-obsidian"
       />
-      <button className="rounded bg-brand px-2 text-xs text-brand-fg">Save</button>
+      <button className="rounded-md bg-brand px-2 text-xs font-medium text-brand-fg transition-opacity hover:opacity-90">Save</button>
     </form>
   );
 }

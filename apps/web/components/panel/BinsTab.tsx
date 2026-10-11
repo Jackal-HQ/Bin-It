@@ -27,7 +27,7 @@ export default function BinsTab({ query, isUnderReported, topN, onTopN, selected
 
   return (
     <div>
-      <div className="border-b border-zinc-200 p-3 dark:border-zinc-800">
+      <div className="border-b border-zinc-200 p-3 dark:border-rc-border">
         <TopNControl value={topN} max={Math.min(50, query.data.length)} onChange={onTopN} />
         <p className="mt-1 text-xs text-zinc-500">
           Ranked by estimated gain: demand-weighted distance to the nearest bin that each site would remove. The top {Math.min(topN, query.data.length)} are numbered on the map and feed the Scenario tab.
@@ -38,8 +38,8 @@ export default function BinsTab({ query, isUnderReported, topN, onTopN, selected
           <li key={r.rank}>
             <button
               onClick={() => onSelect(r)}
-              className={`flex w-full gap-3 border-b border-zinc-100 p-3 text-left hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 ${
-                r.rank === selectedRank ? "bg-brand/10" : ""
+              className={`flex w-full gap-3 border-b border-zinc-100 p-3 text-left transition-colors duration-200 hover:bg-zinc-50 dark:border-rc-border/50 dark:hover:bg-white/[0.03] ${
+                r.rank === selectedRank ? "bg-brand/10 shadow-[inset_3px_0_0_0_var(--brand)]" : ""
               }`}
             >
               <TooltipCard
@@ -67,7 +67,7 @@ export default function BinsTab({ query, isUnderReported, topN, onTopN, selected
               <span className="min-w-0 flex-1">
                 <span className="block text-sm text-zinc-900 dark:text-zinc-100">{r.rationale || "No reason written yet."}</span>
                 <span className="mt-1.5 flex items-center gap-2">
-                  <span className="h-1.5 w-24 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800" title={`Gain ${r.gain.toFixed(3)}`}>
+                  <span className="h-1.5 w-24 overflow-hidden rounded bg-zinc-200 dark:bg-obsidian" title={`Gain ${r.gain.toFixed(3)}`}>
                     <span className="block h-full bg-brand" style={{ width: `${(r.gain / maxGain) * 100}%` }} />
                   </span>
                   <span className="text-xs text-zinc-500">

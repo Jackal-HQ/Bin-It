@@ -3,6 +3,7 @@
 // One card for whatever is selected on the map or in a list: a ticket, a recommended site
 // or an H3 cell. Only tickets have a photo and a status control.
 import { useState } from "react";
+import { motion } from "motion/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, cachedMode } from "@/lib/api";
 import { setStaffKey, useStaffKey } from "@/lib/hooks";
@@ -23,9 +24,22 @@ type Props = {
 };
 
 export default function DetailCard({ selection, ticket, site, cell, siteUnderReported, ratesLoaded, onClose }: Props) {
+  const selKey =
+    selection.kind === "ticket" ? selection.id : selection.kind === "site" ? `site-${selection.rank}` : `cell-${selection.h3}`;
   return (
-    <section className="relative border-b border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950" aria-label="Details">
-      <button onClick={onClose} aria-label="Close details" className="absolute right-2 top-2 rounded px-2 text-lg leading-none text-zinc-400 hover:text-zinc-700">
+    <motion.section
+      key={selKey}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 320, damping: 30 }}
+      className="relative border-b border-zinc-200 bg-white p-3 dark:border-rc-border dark:bg-ink"
+      aria-label="Details"
+    >
+      <button
+        onClick={onClose}
+        aria-label="Close details"
+        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-md text-lg leading-none text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200"
+      >
         ×
       </button>
       {selection.kind === "ticket" ? (
@@ -37,7 +51,7 @@ export default function DetailCard({ selection, ticket, site, cell, siteUnderRep
       ) : (
         <Missing what="No model results for this area." />
       )}
-    </section>
+    </motion.section>
   );
 }
 
@@ -86,7 +100,7 @@ function StreetViewLink({ lat, lng }: { lat: number; lng: number }) {
         href={streetViewUrl(lat, lng)}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 hover:border-zinc-400 dark:border-rc-border dark:hover:bg-white/[0.04] dark:hover:border-smoke"
       >
         Open in Street View <span aria-hidden>↗</span>
       </a>
@@ -139,9 +153,9 @@ function StatusControl({ ticket }: { ticket: Ticket }) {
             onChange={(e) => setDraftKey(e.target.value)}
             placeholder="Staff key to change status"
             aria-label="Staff key"
-            className="min-w-0 flex-1 rounded border border-zinc-300 px-2 py-0.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="min-w-0 flex-1 rounded-md border border-zinc-300 px-2 py-0.5 text-sm dark:border-rc-border dark:bg-obsidian"
           />
-          <button className="rounded bg-brand px-2 py-0.5 text-xs font-medium text-brand-fg">Save</button>
+          <button className="rounded-md bg-brand px-2 py-0.5 text-xs font-medium text-brand-fg transition-opacity hover:opacity-90">Save</button>
         </div>
         {message && <p className="text-xs text-red-700 dark:text-red-400">{message}</p>}
       </form>
@@ -155,7 +169,7 @@ function StatusControl({ ticket }: { ticket: Ticket }) {
         value={patch.isPending ? patch.variables : ticket.status}
         disabled={patch.isPending}
         onChange={(e) => patch.mutate(e.target.value as Status)}
-        className="rounded border border-zinc-300 bg-white px-2 py-0.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="rounded-md border border-zinc-300 bg-white px-2 py-0.5 text-sm transition-colors hover:border-zinc-400 dark:border-rc-border dark:bg-obsidian dark:hover:border-smoke"
       >
         {STATUS_OPTIONS.map((s) => (
           <option key={s} value={s}>

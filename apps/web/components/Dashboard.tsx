@@ -5,6 +5,7 @@
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
 import { latLngToCell } from "h3-js";
 import type { TicketFilters } from "@/lib/api";
 import { rankCells } from "@/lib/labels";
@@ -171,7 +172,7 @@ export default function Dashboard() {
           {!panelOpen && (
             <button
               onClick={() => setPanel(true)}
-              className="absolute top-3 right-14 z-10 flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white/95 px-3 py-1.5 text-sm font-medium text-zinc-800 shadow-md hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/95 dark:text-zinc-100 dark:hover:bg-zinc-900"
+              className="absolute top-3 right-14 z-10 flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white/95 px-3 py-1.5 text-sm font-medium text-zinc-800 shadow-md transition-colors hover:bg-white dark:border-rc-border dark:bg-ink/95 dark:text-zinc-100 dark:hover:bg-obsidian"
             >
               <PanelIcon collapsed />
               Show panel
@@ -201,7 +202,7 @@ export default function Dashboard() {
         </div>
 
         {/* side panel: hidden, not unmounted, so a running scenario and its map highlight survive */}
-        <aside className={`@container ${panelOpen ? "" : "hidden"} border-zinc-200 bg-white min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l dark:border-zinc-800 dark:bg-zinc-950`}>
+        <aside className={`@container ${panelOpen ? "" : "hidden"} border-zinc-200 bg-white min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l dark:border-rc-border dark:bg-ink`}>
           {selection && (
             <DetailCard
               selection={selection}
@@ -214,12 +215,12 @@ export default function Dashboard() {
             />
           )}
           {/* the detail card and tab content scroll together; the tab bar stays pinned */}
-          <nav className="sticky top-0 z-10 flex border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950" role="tablist">
+          <nav className="sticky top-0 z-10 flex border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-rc-border dark:bg-ink/90" role="tablist">
             <button
               onClick={() => setPanel(false)}
               aria-label="Hide panel"
               title="Hide panel to see the whole map"
-              className="border-r border-zinc-200 px-3 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800 dark:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-200"
+              className="border-r border-zinc-200 px-3 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-800 dark:border-rc-border dark:hover:bg-white/[0.04] dark:hover:text-zinc-200"
             >
               <PanelIcon collapsed={false} />
             </button>
@@ -229,34 +230,53 @@ export default function Dashboard() {
                 role="tab"
                 aria-selected={tab === t.id}
                 onClick={() => setParams({ tab: t.id })}
-                className={`flex-1 px-3 py-2 text-sm font-medium ${
-                  tab === t.id ? "border-b-2 border-brand text-brand" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                  tab === t.id ? "text-brand" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
                 }`}
               >
                 {t.name}
+                {tab === t.id && (
+                  <motion.span
+                    layoutId="tab-indicator"
+                    className="absolute inset-x-0 -bottom-px h-0.5 bg-brand"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  />
+                )}
               </button>
             ))}
           </nav>
           <div>
             {tab === "queue" && (
-              <QueueTab
-                city={city}
-                query={tickets}
-                filters={filters}
-                onFilters={setFilters}
-                selectedId={selection?.kind === "ticket" ? selection.id : null}
-                onSelect={(t) => select({ kind: "ticket", id: t.id }, t)}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <QueueTab
+                  city={city}
+                  query={tickets}
+                  filters={filters}
+                  onFilters={setFilters}
+                  selectedId={selection?.kind === "ticket" ? selection.id : null}
+                  onSelect={(t) => select({ kind: "ticket", id: t.id }, t)}
+                />
+              </motion.div>
             )}
             {tab === "bins" && (
-              <BinsTab
-                query={recs}
-                isUnderReported={isUnderReported}
-                topN={topN}
-                onTopN={setTopN}
-                selectedRank={selection?.kind === "site" ? selection.rank : null}
-                onSelect={(r) => select({ kind: "site", rank: r.rank }, r)}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <BinsTab
+                  query={recs}
+                  isUnderReported={isUnderReported}
+                  topN={topN}
+                  onTopN={setTopN}
+                  selectedRank={selection?.kind === "site" ? selection.rank : null}
+                  onSelect={(r) => select({ kind: "site", rank: r.rank }, r)}
+                />
+              </motion.div>
             )}
             {tab === "scenario" && (
               <ScenarioTab key={city} city={city} sites={recs.data} topN={topN} onTopN={setTopN} onActiveSites={setScenarioSites} />
@@ -265,7 +285,7 @@ export default function Dashboard() {
         </aside>
       </div>
 
-      <footer className="border-t border-zinc-200 px-4 py-1.5 text-[11px] leading-snug text-zinc-500 dark:border-zinc-800">
+      <footer className="border-t border-zinc-200 px-4 py-1.5 text-[11px] leading-snug text-zinc-500 dark:border-rc-border">
         Projected changes are model estimates, not measured outcomes. The model target is litter-related complaint density,
         not measured bin overflow. Orlando has no local complaint data: its scores come from a model trained on NYC and
         Chicago and are lightly validated. Rows marked &quot;Demo data&quot; are synthetic.

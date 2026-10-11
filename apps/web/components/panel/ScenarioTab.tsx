@@ -121,7 +121,7 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
           <button
             onClick={reset}
             disabled={busy || (phase !== "done" && phase !== "error")}
-            className="rounded-md border border-zinc-300 px-4 py-1.5 text-sm font-medium hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            className="rounded-md border border-zinc-300 px-4 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 hover:border-zinc-400 disabled:opacity-50 dark:border-rc-border dark:hover:bg-white/[0.04] dark:hover:border-smoke"
           >
             {phase === "deleting" ? "Deleting branch…" : "Reset"}
           </button>
@@ -151,7 +151,7 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
         </div>
       )}
 
-      <div className="rounded-md bg-zinc-50 p-3 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+      <div className="rounded-xl bg-zinc-50 p-3 text-xs text-zinc-600 dark:bg-obsidian dark:text-ash">
         <p className="font-semibold text-zinc-800 dark:text-zinc-200">Assumptions</p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
           <li>Results are estimates from a model, not measured outcomes.</li>
@@ -169,7 +169,7 @@ function Figure(props: { title: string; before: string; after: string; delta: nu
   const better = lowerIsBetter ? delta < 0 : delta > 0;
   const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
   return (
-    <div className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+    <div className="rounded-xl border border-zinc-200 p-3 shadow-sm dark:border-rc-border dark:shadow-[rgba(255,255,255,0.05)_0px_1px_0px_0px_inset]">
       <p className="text-xs text-zinc-500">{title} (estimated)</p>
       <p className="mt-1 flex items-baseline gap-1.5 text-sm">
         <span className="text-zinc-500">{before}</span>

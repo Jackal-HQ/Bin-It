@@ -16,7 +16,7 @@ export default function TopNControl({
   const shown = Math.min(value, max);
   return (
     <label className="flex items-center gap-3 text-sm">
-      <span className="whitespace-nowrap font-medium">Top {shown} sites</span>
+      <span className="whitespace-nowrap font-medium">Top sites</span>
       <input
         type="range"
         min={min}
@@ -24,8 +24,11 @@ export default function TopNControl({
         value={shown}
         disabled={disabled || max <= min}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="flex-1 accent-[var(--brand)]"
+        className="flex-1 cursor-pointer accent-[var(--brand)] disabled:cursor-not-allowed disabled:opacity-50"
       />
+      <span className="min-w-9 rounded-md bg-brand/10 px-2 py-0.5 text-center text-xs font-semibold tabular-nums text-brand">
+        {shown}
+      </span>
     </label>
   );
 }
