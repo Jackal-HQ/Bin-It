@@ -104,6 +104,11 @@ Copy the markup from `app/page.tsx`; this table says where each lives.
 | Product window | Frame `rounded-[12px] bg-ink p-3` + key shadow; command bar `rounded-[16px] bg-obsidian px-4 py-3`; rows `rounded-[8px] px-3 py-2.5`; the selected row `bg-coral-pulse/15` with a coral dot. Always captioned as an illustration |
 | City / link tile | `rounded-[8px] border border-rc-border p-4` with a Graphite badge on the right |
 | Notice | `rounded-[16px] bg-ember-hush/60 p-6`, 16px/500 white title, 14px ash body. Use for caveats and "estimates, not measurements" |
+| Hex grid | `components/landing/HexGrid.tsx`: decorative H3-style SVG, coral intensity, numbered pins, dashed under-reported rings. Always captioned "illustrative"; use `cover` for wide short thumbnails |
+| Spotlight card | `components/landing/SpotlightCard.tsx`: key-shadow card with a cursor-following neutral highlight (no coral) |
+| Bento | `components/landing/Bento.tsx`: report / rank / place / bias cards in a 3-column grid (two spanning 2) |
+| Product window | `components/landing/ProductWindow.tsx`: dashboard mockup with hex map + ranked list; sits under the hero text |
+| Built-on strip | `border-y border-rc-border/60`, mono 12px names in `text-smoke` |
 | Footer | `border-t border-rc-border/60`, centered mono 12px meta strip: `© year Bin-It | Privacy | Terms | Dashboard` |
 
 ### Hero atmosphere
