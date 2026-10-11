@@ -32,6 +32,8 @@ export type Report = {
   photo_url?: string;
   is_synthetic: boolean;
   created_at: string;
+  // The owning ticket's status. GET /api/reports/{id} populates it; optional elsewhere.
+  status?: Status;
 };
 
 export type Ticket = {
@@ -88,4 +90,15 @@ export const LABEL_TEXT: Record<string, string> = {
 export function labelText(label: string): string {
   // Contract: apps must render unknown labels as "received".
   return LABEL_TEXT[label] ?? "Received";
+}
+
+// Status display: the API value `received` reads as "Pending" to residents.
+export const STATUS_TEXT: Record<Status, string> = {
+  received: "Pending",
+  reviewed: "Reviewed",
+  resolved: "Resolved",
+};
+
+export function statusText(status: Status | undefined): string {
+  return status ? STATUS_TEXT[status] : "Pending";
 }
