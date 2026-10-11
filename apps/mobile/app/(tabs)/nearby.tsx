@@ -1,34 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  FlatList,
-  Linking,
-  Modal,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Divider,
-  IconButton,
-  List,
-  Surface,
-  Text,
-  TouchableRipple,
-} from "react-native-paper";
+import { ActivityIndicator, FlatList, Linking, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useCity } from "@/lib/city";
 import { useCities, useNearby } from "@/lib/hooks";
 import { getCurrentCoords } from "@/lib/location";
 import { mapHtml, streetViewUrl, type MapMessage, type MapPoint } from "@/lib/mapHtml";
 import { labelText } from "@/lib/types";
-import { useTheme, type Palette } from "@/lib/theme";
-import { useThemePref } from "@/lib/themePref";
+import { colors, font, radius, severityColor, severityText, shadow } from "@/lib/theme";
 import { CitySelector } from "@/components/CitySelector";
 import { Call311Button } from "@/components/Call311Button";
+import { Button, DemoChip, Led, T } from "@/components/ui";
 
 const NEAR_CITY_KM = 60;
 
@@ -43,10 +27,7 @@ function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: numb
 
 export default function NearbyScreen() {
   const router = useRouter();
-  const t = useTheme();
-  const styles = useMemo(() => makeStyles(t), [t]);
   const insets = useSafeAreaInsets();
-  const { pref, setPref } = useThemePref();
   const { city } = useCity();
   const { data: cities } = useCities();
   const webRef = useRef<WebView>(null);
@@ -177,12 +158,20 @@ export default function NearbyScreen() {
     }
   };
 
+  const bottomGap = Math.max(insets.bottom, 8) + 76; // clears the floating tab bar
+
   if (!coords) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={t.brand} />
-        <Text style={styles.hint}>Finding your location…</Text>
-        {locationError ? <Text style={styles.err}>{locationError}</Text> : null}
+        <ActivityIndicator color={colors.charcoal} />
+        <T v="body" color={colors.soft} style={styles.hint}>
+          Finding your location…
+        </T>
+        {locationError ? (
+          <T v="meta" color={colors.coralInk} style={styles.hint}>
+            {locationError}
+          </T>
+        ) : null}
       </View>
     );
   }
@@ -191,234 +180,195 @@ export default function NearbyScreen() {
   const binCount = data?.bins.length ?? 0;
 
   return (
-    <View style={styles.flex}>
-      <WebView
-        ref={webRef}
-        style={styles.flex}
-        originWhitelist={["*"]}
-        source={{ html: mapHtml(coords, points, t.mode === "dark", deviceCoords) }}
-        onMessage={onMessage}
-        javaScriptEnabled
-      />
-
-      {/* top bar: city picker (menu) + per-city 311 call + theme toggle, over the map */}
-      <View style={[styles.topBar, { top: insets.top + 8 }]}>
-        <CitySelector variant="menu" />
+    <View style={[styles.flex, { paddingTop: insets.top + 8 }]}>
+      {/* header on the ground: city pills + the city's 311 line */}
+      <View style={styles.topBar}>
+        <View style={styles.topBarCity}>
+          <CitySelector floating />
+        </View>
         <View style={styles.topBarSpacer} />
         <Call311Button compact />
-        <Surface style={styles.themeBtn} elevation={3}>
-          <IconButton
-            icon={pref === "dark" ? "weather-night" : pref === "light" ? "white-balance-sunny" : "cellphone"}
-            size={20}
-            onPress={() => setPref(pref === "system" ? "light" : pref === "light" ? "dark" : "system")}
-            accessibilityLabel={`Theme: ${pref}. Tap to change.`}
-            style={styles.themeBtnInner}
-          />
-        </Surface>
       </View>
 
-      {isLoading ? (
-        <Surface style={styles.badge} elevation={3}>
-          <ActivityIndicator size="small" />
-          <Text style={styles.badgeText}>Loading nearby…</Text>
-        </Surface>
-      ) : error ? (
-        <Surface style={styles.badge} elevation={3}>
-          <Text style={styles.badgeText}>Could not load nearby reports.</Text>
-        </Surface>
-      ) : (
-        <Surface style={styles.badgeSurface} elevation={3}>
-          <TouchableRipple
-            onPress={() => setListOpen(true)}
-            disabled={ticketCount + binCount === 0}
-            style={styles.badge}
-            borderless
-          >
-            <View style={styles.badgeInner}>
-              {isRefetching ? <ActivityIndicator size="small" /> : null}
-              <Text style={styles.badgeText}>
-                {ticketCount} report{ticketCount === 1 ? "" : "s"} · {binCount} bin
-                {binCount === 1 ? "" : "s"}
-              </Text>
-              {ticketCount + binCount > 0 ? (
-                <List.Icon icon="chevron-right" color={t.brand} style={styles.badgeChevron} />
-              ) : null}
-            </View>
-          </TouchableRipple>
-        </Surface>
-      )}
+      {/* the map sits in a rounded card, in the same place as the dashboard's */}
+      <View style={[styles.mapShadow, { marginBottom: bottomGap }]}>
+        <View style={styles.mapCard}>
+          <WebView
+            ref={webRef}
+            style={styles.flex}
+            originWhitelist={["*"]}
+            source={{ html: mapHtml(coords, points, deviceCoords) }}
+            onMessage={onMessage}
+            javaScriptEnabled
+          />
 
-      <Modal
-        visible={listOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setListOpen(false)}
-      >
-        <TouchableRipple style={styles.sheetBackdrop} onPress={() => setListOpen(false)}>
-          <View />
-        </TouchableRipple>
-        <Surface style={styles.sheet} elevation={4}>
+          {isLoading ? (
+            <View style={[styles.badge, shadow.float]}>
+              <ActivityIndicator size="small" color={colors.charcoal} />
+              <T v="meta" color={colors.strong} style={styles.badgeText}>
+                Loading nearby…
+              </T>
+            </View>
+          ) : error ? (
+            <View style={[styles.badge, shadow.float]}>
+              <T v="meta" color={colors.coralInk} style={styles.badgeText}>
+                Could not load nearby reports.
+              </T>
+            </View>
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Show nearby list"
+              onPress={() => setListOpen(true)}
+              disabled={ticketCount + binCount === 0}
+              style={({ pressed }) => [styles.badge, shadow.float, pressed && { opacity: 0.85 }]}
+            >
+              {isRefetching ? <ActivityIndicator size="small" color={colors.charcoal} /> : null}
+              <T v="meta" color={colors.strong} style={styles.badgeText}>
+                {ticketCount} report{ticketCount === 1 ? "" : "s"} · {binCount} bin{binCount === 1 ? "" : "s"}
+              </T>
+              {ticketCount + binCount > 0 ? <MaterialCommunityIcons name="chevron-right" size={18} color={colors.soft} /> : null}
+            </Pressable>
+          )}
+        </View>
+      </View>
+
+      <Modal visible={listOpen} animationType="slide" transparent onRequestClose={() => setListOpen(false)}>
+        <Pressable accessibilityLabel="Close list" style={styles.sheetBackdrop} onPress={() => setListOpen(false)} />
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeader}>
-            <Text variant="titleMedium">Nearby</Text>
+            <View>
+              <T v="eyebrow">Near you</T>
+              <T v="heading" style={styles.sheetTitle}>
+                Nearby
+              </T>
+            </View>
             <View style={styles.sheetActions}>
-              <Button
-                mode="text"
-                icon="refresh"
-                onPress={() => refetch()}
-                loading={isRefetching}
-                disabled={isRefetching}
-                compact
-              >
-                Refresh
-              </Button>
-              <Button mode="text" onPress={() => setListOpen(false)} compact>
-                Close
-              </Button>
+              <Button kind="ghost" compact icon="refresh" label="Refresh" onPress={() => refetch()} loading={isRefetching} disabled={isRefetching} />
+              <Button compact label="Close" onPress={() => setListOpen(false)} />
             </View>
           </View>
           <FlatList
             data={points}
             keyExtractor={(p) => `${p.kind}_${p.id}`}
-            ItemSeparatorComponent={() => <Divider />}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            contentContainerStyle={styles.listContent}
             refreshControl={
-              <RefreshControl
-                refreshing={isRefetching}
-                onRefresh={() => refetch()}
-                tintColor={t.brand}
-                colors={[t.brand]}
-              />
+              <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} tintColor={colors.charcoal} colors={[colors.charcoal]} />
             }
             renderItem={({ item, index }) => (
-              <List.Item
-                title={`${item.title}${item.demo ? "  · demo" : ""}`}
-                description={
-                  item.kind === "ticket"
-                    ? `Severity ${item.severity} · ${item.detail} · ${item.status}`
-                    : item.detail
-                }
+              <Pressable
+                accessibilityRole="button"
                 onPress={() => focusOnMap(index)}
-                left={() => (
-                  <View style={[styles.dot, { backgroundColor: dotColor(item, t) }, item.kind === "bin" && styles.dotBin]}>
-                    {item.kind === "ticket" ? <Text style={styles.dotText}>{item.count}</Text> : null}
+                style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.well }]}
+              >
+                <View style={styles.markerSlot}>
+                  {item.kind === "ticket" ? (
+                    <View style={[styles.marker, { backgroundColor: severityColor(item.severity) }]}>
+                      <Text style={styles.markerText}>{item.count}</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.binDot} />
+                  )}
+                </View>
+                <View style={styles.rowMain}>
+                  <View style={styles.rowTitle}>
+                    <T v="row">{item.title}</T>
+                    {item.demo ? <DemoChip /> : null}
                   </View>
-                )}
-                right={() =>
-                  item.kind === "ticket" ? (
-                    <Button
-                      mode="contained-tonal"
-                      compact
-                      onPress={() => {
-                        setListOpen(false);
-                        openDetail(item);
-                      }}
-                    >
-                      View
-                    </Button>
-                  ) : null
-                }
-              />
+                  {item.kind === "ticket" ? (
+                    <View style={styles.rowMeta}>
+                      <Led severity={item.severity} />
+                      <T v="meta">
+                        {severityText(item.severity)} · {item.detail} · {item.status}
+                      </T>
+                    </View>
+                  ) : (
+                    <T v="meta">{item.detail}</T>
+                  )}
+                </View>
+                {item.kind === "ticket" ? (
+                  <Button
+                    compact
+                    label="View"
+                    onPress={() => {
+                      setListOpen(false);
+                      openDetail(item);
+                    }}
+                  />
+                ) : null}
+              </Pressable>
             )}
             ListEmptyComponent={
               <View style={styles.emptyWrap}>
-                <List.Icon icon="map-marker-off" color={t.textMuted} />
-                <Text style={[styles.empty, { color: t.textMuted }]}>
+                <MaterialCommunityIcons name="map-marker-off-outline" size={28} color={colors.quiet} />
+                <T v="body" color={colors.soft} style={styles.empty}>
                   Nothing nearby yet. Pull down to refresh.
-                </Text>
+                </T>
               </View>
             }
           />
-        </Surface>
+        </View>
       </Modal>
     </View>
   );
 }
 
-function dotColor(p: MapPoint, t: Palette) {
-  if (p.kind === "bin") return t.bin;
-  return p.severity >= 3 ? t.sev3 : p.severity >= 2 ? t.sev2 : t.sev1;
-}
-
-function makeStyles(t: Palette) {
-  return StyleSheet.create({
-    flex: { flex: 1, backgroundColor: t.bg },
-    topBar: {
-      position: "absolute",
-      left: 10,
-      right: 10,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-    },
-    topBarSpacer: { flex: 1 },
-    themeBtn: { borderRadius: 20 },
-    themeBtnInner: { margin: 0 },
-    center: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      padding: 24,
-      backgroundColor: t.bg,
-    },
-    hint: { color: t.textMuted, textAlign: "center", padding: 16 },
-    err: { color: t.danger, textAlign: "center" },
-    badgeSurface: {
-      position: "absolute",
-      bottom: 16,
-      alignSelf: "center",
-      borderRadius: 22,
-    },
-    badge: {
-      flexDirection: "row",
-      alignItems: "center",
-      borderRadius: 22,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-    },
-    badgeInner: { flexDirection: "row", alignItems: "center", gap: 8 },
-    badgeText: { color: t.text, fontSize: 13, fontWeight: "700" },
-    badgeChevron: { margin: 0, width: 20, height: 20 },
-    sheetBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
-    sheet: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      maxHeight: "70%",
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      paddingBottom: 24,
-    },
-    sheetHandle: {
-      alignSelf: "center",
-      width: 40,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: t.border,
-      marginTop: 8,
-      marginBottom: 4,
-    },
-    sheetHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: 16,
-      paddingVertical: 6,
-    },
-    sheetActions: { flexDirection: "row", alignItems: "center" },
-    empty: { textAlign: "center", padding: 24 },
-    emptyWrap: { alignItems: "center", paddingVertical: 32 },
-    dot: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      alignItems: "center",
-      justifyContent: "center",
-      alignSelf: "center",
-      marginLeft: 8,
-    },
-    dotBin: { width: 22, height: 22, borderRadius: 11, marginHorizontal: 13 },
-    dotText: { color: "#fff", fontWeight: "700", fontSize: 12 },
-  });
-}
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  topBar: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingBottom: 12 },
+  topBarCity: { flexShrink: 1, minWidth: 0 },
+  topBarSpacer: { flex: 1 },
+  mapShadow: {
+    flex: 1,
+    marginHorizontal: 16,
+    borderRadius: radius.map,
+    backgroundColor: "#F4F0E8",
+    ...shadow.float,
+  },
+  mapCard: { flex: 1, borderRadius: radius.map, overflow: "hidden", backgroundColor: "#F4F0E8" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, padding: 24 },
+  hint: { textAlign: "center" },
+  badge: {
+    position: "absolute",
+    top: 14,
+    left: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    height: 40,
+    paddingHorizontal: 16,
+    borderRadius: radius.pill,
+    backgroundColor: colors.float,
+  },
+  badgeText: { fontFamily: font.ui700 },
+  sheetBackdrop: { flex: 1, backgroundColor: "rgba(30,29,26,0.35)" },
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxHeight: "72%",
+    borderTopLeftRadius: radius.card,
+    borderTopRightRadius: radius.card,
+    backgroundColor: colors.card,
+    paddingHorizontal: 8,
+  },
+  sheetHandle: { alignSelf: "center", width: 40, height: 4, borderRadius: 2, backgroundColor: colors.rim, marginTop: 10, marginBottom: 6 },
+  sheetHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12, paddingVertical: 8 },
+  sheetTitle: { marginTop: 2 },
+  sheetActions: { flexDirection: "row", alignItems: "center", gap: 4 },
+  listContent: { paddingBottom: 8 },
+  separator: { height: 2 },
+  row: { flexDirection: "row", alignItems: "center", gap: 10, padding: 10, borderRadius: radius.row },
+  markerSlot: { width: 38, alignItems: "center" },
+  marker: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#FFFFFF" },
+  markerText: { fontFamily: font.ui800, fontSize: 13, color: "#FFFFFF" },
+  binDot: { width: 14, height: 14, borderRadius: 7, backgroundColor: colors.bin, borderWidth: 1.5, borderColor: "#FFFFFF" },
+  rowMain: { flex: 1, gap: 5 },
+  rowTitle: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
+  rowMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
+  empty: { textAlign: "center", padding: 12 },
+  emptyWrap: { alignItems: "center", paddingVertical: 32 },
+});

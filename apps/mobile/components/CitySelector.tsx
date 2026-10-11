@@ -1,73 +1,34 @@
-// Shared city picker. The choice is app-wide via useCity(). Two variants so it fits
-// each surface:
-//   variant="segmented" (default) — Paper SegmentedButtons, for the Report form.
-//   variant="menu" — a compact dropdown Button + Menu, for the Nearby map top bar.
-import { useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { Button, Menu, SegmentedButtons } from "react-native-paper";
+// Shared city picker. The choice is app-wide via useCity(). A pill group (up to four cities,
+// more scroll sideways). `fill` stretches it across a card; `floating` lifts it over the map.
+import { ScrollView, StyleSheet, View } from "react-native";
 import { useCity } from "@/lib/city";
 import { useCities } from "@/lib/hooks";
+import { colors, radius } from "@/lib/theme";
+import { Segmented } from "@/components/ui";
 
-export function CitySelector({
-  variant = "segmented",
-}: {
-  variant?: "segmented" | "menu";
-}) {
+const MAX_PILLS = 4;
+
+export function CitySelector({ fill = false, floating = false }: { fill?: boolean; floating?: boolean }) {
   const { city, setCity } = useCity();
   const { data: cities } = useCities();
-  const list = cities ?? [];
-  const current = list.find((c) => c.slug === city);
-  const [open, setOpen] = useState(false);
+  const options = (cities ?? []).map((c) => ({
+    id: c.slug,
+    // short label (city name before the comma) so three fit without truncation
+    name: c.name.split(",")[0],
+  }));
 
-  if (variant === "menu") {
-    return (
-      <Menu
-        visible={open}
-        onDismiss={() => setOpen(false)}
-        anchor={
-          <Button
-            mode="elevated"
-            icon="map-marker"
-            onPress={() => setOpen(true)}
-            contentStyle={styles.menuBtnContent}
-            compact
-          >
-            {current ? current.name.split(",")[0] : "City"}
-          </Button>
-        }
-      >
-        {list.map((c) => (
-          <Menu.Item
-            key={c.slug}
-            title={c.name}
-            trailingIcon={c.slug === city ? "check" : undefined}
-            onPress={() => {
-              setCity(c.slug);
-              setOpen(false);
-            }}
-          />
-        ))}
-      </Menu>
-    );
-  }
+  if (options.length === 0) return <View style={[styles.skeleton, fill && { alignSelf: "stretch" }]} />;
 
-  // segmented (form)
+  const group = <Segmented options={options} value={city} onChange={setCity} fill={fill && options.length <= MAX_PILLS} floating={floating} />;
+  if (options.length <= MAX_PILLS) return group;
   return (
-    <View style={styles.wrap}>
-      <SegmentedButtons
-        value={city}
-        onValueChange={setCity}
-        buttons={list.map((c) => ({
-          value: c.slug,
-          // short label (city name before the comma) so three fit without truncation
-          label: c.name.split(",")[0],
-        }))}
-      />
-    </View>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      {group}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: 4 },
-  menuBtnContent: { flexDirection: "row-reverse" },
+  skeleton: { height: 48, width: 240, borderRadius: radius.pill, backgroundColor: colors.well },
+  scroll: { paddingRight: 8 },
 });

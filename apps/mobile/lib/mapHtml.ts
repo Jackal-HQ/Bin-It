@@ -35,64 +35,56 @@ const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 export function mapHtml(
   center: { lat: number; lng: number },
   points: MapPoint[],
-  dark = false,
   device: { lat: number; lng: number } | null = null,
 ) {
   // "<" is escaped so no title can close the script tag.
   const data = JSON.stringify(points).split("<").join(`${BACKSLASH}u003c`);
   const deviceJson = device ? `[${device.lng}, ${device.lat}]` : "null";
 
-  const pageBg = dark ? "#0a0a0a" : "#e5e7eb";
-  const popBg = dark ? "#141414" : "#ffffff";
-  const titleColor = dark ? "#f3f4f6" : "#111827";
-  const detailColor = dark ? "#9ca3af" : "#4b5563";
-  const chipBg = dark ? "#1f1f1f" : "#f3f4f6";
-  const chipColor = dark ? "#d1d5db" : "#374151";
-  const legendBg = dark ? "rgba(20,20,20,.95)" : "rgba(255,255,255,.95)";
-  const legendColor = dark ? "#d1d5db" : "#374151";
-  const brand = "#ff6363"; // Coral Pulse (DESIGN.md) — single product accent
-  // This style has no dark variant, so darken the rendered canvas in dark mode.
-  const darkCss = dark
-    ? ".maplibregl-canvas { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }"
-    : "";
-
+  // Daylight (.claude/DESIGN.md) chrome around the map; the pin and bin colors are the
+  // dashboard's (apps/web/lib/labels.ts), so the phone and the dashboard read as one.
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <style>
-  html, body, #map { height: 100%; margin: 0; background: ${pageBg}; }
-  body { font-family: -apple-system, Roboto, "Segoe UI", sans-serif; }
+  html, body, #map { height: 100%; margin: 0; background: #F4F0E8; }
+  body { font-family: Manrope, -apple-system, Roboto, "Segoe UI", sans-serif; }
   .pin { width: 32px; height: 32px; border-radius: 50%; border: 3px solid #fff;
-         box-shadow: 0 2px 6px rgba(0,0,0,.35); color: #fff; font-weight: 700; font-size: 13px;
+         box-shadow: 0 2px 6px rgba(0,0,0,.3); color: #fff; font-weight: 800; font-size: 13px;
          display: flex; align-items: center; justify-content: center; cursor: pointer;
          text-shadow: 0 1px 1px rgba(0,0,0,.35); box-sizing: border-box; }
-  .pin.sev1 { background: #eab308; } .pin.sev2 { background: #f97316; } .pin.sev3 { background: #dc2626; }
-  .pin.demo { border-style: dashed; }
-  .pin.bin { width: 22px; height: 22px; background: #16a34a; font-size: 11px; }
+  .pin.sev1 { background: #FDAE61; } .pin.sev2 { background: #F46D43; } .pin.sev3 { background: #A50026; }
+  .pin.demo { border-color: #111827; }
+  .pin.bin { width: 16px; height: 16px; border-width: 2px; background: #374151; font-size: 0; }
   .me { width: 16px; height: 16px; border-radius: 50%; background: #2563eb; border: 3px solid #fff;
         box-sizing: border-box; box-shadow: 0 0 0 0 rgba(37,99,235,.5); animation: pulse 2s infinite; }
   @keyframes pulse { 70% { box-shadow: 0 0 0 14px rgba(37,99,235,0); } 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); } }
-  .maplibregl-popup-content { border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.25);
-                              background: ${popBg}; padding: 14px 16px; min-width: 190px; }
-  .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: ${popBg}; }
-  .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: ${popBg}; }
-  .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: ${popBg}; }
-  .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: ${popBg}; }
-  .t { font-size: 16px; font-weight: 700; color: ${titleColor}; margin-bottom: 6px; }
-  .d { font-size: 13px; color: ${detailColor}; margin-bottom: 8px; }
-  .thumb { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; background: ${chipBg}; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-  .chip { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: ${chipBg}; color: ${chipColor}; }
-  .chip.demo { background: #fef3c7; color: #92400e; }
-  .btn { display: block; width: 100%; border: 0; border-radius: 10px; padding: 10px; font-size: 14px;
-         font-weight: 600; color: #fff; margin-top: 6px; }
-  .btn.view { background: ${brand}; }
-  .btn.sv { background: #374151; }
-  .legend { position: absolute; left: 10px; bottom: 26px; z-index: 2; background: ${legendBg};
-            padding: 8px 10px; border-radius: 10px; font-size: 12px; color: ${legendColor};
-            box-shadow: 0 1px 6px rgba(0,0,0,.2); line-height: 1.7; }
-  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
-  ${darkCss}
+  .maplibregl-popup-content { border-radius: 22px; box-shadow: 0 18px 36px -12px rgba(70,55,10,.5);
+                              background: #FEFDFA; padding: 14px; min-width: 200px; }
+  .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #FEFDFA; }
+  .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #FEFDFA; }
+  .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: #FEFDFA; }
+  .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: #FEFDFA; }
+  .t { font-size: 17px; font-weight: 800; letter-spacing: -.2px; color: #1E1D1A; margin-bottom: 8px; }
+  .d { font-size: 13px; font-weight: 500; color: #57544C; margin-bottom: 10px; }
+  .thumb { width: 100%; height: 120px; object-fit: cover; border-radius: 16px; margin-bottom: 10px; background: rgba(60,52,28,.06); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .chip { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: rgba(60,52,28,.07); color: #57544C; }
+  .chip.demo { background: transparent; border: 1.5px dotted rgba(110,107,98,.5); padding: 2px 8px; color: #6E6B62;
+               text-transform: uppercase; letter-spacing: .06em; font-size: 10px; }
+  .btn { display: block; width: 100%; height: 44px; border: 0; border-radius: 999px; font: 700 14px Manrope, sans-serif;
+         margin-top: 6px; }
+  .btn.view { background: #2A2926; color: #fff; }
+  .btn.sv { background: #fff; color: #1E1D1A; border: 1px solid rgba(60,52,28,.16); font-weight: 600; }
+  .legend { position: absolute; left: 12px; bottom: 12px; z-index: 2; background: rgba(254,253,250,.95);
+            padding: 10px 14px; border-radius: 18px; font-size: 12px; font-weight: 600; color: #57544C;
+            box-shadow: 0 10px 24px -10px rgba(70,55,10,.45); line-height: 1.75; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
+  .legend .ring { border: 2.5px solid #111827; background: #9CA3AF; width: 12px; height: 12px; box-sizing: border-box; }
+  .maplibregl-ctrl-group { border-radius: 999px; overflow: hidden; box-shadow: 0 10px 24px -10px rgba(70,55,10,.45); background: rgba(254,253,250,.95); }
+  .maplibregl-ctrl-group button { width: 40px; height: 40px; }
+  .maplibregl-ctrl-attrib { border-radius: 999px; background: rgba(255,255,255,.74); font-size: 10px; color: #6E6B62; }
 </style></head><body><div id="map"></div>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>
@@ -115,7 +107,7 @@ var map = new maplibregl.Map({
   zoom: 15,
   attributionControl: { compact: true }
 });
-map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
 // If the vector style fails to load, fall back to plain OSM tiles instead of a blank map.
 var fellBack = false;
@@ -176,7 +168,7 @@ points.forEach(function (p) {
   };
   box.appendChild(sv);
 
-  var popup = new maplibregl.Popup({ offset: isBin ? 14 : 20, closeButton: false, maxWidth: "280px" })
+  var popup = new maplibregl.Popup({ offset: isBin ? 14 : 20, closeButton: false, focusAfterOpen: false, maxWidth: "280px" })
     .setDOMContent(box);
   var marker = new maplibregl.Marker({ element: pin }).setLngLat([p.lng, p.lat]).setPopup(popup).addTo(map);
   markers.push(marker);
@@ -195,10 +187,11 @@ window.focusPoint = function (i) {
 };
 
 var legend = el("div", "legend");
-legend.innerHTML = '<div><i style="background:#dc2626"></i>Severity 3</div>' +
-  '<div><i style="background:#f97316"></i>Severity 2</div>' +
-  '<div><i style="background:#eab308"></i>Severity 0-1</div>' +
-  '<div><i style="background:#16a34a"></i>Bin</div>';
+legend.innerHTML = '<div><i style="background:#A50026"></i>High</div>' +
+  '<div><i style="background:#F46D43"></i>Medium</div>' +
+  '<div><i style="background:#FDAE61"></i>Low</div>' +
+  '<div><i class="ring"></i>Dark ring = demo data</div>' +
+  '<div><i style="background:#374151"></i>Bin</div>';
 document.body.appendChild(legend);
 </script></body></html>`;
 }
