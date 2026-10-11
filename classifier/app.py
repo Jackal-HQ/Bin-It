@@ -19,6 +19,10 @@ LABEL_PROMPTS = {
         "a photo of an overflowing public trash can with garbage spilling out",
         "a trash can heaped above its rim with litter on top",
         "a public waste bin so full that garbage is falling onto the ground around it",
+        "an overflowing trash bin with garbage bags and boxes piled around its base",
+        "a full bin with trash bags on top and spilling onto the pavement",
+        "an overflowing wheelie bin with its lid pushed open by rubbish",
+        "a trash can stuffed with paper and litter",
     ],
     "bag_pile": [
         "a photo of a pile of trash bags on a sidewalk",
@@ -29,15 +33,28 @@ LABEL_PROMPTS = {
         "a photo of illegally dumped furniture and junk at a curb",
         "a pile of construction debris or old appliances abandoned outdoors",
         "a mattress or couch dumped on the side of the road",
+        "a large heap of mixed garbage and plastic waste dumped on the ground",
+        "scattered litter, bottles and plastic waste strewn across the ground",
+        "a big pile of junk, furniture and bags dumped next to a dumpster",
     ],
     "clean": [
         "a photo of a public trash can with its lid closed and nothing around it",
         "an empty trash bin in a park that is not full",
         "a tidy litter basket or recycling bin on a clean sidewalk",
         "a row of closed wheelie bins standing neatly",
+        "a single empty public trash can standing on a street corner",
+        "a clean litter bin on a sidewalk with nothing around it",
+        "a metal public waste bin with no garbage in it, in daylight",
+        "a recycling and trash kiosk on a clean pavement",
     ],
+    # Specific scenes, not one broad "unrelated" sentence: the broad one also matched
+    # messy-but-real trash photos and sent them here.
     "not_trash": [
-        "a photo of something unrelated to trash, like people, buildings, or nature",
+        "a photo of a city street with no trash or bins in it",
+        "a photo of a building, a car or a tree",
+        "a photo of people walking",
+        "a photo of garden plants and a flower bed",
+        "a bin full of garden clippings and leaves",
     ],
 }
 SEVERITY = [

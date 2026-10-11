@@ -4,6 +4,8 @@ Hackathon project. Residents photo-report overflowing trash bins from a phone; c
 
 Main design doc (source of truth for intent): https://claude.ai/code/artifact/7fdca1aa-285e-4713-b72d-5fc4db5563be (tabs: Spec, Backend Setup, Mobile App, Web Dashboard). If this file and the doc disagree, ask the user.
 
+Design: all pages outside the staff dashboard follow `.claude/DESIGN.md` (read its "Bin-It implementation guide" section first). Reference implementation: `apps/web/app/page.tsx`.
+
 ## Hackathon tracks (why things are built this way)
 
 - Headline: OneEthos "Innovation for Good" (local environmental problem, measurable impact).

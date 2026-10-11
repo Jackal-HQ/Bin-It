@@ -30,6 +30,20 @@ has a recognizable face, crop/blur it first or skip it.
 Aim for a few examples per label, including some `clean`/`not_trash` shots
 so the classifier isn't just tested on positives.
 
+## Labeling rule (keep it consistent)
+
+Pick the label by what the photo mainly shows:
+
+| Label | Rule |
+| --- | --- |
+| `overflowing_can` | A bin is present and overfull. Bags or litter around its base still count as `overflowing_can`. Severity 1 if only a little litter, 3 if a lot is spread around it. |
+| `bag_pile` | Bags with no bin in the scene. |
+| `illegal_dumping` | Furniture, junk, or scattered litter dumped outside a bin (including litter in a ditch or on tracks). |
+| `clean` | A bin with nothing around it, closed or empty. Severity 0. |
+| `not_trash` | No trash problem: a bin of garden clippings, people, buildings, empty street. Severity 0. |
+
+Photos tagged "overflow" by their source (for example the Hugging Face set) are labeled by what is visible, not by the source tag.
+
 ## Checking the classifier against these labels
 
 Once you have a few rows in `labels.csv` and the classifier container is up
