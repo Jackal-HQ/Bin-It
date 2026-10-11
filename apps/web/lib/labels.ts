@@ -1,6 +1,6 @@
-// Display text and colors shared by the dashboard. Colors are color-blind safe and tuned
-// for the dark basemap: pins use a warm ramp that also grows in size, hexes a cool blue
-// ramp, and the under-reported layer a white outline rather than a fill.
+// Display text and colors shared by the dashboard. Colors are color-blind safe:
+// pins use a warm ramp that also grows in size, hexes a cool ramp, and the
+// under-reported layer an outline rather than a fill.
 import type { Cell, Status } from "./types";
 
 type RGB = [number, number, number];
@@ -29,24 +29,23 @@ export const STATUS_TEXT: Record<Status, string> = {
 };
 export const STATUS_OPTIONS = Object.keys(STATUS_TEXT) as Status[];
 
-// severity 0..3: grey, then pale amber -> coral -> red (hue and size both grow with severity)
+// severity 0..3: grey, then light orange -> dark red (luminance falls as severity rises)
 export const SEVERITY_COLOR: RGB[] = [
-  [106, 107, 108],
-  [255, 205, 140],
-  [255, 128, 92],
-  [255, 62, 74],
+  [156, 163, 175],
+  [253, 174, 97],
+  [244, 109, 67],
+  [165, 0, 38],
 ];
 export const severityColor = (s: number): RGB => SEVERITY_COLOR[Math.max(0, Math.min(3, s))];
 export const severityRadius = (s: number) => 7 + 2 * Math.max(0, Math.min(3, s));
 
-// risk rank 0..1 (see rankCells) -> deep navy to Info Blue (#56c2ff, the Raycast supporting
-// accent). A cool ramp keeps hexes distinct from the warm severity pins on the dark map.
+// risk rank 0..1 (see rankCells) -> light to dark blue
 const RISK_STOPS: RGB[] = [
-  [14, 26, 52],
-  [18, 50, 100],
-  [26, 92, 160],
-  [50, 150, 220],
-  [120, 205, 255],
+  [239, 243, 255],
+  [189, 215, 231],
+  [107, 174, 214],
+  [49, 130, 189],
+  [8, 81, 156],
 ];
 export function riskColor(v: number): RGB {
   const t = Math.max(0, Math.min(1, v)) * (RISK_STOPS.length - 1);
@@ -76,12 +75,9 @@ export function riskText(rank: number) {
   return "Low (bottom 40% of areas in this city)";
 }
 
-export const UNDER_REPORTED_COLOR: RGB = [255, 255, 255];
-export const BIN_COLOR: RGB = [156, 156, 157];
-/** Recommended sites: coral fill once a scenario is running; otherwise a dark disc with a mist ring. */
-export const SITE_COLOR: RGB = [255, 99, 99];
-export const SITE_RING: RGB = [230, 230, 230];
-export const SITE_IDLE_FILL: RGB = [4, 5, 6];
+export const UNDER_REPORTED_COLOR: RGB = [231, 41, 138];
+export const BIN_COLOR: RGB = [55, 65, 81];
+export const SITE_COLOR: RGB = [22, 101, 52];
 
 export const rgb = (c: RGB) => `rgb(${c.join(",")})`;
 
