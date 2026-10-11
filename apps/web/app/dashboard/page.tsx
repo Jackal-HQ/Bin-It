@@ -5,7 +5,7 @@ import Dashboard from "@/components/Dashboard";
 // inside a Suspense boundary.
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="h-dvh animate-pulse bg-void-black" />}>
+    <Suspense fallback={<div className="dash h-dvh animate-pulse" />}>
       <Dashboard />
     </Suspense>
   );

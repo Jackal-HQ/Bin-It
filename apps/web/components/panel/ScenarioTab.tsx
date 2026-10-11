@@ -7,12 +7,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError, api, cachedMode } from "@/lib/api";
 import type { Recommendation, Scenario } from "@/lib/types";
-import { Empty, ErrorRetry } from "./States";
 import { Tooltip } from "@/components/ui/tooltip-card";
+import { DotSpinner, PlusIcon, ResetIcon } from "@/components/dash/icons";
+import { DotGauge, btnPrimary, btnSecondary, card } from "@/components/dash/ui";
+import { Empty, ErrorRetry } from "./States";
 import TopNControl from "./TopNControl";
-
-const KEY_SHADOW =
-  "rgba(255,255,255,0.05) 0px 1px 0px 0px inset, rgba(255,255,255,0.25) 0px 0px 0px 1px, rgba(0,0,0,0.2) 0px -1px 0px 0px inset";
 
 type Props = {
   city: string;
@@ -110,85 +109,189 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
   const busy = phase === "running" || phase === "deleting";
 
   return (
-    <div className="space-y-4 p-3">
-      <div className="space-y-3">
-        <TopNControl value={topN} max={Math.min(50, sites.length)} onChange={onTopN} disabled={busy || phase === "done"} />
-        <div className="flex gap-2">
-          <button
-            onClick={run}
-            disabled={busy || phase === "done"}
-            className="flex items-center gap-2 rounded-[8px] bg-mist px-4 py-1.5 text-[13px] font-medium text-iron transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {phase === "running" && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-iron/30 border-t-iron" />}
-            {phase === "running" ? "Running on a Neon branch…" : `Add top ${n} bins`}
+    <>
+      <section aria-label="Scenario controls" className={`${card} flex-none px-[18px] pb-[18px] pt-4`}>
+        <TopNControl
+          value={topN}
+          max={Math.min(50, sites.length)}
+          onChange={onTopN}
+          disabled={busy || phase === "done"}
+          caption="Number of ranked sites to add as new bins in this what-if."
+        />
+        <div className="mt-3.5 flex gap-2">
+          <button onClick={run} disabled={busy || phase === "done"} className={`${btnPrimary} flex-1 pl-3 pr-5`}>
+            {phase === "running" ? (
+              <>
+                <DotSpinner className="text-white" />
+                Running on a Neon branch…
+              </>
+            ) : (
+              <>
+                <span className="flex size-[26px] items-center justify-center rounded-full bg-sun text-strong">
+                  <PlusIcon size={14} weight={2.4} />
+                </span>
+                Add top {n} bins
+              </>
+            )}
           </button>
           <button
             onClick={reset}
             disabled={busy || (phase !== "done" && phase !== "error")}
-            className="rounded-[8px] border border-rc-border px-4 py-1.5 text-[13px] font-medium text-ash transition-colors hover:text-white disabled:opacity-50"
+            className={`${btnSecondary} h-12 px-5 text-[14px]`}
           >
-            {phase === "deleting" ? "Deleting branch…" : "Reset"}
+            {phase === "deleting" ? (
+              <>
+                <DotSpinner size={16} />
+                Deleting branch…
+              </>
+            ) : (
+              <>
+                <ResetIcon size={16} />
+                Reset
+              </>
+            )}
           </button>
         </div>
-      </div>
+      </section>
 
       {phase === "error" && <ErrorRetry error={error} onRetry={run} />}
-      {warning && <p className="rounded-[12px] border border-coral-pulse/30 bg-ember-hush/60 p-3 text-sm text-white">{warning}</p>}
+      {warning && <ErrorRetry error={new Error(warning)} />}
 
       {result && (
-        <div className="grid grid-cols-2 gap-3">
-          <Figure
-            title="Average distance to nearest bin"
-            hint="Demand-weighted average distance from each area to its nearest bin, before and after adding the sites. Lower is better."
-            before={`${Math.round(result.before.avg_distance_m)} m`}
-            after={`${Math.round(result.after.avg_distance_m)} m`}
-            delta={result.after.avg_distance_m - result.before.avg_distance_m}
-            unit=" m"
-            lowerIsBetter
-          />
-          <Figure
-            title="Demand within 150 m of a bin"
-            hint="Share of expected demand that sits within 150 m of a bin. 150 m is an assumption, not a measured walking threshold. Higher is better."
-            before={`${Math.round(result.before.coverage_150m_pct)}%`}
-            after={`${Math.round(result.after.coverage_150m_pct)}%`}
-            delta={result.after.coverage_150m_pct - result.before.coverage_150m_pct}
-            unit=" pts"
-          />
+        <div className="grid flex-none grid-cols-2 gap-3">
+          <CoverageCard before={result.before.coverage_150m_pct} after={result.after.coverage_150m_pct} />
+          <DistanceCard before={result.before.avg_distance_m} after={result.after.avg_distance_m} />
         </div>
       )}
 
-      <div className="rounded-[12px] bg-obsidian p-3 text-xs leading-[1.5] text-ash">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.073em] text-smoke">Assumptions</p>
-        <ul className="mt-2 list-disc space-y-1 pl-4">
-          <li>Results are estimates from a model, not measured outcomes.</li>
-          <li>&quot;Covered&quot; means within 150 m of a bin. 150 m is an assumption.</li>
-          <li>Distances are weighted by expected demand per H3 cell.</li>
-          <li>Each run uses a temporary Neon branch that is deleted on Reset or when you leave this tab.</li>
+      <section
+        aria-label="Assumptions"
+        className="flex-none rounded-card border-[1.5px] border-dotted border-sun-deep/50 bg-sun/20 px-[18px] pb-[18px] pt-4"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#6b5410]">Assumptions</span>
+          <span className="inline-flex h-[22px] items-center rounded-full bg-charcoal/10 px-2.5 font-mono text-[10px] uppercase tracking-[0.07em] text-[#3e3b33]">
+            Estimates
+          </span>
+        </div>
+        <ul className="mt-3 flex flex-col gap-[9px] text-[13px] leading-[1.5] text-[#3e3b33]">
+          {[
+            "Results are estimates from a model, not measured outcomes.",
+            "\u201cCovered\u201d means within 150 m of a bin. 150 m is an assumption.",
+            "Distances are weighted by expected demand per H3 cell.",
+            "Each run uses a temporary Neon branch that is deleted on Reset or when you leave this tab.",
+          ].map((t) => (
+            <li key={t} className="flex gap-2.5">
+              <span aria-hidden className="mt-2 size-1.5 flex-none rounded-full bg-charcoal" />
+              {t}
+            </li>
+          ))}
         </ul>
-      </div>
-    </div>
+      </section>
+    </>
   );
 }
 
-function Figure(props: { title: string; hint: string; before: string; after: string; delta: number; unit: string; lowerIsBetter?: boolean }) {
-  const { title, hint, before, after, delta, unit, lowerIsBetter } = props;
+/** "+17 pts" / "−210 m": a chip that is moss when the change is an improvement. */
+function Delta({ delta, unit, lowerIsBetter, onDark }: { delta: number; unit: string; lowerIsBetter?: boolean; onDark?: boolean }) {
   const better = lowerIsBetter ? delta < 0 : delta > 0;
-  const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
+  const sign = delta > 0 ? "+" : delta < 0 ? "\u2212" : "";
+  const tone = better
+    ? onDark
+      ? "bg-[rgb(155_235_196/0.16)] text-[#9bebc4]"
+      : "bg-moss-wash text-[#1f5e3e]"
+    : onDark
+      ? "bg-white/10 text-on-charcoal"
+      : "bg-well text-soft";
   return (
-    <div className="rounded-[16px] bg-ink/60 p-3" style={{ boxShadow: KEY_SHADOW }}>
-      <Tooltip content={hint}>
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.073em] text-smoke">{title} (estimated)</p>
+    <span className={`inline-flex h-[26px] items-center rounded-full px-[11px] text-[12.5px] font-bold ${tone}`}>
+      {sign}
+      {Math.abs(Math.round(delta))}
+      {unit}
+    </span>
+  );
+}
+
+function CoverageCard({ before, after }: { before: number; after: number }) {
+  const b = Math.round(before);
+  const a = Math.round(after);
+  return (
+    <section aria-label="Demand within 150 m of a bin" className="rounded-card bg-glass-strong px-3.5 pb-4 pt-3.5 shadow-card backdrop-blur-[24px]">
+      <Tooltip content="Share of expected demand that sits within 150 m of a bin. 150 m is an assumption, not a measured walking threshold. Higher is better.">
+        <p className="font-mono text-[10px] uppercase leading-[1.5] tracking-[0.07em] text-quiet">
+          Demand within 150 m of a bin (estimated)
+        </p>
       </Tooltip>
-      <p className="mt-2 flex items-baseline gap-1.5 text-sm">
-        <span className="text-smoke">{before}</span>
-        <span aria-hidden className="text-smoke">→</span>
-        <span className="text-xl font-medium text-white">{after}</span>
-      </p>
-      <p className={`text-sm font-medium ${better ? "text-success-green" : "text-ash"}`}>
-        {sign}
-        {Math.abs(Math.round(delta))}
-        {unit}
-      </p>
-    </div>
+      <div className="relative mt-2.5">
+        <DotGauge before={before} after={after} label={`Dot gauge: coverage goes from ${b} percent to ${a} percent (estimated)`} />
+        <div className="absolute inset-x-0 top-11 flex items-baseline justify-center gap-1">
+          <span className="dot-num text-[40px]">{a}</span>
+          <span className="text-[16px] font-bold text-soft">%</span>
+        </div>
+      </div>
+      <div className="mt-1.5 flex items-center justify-center gap-2">
+        <Delta delta={after - before} unit=" pts" />
+        <span className="text-[12.5px] font-medium text-soft">was {b}%</span>
+      </div>
+      <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] font-medium text-quiet">
+        <span className="inline-flex items-center gap-[5px]">
+          <span className="size-2 rounded-full bg-charcoal" />
+          Now
+        </span>
+        <span className="inline-flex items-center gap-[5px]">
+          <span className="size-2 rounded-full bg-sun ring-[0.9px] ring-sun-deep" />
+          Added
+        </span>
+        <span className="inline-flex items-center gap-[5px]">
+          <span className="size-2 rounded-full bg-[rgb(60_52_28/0.17)]" />
+          Uncovered
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function DistanceCard({ before, after }: { before: number; after: number }) {
+  const b = Math.round(before);
+  const a = Math.round(after);
+  // dots scaled to the larger of the two, 26 at most, 7 px apart
+  const scale = Math.max(before, after, 1);
+  const dots = (v: number) => Math.max(0, Math.round((v / scale) * 26));
+  return (
+    <section
+      aria-label="Average distance to nearest bin"
+      className="relative overflow-hidden rounded-card bg-charcoal px-3.5 pb-4 pt-3.5 text-on-charcoal shadow-charcoal"
+    >
+      <div aria-hidden className="dot-grid absolute inset-0" />
+      <div className="relative">
+        <Tooltip content="Demand-weighted average distance from each area to its nearest bin, before and after adding the sites. Lower is better.">
+          <p className="font-mono text-[10px] uppercase leading-[1.5] tracking-[0.07em] text-on-charcoal-quiet">
+            Average distance to nearest bin (estimated)
+          </p>
+        </Tooltip>
+        <div className="mt-[18px] flex items-baseline gap-1.5">
+          <span className="dot-num text-[48px] text-white">{a}</span>
+          <span className="text-[15px] font-bold text-on-charcoal-quiet">m</span>
+        </div>
+        <div className="mt-3.5 flex items-center gap-2">
+          <Delta delta={after - before} unit=" m" lowerIsBetter onDark />
+          <span className="text-[12.5px] font-medium text-on-charcoal-quiet">was {b} m</span>
+        </div>
+        <div className="mt-5">
+          <p className="font-mono text-[10px] uppercase tracking-[0.07em] text-on-charcoal-quiet">Before · {b} m</p>
+          <div
+            aria-hidden
+            className="mt-[7px] h-2 bg-[radial-gradient(circle_at_3.5px_4px,rgb(255_255_255/0.55)_2.4px,transparent_2.8px)] bg-[length:7px_8px] bg-repeat-x"
+            style={{ width: dots(before) * 7 }}
+          />
+          <p className="mt-3.5 font-mono text-[10px] uppercase tracking-[0.07em] text-on-charcoal-quiet">After · {a} m</p>
+          <div
+            aria-hidden
+            className="mt-[7px] h-2 bg-[radial-gradient(circle_at_3.5px_4px,#f6c944_2.4px,transparent_2.8px)] bg-[length:7px_8px] bg-repeat-x"
+            style={{ width: dots(after) * 7 }}
+          />
+        </div>
+      </div>
+    </section>
   );
 }

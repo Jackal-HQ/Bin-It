@@ -3,7 +3,7 @@
 // Same behavior as the original: a card follows the pointer, opens with a spring height
 // animation, flips at the viewport edges, and toggles on tap for touch devices.
 // Adapted for this app:
-//  - themed with the Raycast tokens in .claude/DESIGN.md (ink surface, hairline border);
+//  - themed with the Daylight tokens in .claude/DESIGN.md (charcoal float, on-charcoal text);
 //  - rendered in a portal with fixed positioning, so it is never clipped by the scrolling
 //    side panel or table wrappers;
 //  - also opens on keyboard focus of a child, and closes on Escape.
@@ -122,10 +122,10 @@ export function Tooltip({
                 animate={{ height: size.h, opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                className="pointer-events-none fixed z-[100] overflow-hidden rounded-[12px] border border-rc-border bg-ink shadow-[rgba(255,255,255,0.05)_0px_1px_0px_0px_inset]"
+                className="pointer-events-none fixed z-[100] overflow-hidden rounded-[18px] bg-charcoal shadow-[0_18px_32px_-14px_rgb(42_41_38/0.65)]"
                 style={{ top, left, minWidth: MIN_WIDTH, maxWidth: 320 }}
               >
-                <div ref={innerRef} className="p-3 text-[13px] leading-[1.5] text-ash">
+                <div ref={innerRef} className="px-3.5 py-3 text-[12.5px] leading-[1.5] text-on-charcoal">
                   {content}
                 </div>
               </motion.div>

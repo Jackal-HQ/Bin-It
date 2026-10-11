@@ -4,7 +4,7 @@ Hackathon project. Residents photo-report overflowing trash bins from a phone; c
 
 Main design doc (source of truth for intent): https://claude.ai/code/artifact/7fdca1aa-285e-4713-b72d-5fc4db5563be (tabs: Spec, Backend Setup, Mobile App, Web Dashboard). If this file and the doc disagree, ask the user.
 
-Design: every web page, including the staff dashboard, follows `.claude/DESIGN.md` (read its "Bin-It implementation guide" section first). Reference implementation: `apps/web/app/page.tsx`.
+Design: Daylight is the main design for the project (warm paper ground, frosted rounded cards, pill controls, charcoal for the one action, sun yellow for selection, dot-matrix numerals). Every web page follows `.claude/DESIGN.md`: read its "Daylight guide" section first. Reference implementation: `apps/web/components/Dashboard.tsx` and `apps/web/components/dash/` (shared recipes in `dash/ui.tsx`; tokens in `app/globals.css`). Use the tokens, never hardcoded hex, and keep the map's data colors as in `lib/labels.ts`. The landing page, `/privacy` and `/terms` still use the older dark "Midnight guide" in the same file until migrated; do not use Midnight for new work.
 
 ## Hackathon tracks (why things are built this way)
 
@@ -183,6 +183,8 @@ Demo (about 3 minutes): report an overflowing bin on the phone (classified, merg
 
 Build spec and decisions: `docs/web-dashboard.md` (supersedes the plan below where they differ: map left + side panel with Queue / Bins / Scenario tabs at `/dashboard`, OpenFreeMap tiles, staff key on PATCH only). Built on 2026-10-10 against mocks; Phases 1-3 of the spec are in place, Phase 4 polish and the live-data checks remain.
 
+Visual style: Daylight (`.claude/DESIGN.md`), ported 2026-10-11. Fonts are Manrope and Doto (axes wght + ROND, round dots) from `next/font/google` in `app/layout.tsx`, so a build needs network for Google Fonts; Geist Mono was already loaded. The map layers and colors (`components/map/layers.ts`, `lib/labels.ts`) were not touched; only its legend, zoom and attribution are restyled.
+
 Gotchas: `@loaders.gl/*` is pinned to 4.5.3 via `overrides` (4.5.4 is partly published); hexes use `PolygonLayer` + `h3-js`, not `@deck.gl/geo-layers`. MapLibre 6's worker is copied to `public/` on `postinstall` (`scripts/copy-maplibre-worker.mjs`) and set with `setWorkerUrl`; without it the map shows no tiles and no pins. Local `next build` needs `DATABASE_URL` or `USE_MOCKS=1`.
 
 ### Original plan (kept for the API work list)
@@ -265,5 +267,5 @@ Update this section as work lands.
 - [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id}, cells, recommendations, scenarios are all live (scenarios: Neon branch via `lib/scenarios.ts`, falls back to a no-write "calculated" mode; ~5 s on a real branch, numbers identical in both modes)
 - [ ] Databricks pipeline + gold load: `db/load_gold.py` written (expects `data/gold/<slug>/{cell_scores,bins,bin_candidates}.csv`); notebooks and CSV export not in the repo yet; gold CSVs for orlando/nyc/chicago exist under `data/gold/` (`reports_per_1k` blank, so no under-reported flags yet); `data/explain.py` runs (LLM top 20 with `meta-llama/Llama-3.1-8B-Instruct`, templates for the rest); whether gold and rationales are loaded in Neon for all three cities is not confirmed
 - [x] Mobile: report flow, nearby map, detail
-- [ ] Web: `/dashboard` built against mocks (queue with polling + status PATCH, map with pins/bins/heatmap/under-reported/sites, bins tab, scenario tab with branch cleanup, cached-data mode + `scripts/save-cache.ts`); still to do: test against live data (Gate 2), real cells/recommendations/scenarios handlers, cache saved for all three cities, rehearsal
+- [ ] Web: `/dashboard` restyled to Daylight (2026-10-11) and built against mocks (queue with polling + status PATCH, map with pins/bins/heatmap/under-reported/sites, bins tab, scenario tab with branch cleanup, cached-data mode + `scripts/save-cache.ts`); still to do: test against live data (Gate 2), real cells/recommendations/scenarios handlers, cache saved for all three cities, rehearsal
 - [ ] Smoke tests, cache mode, recorded demo

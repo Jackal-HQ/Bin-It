@@ -2,6 +2,8 @@
 
 The design doc's Web Dashboard tab, broken down page by page and checked against `docs/api.md`, `mocks/` and the code in `apps/web`. Where the tab and `.claude/CLAUDE.md` disagreed, the team's decision (2026-10-10) is recorded below. The contract (`docs/api.md`) still wins for response shapes.
 
+Visual style: Daylight, defined in `.claude/DESIGN.md` (this spec covers behavior and data; the look lives there). Components in `apps/web/components/panel/` use the shared recipes in `apps/web/components/dash/`.
+
 Staff open `/dashboard` and get answers to three questions: what residents are reporting now, where the model says bins are missing, and what a plan would change.
 
 ## Decisions
