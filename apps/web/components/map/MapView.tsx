@@ -9,6 +9,7 @@ import { setWorkerUrl } from "maplibre-gl";
 import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
 import type { PickingInfo } from "@deck.gl/core";
 import { buildLayers, toCellShapes, type CellShape } from "./layers";
+import ReportHoverCard from "./ReportHoverCard";
 import type { LayerToggles, Selection } from "@/lib/selection";
 import type { RankedCell } from "@/lib/labels";
 import type { Bbox, Bin, Cell, City, Recommendation, Ticket } from "@/lib/types";
@@ -46,6 +47,9 @@ export default function MapView(props: Props) {
   const { city, flyTo, cells, onSelect, onBoundsChange } = props;
   const mapRef = useRef<MapRef>(null);
   const [hovering, setHovering] = useState(false);
+  // report pin under the pointer, with the pointer position inside the map box
+  const [hoverPin, setHoverPin] = useState<{ ticket: Ticket; x: number; y: number; w: number; h: number } | null>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   const shapes = useMemo<CellShape[]>(() => toCellShapes(cells), [cells]);
   const layers = useMemo(
@@ -91,21 +95,42 @@ export default function MapView(props: Props) {
   }
 
   return (
-    <Map
-      ref={mapRef}
-      initialViewState={{ longitude: city.center.lng, latitude: city.center.lat, zoom: 13 }}
-      mapStyle={MAP_STYLE}
-      style={{ width: "100%", height: "100%" }}
-      cursor={hovering ? "pointer" : "grab"}
-      onLoad={reportBounds}
-      onMoveEnd={reportBounds}
-    >
-      <NavigationControl position="top-right" showCompass={false} />
-      <DeckOverlay
-        layers={layers}
-        onClick={handleClick}
-        onHover={(info: PickingInfo) => setHovering(Boolean(info.object))}
-      />
-    </Map>
+    <div ref={boxRef} className="relative h-full w-full">
+      <Map
+        ref={mapRef}
+        initialViewState={{ longitude: city.center.lng, latitude: city.center.lat, zoom: 13 }}
+        mapStyle={MAP_STYLE}
+        style={{ width: "100%", height: "100%" }}
+        cursor={hovering ? "pointer" : "grab"}
+        onLoad={reportBounds}
+        onMoveStart={() => setHoverPin(null)}
+        onMoveEnd={reportBounds}
+      >
+        <NavigationControl position="top-right" showCompass={false} />
+        <DeckOverlay
+          layers={layers}
+          onClick={handleClick}
+          onHover={(info: PickingInfo) => {
+            setHovering(Boolean(info.object));
+            const isPin = info.layer?.id === "pins" && info.object;
+            const box = boxRef.current;
+            setHoverPin(
+              isPin && box
+                ? { ticket: info.object as Ticket, x: info.x, y: info.y, w: box.clientWidth, h: box.clientHeight }
+                : null,
+            );
+          }}
+        />
+      </Map>
+      {hoverPin && (
+        <ReportHoverCard
+          key={hoverPin.ticket.id}
+          ticket={hoverPin.ticket}
+          x={hoverPin.x}
+          y={hoverPin.y}
+          bounds={{ width: hoverPin.w, height: hoverPin.h }}
+        />
+      )}
+    </div>
   );
 }

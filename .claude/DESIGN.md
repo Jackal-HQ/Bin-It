@@ -318,6 +318,21 @@ Do: reuse `KeyCard`, `HoverEffect`, `CountUp`, `FadeContent` (landing page only)
 Don't: add chromatic buttons or colored status text; add new accent colors; use gradients on UI controls (only the hero artwork); use drop shadows on cards; set the page on a light surface.
 
 
+### Dashboard (`/dashboard`)
+
+Same tokens, same dark canvas. Layout and recipes:
+
+| Part | Recipe |
+| --- | --- |
+| Root | `dash bg-void-black font-[family-name:var(--font-inter)] text-white` (the `.dash` class sets the dark scrollbar colors) |
+| Top bar | `border-b border-rc-border bg-void-black/80 backdrop-blur-[48px]`; coral diamond + "Bin-It" + mono `Staff` badge; selects and menus `rounded-[8px] border-rc-border bg-obsidian`; staff key and health as mono 11px `text-smoke` |
+| Side panel | `bg-ink`, `border-l border-rc-border`; tabs are a segmented control on `bg-ink/90` with the active tab `bg-graphite text-white` (motion `layoutId` slides it) |
+| Lists and tables | header mono 10px uppercase `text-smoke` on `bg-obsidian`; row dividers `border-rc-border/60`; hover `bg-white/[0.04]`; selected row `bg-coral-pulse/10` plus a 2px coral inset on the left |
+| Detail card | `KeyCard` look (16px, key shadow, `bg-ink/60`), 16px/500 title, `dl` with `text-smoke` keys and `text-white` values; keys carry a Tooltip |
+| Buttons | Primary = Mist/Iron, secondary = `border-rc-border text-ash`; no coral buttons. Status: `success-green` for good, `coral-pulse` for errors, never new hues |
+| Errors and warnings | `rounded-[12px] border border-coral-pulse/30 bg-ember-hush/60` |
+| Map | Left as it was before the dashboard restyle: OpenFreeMap Liberty (or `NEXT_PUBLIC_MAP_STYLE_URL`) with the deck.gl layers and colors in `lib/labels.ts` (warm severity pins, blue hexes, pink under-reported outline, green sites). Only the legend overlay uses the dark glass card. Hovering a report pin shows `ReportHoverCard` (Tooltip Card look): photo, label, severity, status, report count, last seen |
+
 ### Where this differs from the Raycast reference
 
 - The nav is a true pill (`rounded-full`); the reference says both "pill-shaped" and "8 px radius", we chose the pill and keep 8 px on buttons inside it.
