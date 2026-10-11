@@ -133,6 +133,7 @@ Shared building blocks: `components/dash/ui.tsx` (class recipes `card`, `float`,
 | Notice | `Assumptions`: sun at 20% with a dotted `sun-deep` border, dot bullets. Use for caveats and "estimates, not measurements" |
 | Legend | Frosted float bottom-left of the map, one entry per visible layer, colors from `lib/labels.ts`. Collapses to a pill |
 | Map controls | MapLibre zoom group as a vertical pill, attribution as a glass pill (CSS overrides under `.daylight` in `globals.css`) |
+| Map hover card | `components/map/ReportHoverCard.tsx`: shown while the pointer is over a report pin. A `bg-glass-strong` float (`rounded-float`, `shadow-pop`) with a rounded photo, label and `Demo data` chip, LED severity, status, report count and last seen. Pointer-events off, kept inside the map box |
 | Tooltip | `components/ui/tooltip-card.tsx`: charcoal, `text-on-charcoal` 12.5 px, follows the pointer. Use it for any explanation instead of `title=` |
 
 ### Dashboard layout
