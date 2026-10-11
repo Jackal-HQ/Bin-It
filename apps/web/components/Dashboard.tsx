@@ -110,7 +110,9 @@ export default function Dashboard() {
   const noScores = cells.isSuccess && cells.data.length === 0;
 
   return (
-    <div className="flex h-dvh flex-col">
+    // Side by side from 700px wide (laptops with display scaling are often under 768px).
+    // Narrower: map on top and the page scrolls, so the panel is never squeezed.
+    <div className="flex min-h-dvh flex-col min-[700px]:h-dvh">
       <TopBar
         cities={cities.data}
         city={city}
@@ -123,9 +125,9 @@ export default function Dashboard() {
         onLayers={setLayers}
       />
 
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <div className="flex flex-col min-[700px]:min-h-0 min-[700px]:flex-1 min-[700px]:flex-row">
         {/* map */}
-        <div className="relative h-[50vh] shrink-0 md:h-auto md:flex-1">
+        <div className="relative h-[55vh] shrink-0 min-[700px]:h-auto min-[700px]:flex-1">
           {cities.isError ? (
             <ErrorRetry error={cities.error} onRetry={() => cities.refetch()} />
           ) : !cityObj ? (
@@ -145,7 +147,7 @@ export default function Dashboard() {
               onBoundsChange={setBbox}
             />
           )}
-          <div className="pointer-events-none absolute bottom-8 left-3 z-10 flex flex-col items-start gap-2">
+          <div className="pointer-events-none absolute top-3 bottom-8 left-3 z-10 flex flex-col items-start justify-end gap-2">
             {noScores && (
               <div className="pointer-events-auto rounded-md bg-white/95 px-3 py-2 text-sm font-medium shadow dark:bg-zinc-900/95">
                 No model results loaded for this city.
@@ -162,14 +164,14 @@ export default function Dashboard() {
                 />
               </div>
             )}
-            <div className="pointer-events-auto hidden sm:block">
+            <div className="pointer-events-auto hidden min-h-0 sm:flex">
               <Legend layers={layers} anyUnderReported={anyUnderReported} ratesLoaded={ratesLoaded} />
             </div>
           </div>
         </div>
 
         {/* side panel */}
-        <aside className="min-h-0 flex-1 overflow-y-auto border-zinc-200 bg-white md:w-[480px] md:flex-none md:border-l dark:border-zinc-800 dark:bg-zinc-950">
+        <aside className="@container border-zinc-200 bg-white min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l dark:border-zinc-800 dark:bg-zinc-950">
           {selection && (
             <DetailCard
               selection={selection}

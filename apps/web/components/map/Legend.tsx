@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useSyncExternalStore } from "react";
 import {
   BIN_COLOR,
   RISK_GRADIENT,
@@ -9,11 +12,28 @@ import {
 } from "@/lib/labels";
 import type { LayerToggles } from "@/lib/selection";
 
+const TALL = "(min-height: 760px)";
+function subscribeTall(cb: () => void) {
+  const mq = window.matchMedia(TALL);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+
 type Props = { layers: LayerToggles; anyUnderReported: boolean; ratesLoaded: boolean };
 
 export default function Legend({ layers, anyUnderReported, ratesLoaded }: Props) {
+  // Start collapsed on short screens (scaled laptops, projectors) so the map stays visible;
+  // after the first click the user's choice wins.
+  const tall = useSyncExternalStore(subscribeTall, () => window.matchMedia(TALL).matches, () => true);
+  const [userOpen, setUserOpen] = useState<boolean | null>(null);
+  const open = userOpen ?? tall;
   return (
-    <details open className="group max-w-[260px] rounded-lg bg-white/95 p-3 text-xs text-zinc-700 shadow-md dark:bg-zinc-900/95 dark:text-zinc-300">
+    <details
+      open={open}
+      onToggle={(e) => {
+        if (e.currentTarget.open !== open) setUserOpen(e.currentTarget.open);
+      }}
+      className="group max-h-full min-h-0 max-w-[260px] overflow-y-auto rounded-lg bg-white/95 p-3 text-xs text-zinc-700 shadow-md dark:bg-zinc-900/95 dark:text-zinc-300">
       <summary className="cursor-pointer list-none font-semibold text-zinc-900 dark:text-zinc-100">
         Legend <span className="font-normal text-zinc-500 group-open:hidden">(show)</span>
       </summary>
