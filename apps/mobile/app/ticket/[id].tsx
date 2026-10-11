@@ -30,7 +30,7 @@ export default function TicketDetailScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: t.bg }]}>
-      <Card mode="contained" style={styles.card}>
+      <Card mode="outlined" style={styles.card}>
         {photoUrl ? (
           <Card.Cover source={{ uri: photoUrl }} style={styles.cover} />
         ) : (

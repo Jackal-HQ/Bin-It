@@ -50,7 +50,7 @@ export function mapHtml(
   const chipColor = dark ? "#d1d5db" : "#374151";
   const legendBg = dark ? "rgba(20,20,20,.95)" : "rgba(255,255,255,.95)";
   const legendColor = dark ? "#d1d5db" : "#374151";
-  const brand = dark ? "#22c55e" : "#166534";
+  const brand = "#ff6363"; // Coral Pulse (DESIGN.md) — single product accent
   // This style has no dark variant, so darken the rendered canvas in dark mode.
   const darkCss = dark
     ? ".maplibregl-canvas { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }"

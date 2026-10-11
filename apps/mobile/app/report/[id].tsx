@@ -34,7 +34,7 @@ export default function ReportDetailScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: t.bg }]}>
-      <Card mode="contained" style={styles.card}>
+      <Card mode="outlined" style={styles.card}>
         {report.photo_url ? (
           <Card.Cover source={{ uri: report.photo_url }} style={styles.cover} />
         ) : (

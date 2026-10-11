@@ -174,7 +174,7 @@ export default function ReportScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <FadeInUp delay={0}>
-        <Card mode="elevated" style={styles.card}>
+        <Card mode="outlined" style={styles.card}>
           <Card.Content style={styles.cardContent}>
           <View style={styles.sectionHeader}>
             <MaterialCommunityIcons name="trash-can" size={20} color={t.brand} />
@@ -236,7 +236,7 @@ export default function ReportScreen() {
 
       {myReports.length > 0 ? (
         <FadeInUp delay={80}>
-          <Card mode="elevated" style={styles.card}>
+          <Card mode="outlined" style={styles.card}>
             <Card.Title
               title="Your reports"
               left={(props) => <List.Icon {...props} icon="history" color={t.brand} />}
@@ -289,7 +289,7 @@ export default function ReportScreen() {
       ) : null}
 
       <FadeInUp delay={160}>
-        <Card mode="elevated" style={styles.card}>
+        <Card mode="outlined" style={styles.card}>
           <Card.Title
             title="Prefer to call?"
             left={(props) => <List.Icon {...props} icon="phone" color={t.brand} />}
@@ -302,7 +302,7 @@ export default function ReportScreen() {
       </FadeInUp>
 
       <FadeInUp delay={240}>
-        <Card mode="elevated" style={styles.card}>
+        <Card mode="outlined" style={styles.card}>
           <Card.Title
             title="Appearance"
             left={(props) => <List.Icon {...props} icon="theme-light-dark" color={t.brand} />}

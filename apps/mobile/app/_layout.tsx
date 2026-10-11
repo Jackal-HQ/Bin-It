@@ -37,6 +37,9 @@ function ThemedApp() {
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: t.headerBg },
+            // Raycast look: flat header separated by a hairline (the native header's
+            // bottom separator), not a drop shadow.
+            headerShadowVisible: true,
             headerTintColor: t.headerFg,
             headerTitleStyle: { fontWeight: "600" },
             contentStyle: { backgroundColor: t.bg },

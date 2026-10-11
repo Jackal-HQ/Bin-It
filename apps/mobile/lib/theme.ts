@@ -1,6 +1,11 @@
 // Centralized colors + light/dark palettes. Screens call useTheme(), which follows
 // the user's theme preference (System/Light/Dark via lib/themePref), defaulting to the
-// OS appearance. The brand green matches the web app's accent.
+// OS appearance.
+//
+// SOURCE OF TRUTH: .claude/DESIGN.md (the Raycast "midnight command center, coral neon"
+// system also used by the web landing page). Dark is the canonical Raycast look
+// (void-black canvas #040506, coral accent #ff6363, Raycast neutrals). Light is an
+// on-brand counterpart that keeps the same coral accent so the theme toggle still works.
 import {
   MD3DarkTheme,
   MD3LightTheme,
@@ -31,46 +36,50 @@ export type Palette = {
   headerFg: string;
 };
 
+// Coral is the single accent across the whole product (DESIGN.md: Coral Pulse #ff6363).
+const CORAL = "#ff6363";
+
 const light: Palette = {
   mode: "light",
-  brand: "#166534",
+  brand: CORAL,
   brandFg: "#ffffff",
   bg: "#ffffff",
-  card: "#f9fafb",
-  cardAlt: "#f3f4f6",
-  text: "#111827",
-  textMuted: "#6b7280",
-  border: "#e5e7eb",
-  danger: "#b91c1c",
+  card: "#f7f7f8",
+  cardAlt: "#eeeeef",
+  text: "#040506",
+  textMuted: "#6a6b6c",
+  border: "#e4e4e6",
+  danger: "#c2410c",
+  // keep severity semantic (warm scale) but tuned to the system
   sev1: "#eab308",
   sev2: "#f97316",
   sev3: "#dc2626",
-  bin: "#16a34a",
-  demoBg: "#fef3c7",
-  demoFg: "#92400e",
-  headerBg: "#166534",
+  bin: "#59d499", // DESIGN.md Success Green, used only as a map accent
+  demoBg: "#452324", // Ember Hush tint
+  demoFg: "#ff6363",
+  headerBg: "#040506",
   headerFg: "#ffffff",
 };
 
 const dark: Palette = {
   mode: "dark",
-  brand: "#22c55e",
-  brandFg: "#052e16",
-  bg: "#0a0a0a",
-  card: "#141414",
-  cardAlt: "#1f1f1f",
-  text: "#f3f4f6",
-  textMuted: "#9ca3af",
-  border: "#262626",
-  danger: "#f87171",
+  brand: CORAL,
+  brandFg: "#ffffff",
+  bg: "#040506", // Void Black — the canonical Raycast canvas
+  card: "#07080a", // Ink
+  cardAlt: "#111214", // Obsidian
+  text: "#ffffff", // Pure White
+  textMuted: "#9c9c9d", // Ash
+  border: "#363739", // Raycast hairline border
+  danger: "#ff6363",
   sev1: "#eab308",
   sev2: "#fb923c",
   sev3: "#ef4444",
-  bin: "#22c55e",
-  demoBg: "#422006",
-  demoFg: "#fcd34d",
-  headerBg: "#0f3d22",
-  headerFg: "#f3f4f6",
+  bin: "#59d499", // Success Green
+  demoBg: "#452324", // Ember Hush
+  demoFg: "#ff8f8f",
+  headerBg: "#040506",
+  headerFg: "#ffffff",
 };
 
 export function useTheme(): Palette {
