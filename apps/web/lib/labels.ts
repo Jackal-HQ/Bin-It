@@ -97,3 +97,8 @@ export const formatDateTime = (iso: string | undefined) =>
 
 /** Cities with no local complaint data run the cold-start model (hard-coded until /api/cities has a flag). */
 export const COLD_START_CITIES = new Set(["orlando"]);
+
+/** Google Street View at a point via a plain Maps URL (no API key; same as the mobile app).
+ *  Google opens the nearest panorama, which may be some metres from the point. */
+export const streetViewUrl = (lat: number, lng: number) =>
+  `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;

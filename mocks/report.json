@@ -10,6 +10,7 @@
     "note": null,
     "photo_url": "https://example-storage.invalid/report-photos/r_01.jpg",
     "is_synthetic": true,
-    "created_at": "2026-10-10T12:00:00Z"
+    "created_at": "2026-10-10T12:00:00Z",
+    "status": "received"
   }
 }
