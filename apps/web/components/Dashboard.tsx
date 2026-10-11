@@ -169,7 +169,7 @@ export default function Dashboard() {
         </div>
 
         {/* side panel */}
-        <aside className="flex min-h-0 flex-1 flex-col border-zinc-200 bg-white md:w-[480px] md:flex-none md:border-l dark:border-zinc-800 dark:bg-zinc-950">
+        <aside className="min-h-0 flex-1 overflow-y-auto border-zinc-200 bg-white md:w-[480px] md:flex-none md:border-l dark:border-zinc-800 dark:bg-zinc-950">
           {selection && (
             <DetailCard
               selection={selection}
@@ -181,7 +181,8 @@ export default function Dashboard() {
               onClose={() => setParams({ sel: null })}
             />
           )}
-          <nav className="flex border-b border-zinc-200 dark:border-zinc-800" role="tablist">
+          {/* the detail card and tab content scroll together; the tab bar stays pinned */}
+          <nav className="sticky top-0 z-10 flex border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950" role="tablist">
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -196,7 +197,7 @@ export default function Dashboard() {
               </button>
             ))}
           </nav>
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div>
             {tab === "queue" && (
               <QueueTab
                 city={city}

@@ -95,7 +95,7 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
         <Empty>No tickets match these filters.</Empty>
       ) : (
         <table className="w-full text-left text-[13px]">
-          <thead className="sticky top-0 bg-zinc-50 text-xs text-zinc-500 dark:bg-zinc-900">
+          <thead className="bg-zinc-50 text-xs text-zinc-500 dark:bg-zinc-900">
             <tr>
               <th className="py-2 pl-3 pr-1 font-medium">Severity</th>
               <th className="px-2 py-2 font-medium">Label</th>
