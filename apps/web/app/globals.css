@@ -45,6 +45,53 @@
   /* status colors from the Raycast supporting accents (dashboard health and gains) */
   --color-success-green: #59d499;
   --color-info-blue: #56c2ff;
+
+  /* Daylight (.claude/DESIGN.md): the dashboard's warm, rounded skin. Ground, glass
+     surfaces, charcoal for action, sun for selection, coral only as a signal. */
+  --color-paper: #e9e8e3;
+  --color-paper-warm: #f1eee3;
+  --color-paper-sun: #f8eebc;
+  --color-strong: #1e1d1a;
+  --color-soft: #57544c;
+  --color-quiet: #6e6b62;
+  --color-glass: rgb(255 255 255 / 0.74);
+  --color-glass-strong: rgb(255 255 255 / 0.86);
+  --color-well: rgb(60 52 28 / 0.06);
+  --color-rim: rgb(60 52 28 / 0.14);
+  --color-led-off: rgb(60 52 28 / 0.16);
+  --color-charcoal: #2a2926;
+  --color-charcoal-raised: #3b3a36;
+  --color-on-charcoal: #f6f3ea;
+  --color-on-charcoal-quiet: #bdb9ac;
+  --color-sun: #f6c944;
+  --color-sun-wash: #fcefc2;
+  --color-sun-deep: #c99410;
+  --color-sun-ink: #4a3c0b;
+  --color-coral-wash: #ffe7e3;
+  --color-coral-ink: #b8322b;
+  --color-moss: #1f7a4f;
+  --color-moss-wash: #ddf2e4;
+  --color-pink-ink: #9c1d5e;
+
+  --font-display: var(--font-doto), ui-monospace, Menlo, monospace;
+  --font-ui: var(--font-manrope), system-ui, sans-serif;
+
+  --radius-map: 32px;
+  --radius-card: 28px;
+  --radius-float: 26px;
+  --radius-notice: 24px;
+  --radius-row: 22px;
+  --radius-tile: 20px;
+  --radius-thumb: 18px;
+
+  /* Shadows sit below the surface (negative spread) so a scrolling column never clips them. */
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 14px 30px -18px rgb(70 55 10 / 0.38);
+  --shadow-float: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 18px 36px -20px rgb(70 55 10 / 0.5);
+  --shadow-pop: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 28px 50px -20px rgb(70 55 10 / 0.5),
+    0 2px 6px rgb(70 55 10 / 0.06);
+  --shadow-bar: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 10px 24px -16px rgb(70 55 10 / 0.4);
+  --shadow-primary: 0 1px 0 rgb(255 255 255 / 0.16) inset, 0 10px 20px -10px rgb(42 41 38 / 0.6);
+  --shadow-charcoal: 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 18px 34px -18px rgb(42 41 38 / 0.7);
 }
 
 /* Aceternity Spotlight animation */
@@ -103,9 +150,175 @@ body {
   background: transparent;
 }
 
-/* Staff dashboard: always dark (see .claude/DESIGN.md), regardless of the OS theme. */
+/* Staff dashboard: Daylight, always light (see .claude/DESIGN.md), regardless of the OS theme.
+   Literal values on purpose: they must not depend on which theme variables Tailwind emits. */
 .dash {
-  color-scheme: dark;
-  --scrollbar-thumb: rgb(255 255 255 / 0.18);
-  --scrollbar-thumb-hover: rgb(255 255 255 / 0.32);
+  color-scheme: light;
+  --scrollbar-thumb: rgb(60 52 28 / 0.25);
+  --scrollbar-thumb-hover: rgb(60 52 28 / 0.4);
+  background: linear-gradient(135deg, #e9e8e3 0%, #f1eee3 42%, #f8eebc 100%);
+  color: #1e1d1a;
+}
+.dash :focus-visible {
+  outline: 2px solid #2a2926;
+  outline-offset: 2px;
+}
+
+/* Dot-matrix numerals (Doto, round dots). Numerals, counters, the wordmark. */
+.dot-num {
+  font-family: var(--font-display);
+  font-variation-settings: "ROND" 100;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* Photo placeholder texture and the charcoal card's dot grid. */
+.photo-dots {
+  background-image: radial-gradient(circle, rgb(60 52 28 / 0.3) 1px, transparent 1.6px);
+  background-size: 7px 7px;
+}
+.dot-grid {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.1) 1px, transparent 1.5px);
+  background-size: 10px 10px;
+}
+
+/* Dot bar: n filled dots out of a faint track. Width of the fill is n * pitch. */
+.dot-track {
+  background-image: radial-gradient(circle at 4px 4px, rgb(60 52 28 / 0.2) 2.6px, transparent 3px);
+  background-size: 8px 8px;
+  background-repeat: repeat-x;
+}
+.dot-fill {
+  background-image: radial-gradient(circle at 4px 4px, #2a2926 2.6px, transparent 3px);
+  background-size: 8px 8px;
+  background-repeat: repeat-x;
+}
+
+/* Top-N slider: sun fill up to --p, charcoal thumb. */
+.dl-range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.dl-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.dl-range::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #f6c944 var(--p), rgb(60 52 28 / 0.13) var(--p));
+}
+.dl-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  box-sizing: content-box;
+  width: 10px;
+  height: 10px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: #fff;
+  border: 8px solid #2a2926;
+  box-shadow: 0 5px 12px -3px rgb(42 41 38 / 0.5);
+}
+.dl-range::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(60 52 28 / 0.13);
+}
+.dl-range::-moz-range-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: #f6c944;
+}
+.dl-range::-moz-range-thumb {
+  box-sizing: content-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 8px solid #2a2926;
+}
+
+/* Round checkbox for the Layers menu. */
+.dl-check {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: none;
+  display: grid;
+  place-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgb(60 52 28 / 0.3);
+  background: #fff;
+  cursor: pointer;
+}
+.dl-check:checked {
+  background: #2a2926;
+  border-color: #2a2926;
+}
+.dl-check:checked::after {
+  content: "";
+  width: 10px;
+  height: 5px;
+  margin-top: -2px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg);
+}
+
+/* Loading dots: 8 steps, static under reduced motion. */
+@keyframes dl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.dl-spin {
+  animation: dl-spin 1s steps(8) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dl-spin {
+    animation: none;
+  }
+}
+
+/* MapLibre controls restyled as Daylight floats. The map itself is untouched. */
+.dash .maplibregl-ctrl-top-right {
+  top: 16px;
+  right: 16px;
+}
+.dash .maplibregl-ctrl-top-right .maplibregl-ctrl {
+  margin: 0;
+}
+.dash .maplibregl-ctrl-group {
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.84);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 14px 28px -16px rgb(70 55 10 / 0.5);
+}
+.dash .maplibregl-ctrl-group button {
+  width: 44px;
+  height: 44px;
+}
+.dash .maplibregl-ctrl-group button + button {
+  border-top: 1px solid rgb(60 52 28 / 0.18);
+}
+.dash .maplibregl-ctrl-attrib {
+  margin: 0 16px 16px 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.74);
+  backdrop-filter: blur(14px);
+  color: #6e6b62;
+  font-size: 10.5px;
+}
+.dash .maplibregl-ctrl-attrib a {
+  color: #57544c;
 }

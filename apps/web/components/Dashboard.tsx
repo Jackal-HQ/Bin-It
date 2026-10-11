@@ -19,11 +19,12 @@ import DetailCard from "./panel/DetailCard";
 import QueueTab from "./panel/QueueTab";
 import ScenarioTab from "./panel/ScenarioTab";
 import { ErrorRetry, Loading } from "./panel/States";
+import { InfoIcon, PanelIcon } from "./dash/icons";
 import TopBar from "./TopBar";
 
 const MapView = dynamic(() => import("./map/MapView"), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-ink" />,
+  loading: () => <div className="h-full w-full animate-pulse bg-[#f4f0e8]" />,
 });
 
 const TABS = [
@@ -57,17 +58,6 @@ function useUrlState() {
     [params],
   );
   return { city, tab, selection, panelOpen, setParams };
-}
-
-function PanelIcon({ collapsed }: { collapsed: boolean }) {
-  // a sidebar outline with an arrow: points right to hide the panel, left to show it
-  return (
-    <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4">
-      <rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M10 2.5v11" stroke="currentColor" strokeWidth="1.3" />
-      <path d={collapsed ? "M7 6 5 8l2 2" : "M5 6l2 2-2 2"} fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
 }
 
 export default function Dashboard() {
@@ -123,15 +113,17 @@ export default function Dashboard() {
   const noScores = cells.isSuccess && cells.data.length === 0;
   const setPanel = (open: boolean) => setParams({ panel: open ? null : "hidden" });
 
+  const counts: Record<Tab, number | undefined> = {
+    queue: tickets.data?.length,
+    bins: recs.data?.length,
+    scenario: undefined,
+  };
+
   return (
     // Side by side from 700px wide (laptops with display scaling are often under 768px).
     // Narrower: map on top and the page scrolls, so the panel is never squeezed.
     // With the panel hidden (?panel=hidden) the map fills the window at any width.
-    <div
-      className={`dash bg-void-black font-[family-name:var(--font-inter)] text-white antialiased ${
-        panelOpen ? "flex min-h-dvh flex-col min-[700px]:h-dvh" : "flex h-dvh flex-col"
-      }`}
-    >
+    <div className={`dash flex flex-col gap-3 p-4 font-ui antialiased ${panelOpen ? "min-h-dvh min-[700px]:h-dvh" : "h-dvh"}`}>
       <TopBar
         cities={cities.data}
         city={city}
@@ -146,13 +138,23 @@ export default function Dashboard() {
 
       <div
         className={
-          panelOpen ? "flex flex-col min-[700px]:min-h-0 min-[700px]:flex-1 min-[700px]:flex-row" : "flex min-h-0 flex-1"
+          panelOpen
+            ? "flex flex-col gap-4 min-[700px]:min-h-0 min-[700px]:flex-1 min-[700px]:flex-row"
+            : "flex min-h-0 flex-1"
         }
       >
-        {/* map */}
-        <div className={panelOpen ? "relative h-[55vh] shrink-0 min-[700px]:h-auto min-[700px]:flex-1" : "relative min-h-0 flex-1"}>
+        {/* map: rounded card, same place as before; only the chrome around it changed */}
+        <div
+          className={`relative isolate overflow-hidden rounded-map bg-[#f4f0e8] shadow-[0_0_0_1px_rgb(255_255_255/0.75),0_26px_50px_-30px_rgb(70_55_10/0.5)] ${
+            panelOpen ? "h-[55vh] shrink-0 min-[700px]:h-auto min-[700px]:min-w-0 min-[700px]:flex-1" : "min-h-0 flex-1"
+          }`}
+        >
           {cities.isError ? (
-            <ErrorRetry error={cities.error} onRetry={() => cities.refetch()} />
+            <div className="flex h-full items-center justify-center">
+              <div className="max-w-sm">
+                <ErrorRetry error={cities.error} onRetry={() => cities.refetch()} />
+              </div>
+            </div>
           ) : !cityObj ? (
             <Loading what="cities" />
           ) : (
@@ -176,20 +178,21 @@ export default function Dashboard() {
           {!panelOpen && (
             <button
               onClick={() => setPanel(true)}
-              className="absolute top-3 right-14 z-10 flex items-center gap-1.5 rounded-[8px] border border-rc-border bg-void-black/85 px-3 py-1.5 text-[13px] font-medium text-ash backdrop-blur-[24px] transition-colors hover:text-white"
+              className="absolute right-[72px] top-4 z-10 flex h-11 items-center gap-2.5 rounded-full bg-glass-strong pl-3.5 pr-[18px] text-[13.5px] font-semibold shadow-float backdrop-blur-[22px] transition-colors hover:bg-white"
             >
               <PanelIcon collapsed />
               Show panel
             </button>
           )}
-          <div className="pointer-events-none absolute top-3 bottom-8 left-3 z-10 flex flex-col items-start justify-end gap-2">
+          <div className="pointer-events-none absolute bottom-4 left-4 top-4 z-10 flex flex-col items-start justify-end gap-2">
             {noScores && (
-              <div className="pointer-events-auto rounded-[12px] border border-rc-border bg-void-black/85 px-3 py-2 text-sm font-medium text-white backdrop-blur-[24px]">
+              <div className="pointer-events-auto flex h-10 items-center gap-2.5 rounded-full bg-glass-strong pl-3.5 pr-[18px] text-[13px] font-semibold shadow-float backdrop-blur-[22px]">
+                <span className="size-2 rounded-full bg-sun ring-1 ring-sun-deep" />
                 No model results loaded for this city.
               </div>
             )}
             {(cells.isError || nearby.isError) && (
-              <div className="pointer-events-auto max-w-xs rounded-[12px] border border-rc-border bg-void-black/85 backdrop-blur-[24px]">
+              <div className="pointer-events-auto max-w-xs">
                 <ErrorRetry
                   error={cells.error ?? nearby.error}
                   onRetry={() => {
@@ -206,81 +209,91 @@ export default function Dashboard() {
         </div>
 
         {/* side panel: hidden, not unmounted, so a running scenario and its map highlight survive */}
-        <aside className={`@container ${panelOpen ? "" : "hidden"} border-rc-border bg-ink min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l`}>
-          {selection && (
-            <DetailCard
-              selection={selection}
-              ticket={detailTicket}
-              site={selSite}
-              cell={selCell}
-              siteUnderReported={selSite ? isUnderReported(selSite) : false}
-              ratesLoaded={ratesLoaded}
-              onClose={() => setParams({ sel: null })}
-            />
-          )}
-          {/* the detail card and tab content scroll together; the tab bar stays pinned */}
-          <nav className="sticky top-0 z-10 flex items-center gap-1 border-b border-rc-border bg-ink/90 p-2 backdrop-blur-[24px]" role="tablist">
-            <button
-              onClick={() => setPanel(false)}
-              aria-label="Hide panel"
-              title="Hide panel to see the whole map"
-              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-smoke transition-colors hover:bg-white/[0.06] hover:text-white"
+        <aside
+          className={`@container ${panelOpen ? "" : "hidden"} min-[700px]:min-h-0 min-[700px]:w-[clamp(340px,34vw,464px)] min-[700px]:flex-none min-[700px]:overflow-y-auto`}
+        >
+          <div className="flex flex-col gap-3 pb-5 pl-0.5 pr-1 pt-0.5">
+            {/* the tab bar stays pinned; the cards below scroll under it */}
+            <nav
+              className="sticky top-0 z-10 flex flex-none items-center gap-1.5 rounded-full bg-glass-strong p-1.5 shadow-float backdrop-blur-[24px]"
+              role="tablist"
             >
-              <PanelIcon collapsed={false} />
-            </button>
-            {TABS.map((t) => (
               <button
-                key={t.id}
-                role="tab"
-                aria-selected={tab === t.id}
-                onClick={() => setParams({ tab: t.id })}
-                className={`relative flex-1 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-colors ${
-                  tab === t.id ? "text-white" : "text-smoke hover:text-white"
-                }`}
+                onClick={() => setPanel(false)}
+                aria-label="Hide panel"
+                title="Hide panel to see the whole map"
+                className="flex size-11 flex-none items-center justify-center rounded-full bg-well text-soft transition-colors hover:bg-rim"
               >
-                <span className="relative z-10">{t.name}</span>
-                {tab === t.id && (
-                  <motion.span
-                    layoutId="tab-indicator"
-                    className="absolute inset-0 rounded-[8px] bg-graphite"
-                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                  />
-                )}
+                <PanelIcon />
               </button>
-            ))}
-          </nav>
-          <div>
+              {TABS.map((t) => {
+                const active = tab === t.id;
+                const count = counts[t.id];
+                return (
+                  <button
+                    key={t.id}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setParams({ tab: t.id })}
+                    className={`relative flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-[14px] transition-colors ${
+                      active ? "font-bold text-white" : "font-semibold text-soft hover:bg-well"
+                    }`}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="tab-indicator"
+                        className="absolute inset-0 rounded-full bg-charcoal shadow-primary"
+                        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                      />
+                    )}
+                    <span className="relative z-10">{t.name}</span>
+                    {count !== undefined && (
+                      <span
+                        className={`relative z-10 font-mono text-[11px] font-medium ${
+                          active ? "inline-flex h-5 min-w-6 items-center justify-center rounded-full bg-sun px-[7px] text-strong" : "text-quiet"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {selection && (
+              <DetailCard
+                selection={selection}
+                ticket={detailTicket}
+                site={selSite}
+                cell={selCell}
+                siteUnderReported={selSite ? isUnderReported(selSite) : false}
+                ratesLoaded={ratesLoaded}
+                onClose={() => setParams({ sel: null })}
+              />
+            )}
+
             {tab === "queue" && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <QueueTab
-                  city={city}
-                  query={tickets}
-                  filters={filters}
-                  onFilters={setFilters}
-                  selectedId={selection?.kind === "ticket" ? selection.id : null}
-                  onSelect={(t) => select({ kind: "ticket", id: t.id }, t)}
-                />
-              </motion.div>
+              <QueueTab
+                city={city}
+                cityName={cityObj?.name ?? city}
+                query={tickets}
+                filters={filters}
+                onFilters={setFilters}
+                selectedId={selection?.kind === "ticket" ? selection.id : null}
+                onSelect={(t) => select({ kind: "ticket", id: t.id }, t)}
+                showSummary={!selection}
+              />
             )}
             {tab === "bins" && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <BinsTab
-                  query={recs}
-                  isUnderReported={isUnderReported}
-                  topN={topN}
-                  onTopN={setTopN}
-                  selectedRank={selection?.kind === "site" ? selection.rank : null}
-                  onSelect={(r) => select({ kind: "site", rank: r.rank }, r)}
-                />
-              </motion.div>
+              <BinsTab
+                query={recs}
+                isUnderReported={isUnderReported}
+                topN={topN}
+                onTopN={setTopN}
+                selectedRank={selection?.kind === "site" ? selection.rank : null}
+                onSelect={(r) => select({ kind: "site", rank: r.rank }, r)}
+              />
             )}
             {tab === "scenario" && (
               <ScenarioTab key={city} city={city} sites={recs.data} topN={topN} onTopN={setTopN} onActiveSites={setScenarioSites} />
@@ -289,10 +302,13 @@ export default function Dashboard() {
         </aside>
       </div>
 
-      <footer className="border-t border-rc-border bg-void-black px-4 py-1.5 font-mono text-[11px] leading-snug text-smoke">
-        Projected changes are model estimates, not measured outcomes. The model target is litter-related complaint density,
-        not measured bin overflow. Orlando has no local complaint data: its scores come from a model trained on NYC and
-        Chicago and are lightly validated. Rows marked &quot;Demo data&quot; are synthetic.
+      <footer className="flex flex-none items-start gap-2.5 rounded-[22px] bg-white/55 px-[18px] py-2 backdrop-blur-[16px]">
+        <InfoIcon size={14} className="mt-0.5 flex-none text-quiet" />
+        <p className="font-mono text-[11px] leading-[1.55] text-soft">
+          Projected changes are model estimates, not measured outcomes. The model target is litter-related complaint
+          density, not measured bin overflow. Orlando has no local complaint data: its scores come from a model trained
+          on NYC and Chicago and are lightly validated. Rows marked &quot;Demo data&quot; are synthetic.
+        </p>
       </footer>
     </div>
   );
