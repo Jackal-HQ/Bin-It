@@ -1,9 +1,12 @@
 // Daylight primitives for the mobile app (.claude/DESIGN.md, "Daylight guide"). They mirror the
 // web recipes in apps/web/components/dash/ui.tsx: frosted-looking cards, pill controls, one
 // charcoal action per view, LED severity dots and dot-matrix numerals.
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
+  AccessibilityInfo,
   ActivityIndicator,
+  Animated,
+  Easing,
   Image,
   Pressable,
   StyleSheet,
@@ -282,35 +285,88 @@ export function Led({ severity, size = 8, onDark = false }: { severity: number; 
   );
 }
 
-/** The Bin-It mark: six dots round a coral center (a map cell with one thing flagged). */
-export function HexMark({ size = 30 }: { size?: number }) {
+/**
+ * The Bin-It mark: six dots round a coral center (a map cell with one thing flagged).
+ * `spin` (in turns) rotates the six outer dots round the coral one; `pop` (0 to 1) swells the
+ * coral dot. Both are optional Animated values driven by Brand.
+ */
+export function HexMark({ size = 30, spin, pop }: { size?: number; spin?: Animated.Value; pop?: Animated.Value }) {
   const k = size / 30;
-  const dot = (cx: number, cy: number, r: number, color: string) => (
-    <View
-      key={`${cx}-${cy}`}
-      style={{ position: "absolute", left: (cx - r) * k, top: (cy - r) * k, width: 2 * r * k, height: 2 * r * k, borderRadius: r * k, backgroundColor: color }}
-    />
-  );
+  const dotStyle = (cx: number, cy: number, r: number, color: string) => ({
+    position: "absolute" as const,
+    left: (cx - r) * k,
+    top: (cy - r) * k,
+    width: 2 * r * k,
+    height: 2 * r * k,
+    borderRadius: r * k,
+    backgroundColor: color,
+  });
+  const ring = [
+    [24.5, 15],
+    [19.75, 6.8],
+    [10.25, 6.8],
+    [5.5, 15],
+    [10.25, 23.2],
+    [19.75, 23.2],
+  ].map(([cx, cy]) => <View key={`${cx}-${cy}`} style={dotStyle(cx, cy, 3, colors.charcoal)} />);
+  const rotate = spin?.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
+  const scale = pop?.interpolate({ inputRange: [0, 1], outputRange: [1, 1.3] });
   return (
     <View style={{ width: size, height: size }} accessibilityElementsHidden importantForAccessibility="no">
-      {[
-        [24.5, 15],
-        [19.75, 6.8],
-        [10.25, 6.8],
-        [5.5, 15],
-        [10.25, 23.2],
-        [19.75, 23.2],
-      ].map(([cx, cy]) => dot(cx, cy, 3, colors.charcoal))}
-      {dot(15, 15, 3.8, colors.coral)}
+      {rotate ? (
+        <Animated.View style={{ position: "absolute", left: 0, top: 0, width: size, height: size, transform: [{ rotate }] }}>{ring}</Animated.View>
+      ) : (
+        ring
+      )}
+      <Animated.View style={[dotStyle(15, 15, 3.8, colors.coral), scale ? { transform: [{ scale }] } : null]} />
     </View>
   );
 }
 
-/** Hex mark + dot-matrix wordmark. */
+/** Taps closer together than this count as one run. */
+const TAP_RUN_MS = 650;
+
+/**
+ * Hex mark + dot-matrix wordmark. Tapping the mark turns its dots a sixth of a turn; tapping
+ * again and again spins them round the coral one, and more taps add more spin.
+ */
 export function Brand({ size = 26 }: { size?: number }) {
+  const spin = useRef(new Animated.Value(0)).current;
+  const pop = useRef(new Animated.Value(0)).current;
+  const run = useRef({ count: 0, last: 0, turns: 0, reduced: false });
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((v) => {
+      run.current.reduced = v;
+    });
+  }, []);
+
+  const onPress = () => {
+    const r = run.current;
+    if (r.reduced) return;
+    const now = Date.now();
+    r.count = now - r.last < TAP_RUN_MS ? r.count + 1 : 1;
+    r.last = now;
+    // first tap: a nudge; then one turn per tap, two from the fourth tap on
+    const add = r.count === 1 ? 1 / 6 : r.count >= 4 ? 2 : 1;
+    r.turns += add;
+    Animated.sequence([
+      Animated.timing(pop, { toValue: 1, duration: 140, useNativeDriver: true }),
+      Animated.timing(pop, { toValue: 0, duration: 220, useNativeDriver: true }),
+    ]).start();
+    Animated.timing(spin, {
+      toValue: r.turns,
+      duration: r.count === 1 ? 360 : 900 + 250 * add,
+      easing: Easing.bezier(0.16, 0.84, 0.24, 1),
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
     <View style={styles.brand}>
-      <HexMark size={size + 6} />
+      <Pressable onPress={onPress} hitSlop={8} accessible={false}>
+        <HexMark size={size + 6} spin={spin} pop={pop} />
+      </Pressable>
       <DotNum size={size}>
         Bin-It
       </DotNum>

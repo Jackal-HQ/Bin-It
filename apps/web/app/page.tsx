@@ -2,6 +2,7 @@
 // rounded cards, pill controls, charcoal for the one action, dot-matrix numerals.
 import Link from "next/link";
 import { Bento } from "@/components/landing/Bento";
+import BinBackdrop from "@/components/landing/BinBackdrop";
 import { HexGrid } from "@/components/landing/HexGrid";
 import { ProductWindow } from "@/components/landing/ProductWindow";
 import { btnPrimary, btnSecondary } from "@/components/dash/ui";
@@ -51,6 +52,7 @@ const H2 = ({ children, className }: { children: React.ReactNode; className?: st
 export default function Home() {
   return (
     <div className="daylight relative flex min-h-dvh flex-col overflow-x-clip font-ui antialiased">
+      <BinBackdrop />
       <SiteNav links={NAV_LINKS} />
 
       {/* Hero: the paper ground, one sun behind the headline, and the product window below it */}

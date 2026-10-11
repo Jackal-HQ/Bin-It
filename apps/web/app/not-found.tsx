@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HexMark } from "@/components/dash/icons";
+import { LogoMark } from "@/components/dash/LogoMark";
 import { btnPrimary, btnSecondary } from "@/components/dash/ui";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ export default function NotFound() {
 
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
         <Link href="/" aria-label="Bin-It home" className="mb-8 flex items-center gap-2.5">
-          <HexMark size={28} />
+          <LogoMark size={28} />
           <span className="dot-num text-[24px]">Bin-It</span>
         </Link>
 

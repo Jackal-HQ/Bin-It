@@ -9,7 +9,8 @@ import { LAYER_NAMES, type LayerToggles } from "@/lib/selection";
 import type { City } from "@/lib/types";
 import { Tooltip } from "@/components/ui/tooltip-card";
 import { cn } from "@/lib/utils";
-import { ChevronIcon, CloseIcon, HexMark, HexOutline, KeyIcon, LayersIcon } from "@/components/dash/icons";
+import { LogoMark } from "@/components/dash/LogoMark";
+import { ChevronIcon, CloseIcon, HexOutline, KeyIcon, LayersIcon } from "@/components/dash/icons";
 import { btnPrimary, inputPill } from "@/components/dash/ui";
 import CitySwitcher from "./CitySwitcher";
 
@@ -69,7 +70,7 @@ export default function TopBar({ cities, city, onCity, layers, onLayers }: Props
   return (
     <header className="relative z-30 flex flex-none flex-wrap items-center gap-x-3 gap-y-2">
       <Link href="/" aria-label="Bin-It home" className="order-1 flex h-12 items-center gap-2.5 pl-1 pr-2.5">
-        <HexMark />
+        <LogoMark />
         <span className="dot-num text-[26px]">Bin-It</span>
         <span className="hidden h-[22px] items-center rounded-full bg-well px-[9px] font-mono text-[10.5px] uppercase tracking-[0.08em] text-soft sm:inline-flex">
           Staff
