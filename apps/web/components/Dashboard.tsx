@@ -41,6 +41,7 @@ function useUrlState() {
   const rawTab = params.get("tab");
   const tab: Tab = TABS.some((t) => t.id === rawTab) ? (rawTab as Tab) : "queue";
   const selection = parseSelection(params.get("sel"));
+  const panelOpen = params.get("panel") !== "hidden";
 
   const setParams = useCallback(
     (patch: Record<string, string | null>) => {
@@ -54,11 +55,22 @@ function useUrlState() {
     },
     [params],
   );
-  return { city, tab, selection, setParams };
+  return { city, tab, selection, panelOpen, setParams };
+}
+
+function PanelIcon({ collapsed }: { collapsed: boolean }) {
+  // a sidebar outline with an arrow: points right to hide the panel, left to show it
+  return (
+    <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4">
+      <rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M10 2.5v11" stroke="currentColor" strokeWidth="1.3" />
+      <path d={collapsed ? "M7 6 5 8l2 2" : "M5 6l2 2-2 2"} fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
 export default function Dashboard() {
-  const { city, tab, selection, setParams } = useUrlState();
+  const { city, tab, selection, panelOpen, setParams } = useUrlState();
   const cities = useCities();
   const cityObj = cities.data?.find((c) => c.slug === city);
 
@@ -108,11 +120,13 @@ export default function Dashboard() {
   );
 
   const noScores = cells.isSuccess && cells.data.length === 0;
+  const setPanel = (open: boolean) => setParams({ panel: open ? null : "hidden" });
 
   return (
     // Side by side from 700px wide (laptops with display scaling are often under 768px).
     // Narrower: map on top and the page scrolls, so the panel is never squeezed.
-    <div className="flex min-h-dvh flex-col min-[700px]:h-dvh">
+    // With the panel hidden (?panel=hidden) the map fills the window at any width.
+    <div className={panelOpen ? "flex min-h-dvh flex-col min-[700px]:h-dvh" : "flex h-dvh flex-col"}>
       <TopBar
         cities={cities.data}
         city={city}
@@ -125,9 +139,13 @@ export default function Dashboard() {
         onLayers={setLayers}
       />
 
-      <div className="flex flex-col min-[700px]:min-h-0 min-[700px]:flex-1 min-[700px]:flex-row">
+      <div
+        className={
+          panelOpen ? "flex flex-col min-[700px]:min-h-0 min-[700px]:flex-1 min-[700px]:flex-row" : "flex min-h-0 flex-1"
+        }
+      >
         {/* map */}
-        <div className="relative h-[55vh] shrink-0 min-[700px]:h-auto min-[700px]:flex-1">
+        <div className={panelOpen ? "relative h-[55vh] shrink-0 min-[700px]:h-auto min-[700px]:flex-1" : "relative min-h-0 flex-1"}>
           {cities.isError ? (
             <ErrorRetry error={cities.error} onRetry={() => cities.refetch()} />
           ) : !cityObj ? (
@@ -143,9 +161,21 @@ export default function Dashboard() {
               scenarioActive={scenarioSites !== null}
               layers={layers}
               selection={selection}
-              onSelect={(s) => select(s)}
+              onSelect={(s) => {
+                select(s);
+                if (!panelOpen) setPanel(true); // show the detail card for what was clicked
+              }}
               onBoundsChange={setBbox}
             />
+          )}
+          {!panelOpen && (
+            <button
+              onClick={() => setPanel(true)}
+              className="absolute top-3 right-14 z-10 flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white/95 px-3 py-1.5 text-sm font-medium text-zinc-800 shadow-md hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/95 dark:text-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <PanelIcon collapsed />
+              Show panel
+            </button>
           )}
           <div className="pointer-events-none absolute top-3 bottom-8 left-3 z-10 flex flex-col items-start justify-end gap-2">
             {noScores && (
@@ -170,8 +200,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* side panel */}
-        <aside className="@container border-zinc-200 bg-white min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l dark:border-zinc-800 dark:bg-zinc-950">
+        {/* side panel: hidden, not unmounted, so a running scenario and its map highlight survive */}
+        <aside className={`@container ${panelOpen ? "" : "hidden"} border-zinc-200 bg-white min-[700px]:min-h-0 min-[700px]:w-[clamp(320px,38vw,480px)] min-[700px]:flex-none min-[700px]:overflow-y-auto min-[700px]:border-l dark:border-zinc-800 dark:bg-zinc-950`}>
           {selection && (
             <DetailCard
               selection={selection}
@@ -185,6 +215,14 @@ export default function Dashboard() {
           )}
           {/* the detail card and tab content scroll together; the tab bar stays pinned */}
           <nav className="sticky top-0 z-10 flex border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950" role="tablist">
+            <button
+              onClick={() => setPanel(false)}
+              aria-label="Hide panel"
+              title="Hide panel to see the whole map"
+              className="border-r border-zinc-200 px-3 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800 dark:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-200"
+            >
+              <PanelIcon collapsed={false} />
+            </button>
             {TABS.map((t) => (
               <button
                 key={t.id}
