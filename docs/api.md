@@ -73,10 +73,14 @@ Query: `city`, either (`lat`, `lng`, optional `radius_m`, default 500, max 5000)
 `bbox=west,south,east,north`. Resolved tickets are left out; `proposed` bins are never returned.
 Up to 200 tickets and 200 bins.
 
+Each ticket carries `photo_url`: the photo of its most severe (then most recent) report,
+so clients can show a thumbnail without a second request. It is `null` when no report on
+the ticket has a stored photo.
+
 Response `200`:
 ```json
 {
-  "tickets": [ { "id": "t_01", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "max_severity": 2, "report_count": 3, "status": "received", "is_synthetic": true } ],
+  "tickets": [ { "id": "t_01", "lat": 28.5383, "lng": -81.3792, "label": "overflowing_can", "max_severity": 2, "report_count": 3, "status": "received", "photo_url": "https://.../report-photos/r_01.jpg", "is_synthetic": true } ],
   "bins": [ { "id": "b_01", "lat": 28.5390, "lng": -81.3800, "source": "osm" } ]
 }
 ```

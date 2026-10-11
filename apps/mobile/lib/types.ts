@@ -42,6 +42,8 @@ export type Ticket = {
   max_severity: number;
   report_count: number;
   status: Status;
+  // Only GET /api/reports/nearby populates this (the representative report's photo).
+  photo_url?: string | null;
   is_synthetic: boolean;
 };
 
