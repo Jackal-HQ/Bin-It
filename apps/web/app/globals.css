@@ -1,52 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Brand accent — Raycast Coral Pulse (.claude/DESIGN.md), the single product accent
-     shared by the landing page, mobile app, and dashboard. */
-  --brand: #ff6363;
-  --brand-fg: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dashboard dark mode follows the Raycast canvas (void-black / ink). */
-    --background: #040506;
-    --foreground: #e6e6e6;
-    --brand: #ff6363;
-  }
+  --background: #f1eee3;
+  --foreground: #1e1d1a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand: var(--brand);
-  --color-brand-fg: var(--brand-fg);
-  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Raycast style reference (.claude/DESIGN.md) — dark cockpit, coral accent.
-     Used by the marketing landing page; the dashboard keeps its own palette. */
-  --color-void-black: #040506;
-  --color-ink: #07080a;
-  --color-obsidian: #111214;
-  --color-graphite: #1b1c1e;
-  --color-smoke: #6a6b6c;
-  --color-ash: #9c9c9d;
-  --color-mist: #e6e6e6;
-  --color-iron: #454647;
-  --color-slate: #2f3031;
+  /* Signals kept from the original palette: the brand coral (logo dot, new items, errors)
+     and the green of the "Live" health dot. */
   --color-coral-pulse: #ff6363;
-  --color-ember-hush: #452324;
-  --color-electric-sky: #63a1ff;
-  --color-cobalt-edge: #143ca3;
-  --color-rc-border: #363739;
-  /* status colors from the Raycast supporting accents (dashboard health and gains) */
   --color-success-green: #59d499;
-  --color-info-blue: #56c2ff;
 
-  /* Daylight (.claude/DESIGN.md): the dashboard's warm, rounded skin. Ground, glass
+  /* Daylight (.claude/DESIGN.md): the project's warm, rounded skin. Ground, glass
      surfaces, charcoal for action, sun for selection, coral only as a signal. */
   --color-paper: #e9e8e3;
   --color-paper-warm: #f1eee3;
@@ -94,37 +63,16 @@
   --shadow-charcoal: 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 18px 34px -18px rgb(42 41 38 / 0.7);
 }
 
-/* Aceternity Spotlight animation */
-@keyframes spotlight {
-  0% {
-    opacity: 0;
-    transform: translate(-72%, -62%) scale(0.5);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -40%) scale(1);
-  }
-}
-.animate-spotlight {
-  animation: spotlight 2s ease 0.75s 1 forwards;
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), system-ui, sans-serif;
 }
 
-/* Thin, rounded scrollbars that follow the theme (side panel, legend, tables). */
+/* Thin, rounded scrollbars (side panel, legend, tables). */
 :root {
-  --scrollbar-thumb: rgb(0 0 0 / 0.22);
-  --scrollbar-thumb-hover: rgb(0 0 0 / 0.38);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --scrollbar-thumb: rgb(255 255 255 / 0.18);
-    --scrollbar-thumb-hover: rgb(255 255 255 / 0.32);
-  }
+  --scrollbar-thumb: rgb(60 52 28 / 0.25);
+  --scrollbar-thumb-hover: rgb(60 52 28 / 0.4);
 }
 * {
   scrollbar-width: thin;
@@ -150,16 +98,17 @@ body {
   background: transparent;
 }
 
-/* Staff dashboard: Daylight, always light (see .claude/DESIGN.md), regardless of the OS theme.
+/* Daylight root: put `daylight font-ui` on the root element of every page. Always light (see
+   .claude/DESIGN.md), regardless of the OS theme.
    Literal values on purpose: they must not depend on which theme variables Tailwind emits. */
-.dash {
+.daylight {
   color-scheme: light;
   --scrollbar-thumb: rgb(60 52 28 / 0.25);
   --scrollbar-thumb-hover: rgb(60 52 28 / 0.4);
   background: linear-gradient(135deg, #e9e8e3 0%, #f1eee3 42%, #f8eebc 100%);
   color: #1e1d1a;
 }
-.dash :focus-visible {
+.daylight :focus-visible {
   outline: 2px solid #2a2926;
   outline-offset: 2px;
 }
@@ -191,6 +140,12 @@ body {
 }
 .dot-fill {
   background-image: radial-gradient(circle at 4px 4px, #2a2926 2.6px, transparent 3px);
+  background-size: 8px 8px;
+  background-repeat: repeat-x;
+}
+
+.dot-fill-sun {
+  background-image: radial-gradient(circle at 4px 4px, #f6c944 2.6px, transparent 3px);
   background-size: 8px 8px;
   background-repeat: repeat-x;
 }
@@ -290,28 +245,28 @@ body {
 }
 
 /* MapLibre controls restyled as Daylight floats. The map itself is untouched. */
-.dash .maplibregl-ctrl-top-right {
+.daylight .maplibregl-ctrl-top-right {
   top: 16px;
   right: 16px;
 }
-.dash .maplibregl-ctrl-top-right .maplibregl-ctrl {
+.daylight .maplibregl-ctrl-top-right .maplibregl-ctrl {
   margin: 0;
 }
-.dash .maplibregl-ctrl-group {
+.daylight .maplibregl-ctrl-group {
   overflow: hidden;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.84);
   backdrop-filter: blur(18px);
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 14px 28px -16px rgb(70 55 10 / 0.5);
 }
-.dash .maplibregl-ctrl-group button {
+.daylight .maplibregl-ctrl-group button {
   width: 44px;
   height: 44px;
 }
-.dash .maplibregl-ctrl-group button + button {
+.daylight .maplibregl-ctrl-group button + button {
   border-top: 1px solid rgb(60 52 28 / 0.18);
 }
-.dash .maplibregl-ctrl-attrib {
+.daylight .maplibregl-ctrl-attrib {
   margin: 0 16px 16px 0;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.74);
@@ -319,6 +274,6 @@ body {
   color: #6e6b62;
   font-size: 10.5px;
 }
-.dash .maplibregl-ctrl-attrib a {
+.daylight .maplibregl-ctrl-attrib a {
   color: #57544c;
 }

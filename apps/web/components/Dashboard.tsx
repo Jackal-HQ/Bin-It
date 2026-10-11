@@ -123,7 +123,7 @@ export default function Dashboard() {
     // Side by side from 700px wide (laptops with display scaling are often under 768px).
     // Narrower: map on top and the page scrolls, so the panel is never squeezed.
     // With the panel hidden (?panel=hidden) the map fills the window at any width.
-    <div className={`dash flex flex-col gap-3 p-4 font-ui antialiased ${panelOpen ? "min-h-dvh min-[700px]:h-dvh" : "h-dvh"}`}>
+    <div className={`daylight flex flex-col gap-3 p-4 font-ui antialiased ${panelOpen ? "min-h-dvh min-[700px]:h-dvh" : "h-dvh"}`}>
       <TopBar
         cities={cities.data}
         city={city}

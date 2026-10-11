@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { ApiError, api, cachedMode } from "@/lib/api";
 import type { Recommendation, Scenario } from "@/lib/types";
 import { Tooltip } from "@/components/ui/tooltip-card";
+import { cn } from "@/lib/utils";
 import { DotSpinner, PlusIcon, ResetIcon } from "@/components/dash/icons";
 import { DotGauge, btnPrimary, btnSecondary, card } from "@/components/dash/ui";
 import { Empty, ErrorRetry } from "./States";
@@ -119,7 +120,7 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
           caption="Number of ranked sites to add as new bins in this what-if."
         />
         <div className="mt-3.5 flex gap-2">
-          <button onClick={run} disabled={busy || phase === "done"} className={`${btnPrimary} flex-1 pl-3 pr-5`}>
+          <button onClick={run} disabled={busy || phase === "done"} className={cn(btnPrimary, "flex-1 pl-3 pr-5")}>
             {phase === "running" ? (
               <>
                 <DotSpinner className="text-white" />
@@ -137,7 +138,7 @@ export default function ScenarioTab({ city, sites, topN, onTopN, onActiveSites }
           <button
             onClick={reset}
             disabled={busy || (phase !== "done" && phase !== "error")}
-            className={`${btnSecondary} h-12 px-5 text-[14px]`}
+            className={cn(btnSecondary, "h-12 px-5 text-[14px]")}
           >
             {phase === "deleting" ? (
               <>
