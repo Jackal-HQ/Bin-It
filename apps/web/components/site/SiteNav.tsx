@@ -1,6 +1,6 @@
 // Floating glass nav for the marketing and legal pages (Daylight). The dashboard has its own bar.
 import Link from "next/link";
-import { HexMark } from "@/components/dash/icons";
+import { LogoMark } from "@/components/dash/LogoMark";
 import { btnPrimary } from "@/components/dash/ui";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ export function SiteNav({ links = [] }: { links?: NavLink[] }) {
         className="flex w-full max-w-[760px] items-center justify-between gap-4 rounded-full bg-glass-strong py-2 pl-4 pr-2 shadow-float backdrop-blur-[24px]"
       >
         <Link href="/" aria-label="Bin-It home" className="flex items-center gap-2.5">
-          <HexMark size={26} />
+          <LogoMark size={26} />
           <span className="dot-num text-[22px]">Bin-It</span>
         </Link>
         {links.length > 0 && (

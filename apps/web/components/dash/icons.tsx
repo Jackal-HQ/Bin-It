@@ -1,6 +1,6 @@
 // Inline stroke icons for the Daylight dashboard (24-unit grid, round caps, 1.7 stroke).
 // Decorative: callers give the button its aria-label.
-import type { SVGProps } from "react";
+import type { CSSProperties, Ref, SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number; weight?: number };
 
@@ -140,11 +140,25 @@ export function DotSpinner({ size = 20, className = "" }: { size?: number; class
   );
 }
 
-/** The Bin-It mark: a hexagon of six dots (a map cell) with the center flagged coral. */
-export function HexMark({ size = 32 }: { size?: number }) {
+/**
+ * The Bin-It mark: a hexagon of six dots (a map cell) with the center flagged coral.
+ * `ringStyle` styles the six outer dots as one group and `centerRef` reaches the coral dot, so
+ * LogoMark can spin the ring around it; the plain mark needs neither.
+ */
+export function HexMark({
+  size = 32,
+  ringStyle,
+  centerRef,
+  style,
+}: {
+  size?: number;
+  ringStyle?: CSSProperties;
+  centerRef?: Ref<SVGCircleElement>;
+  style?: CSSProperties;
+}) {
   return (
-    <svg aria-hidden width={size} height={size} viewBox="0 0 30 30">
-      <g fill="#2A2926">
+    <svg aria-hidden width={size} height={size} viewBox="0 0 30 30" style={style}>
+      <g fill="#2A2926" style={ringStyle}>
         <circle cx="24.5" cy="15" r="3" />
         <circle cx="19.75" cy="6.8" r="3" />
         <circle cx="10.25" cy="6.8" r="3" />
@@ -152,7 +166,7 @@ export function HexMark({ size = 32 }: { size?: number }) {
         <circle cx="10.25" cy="23.2" r="3" />
         <circle cx="19.75" cy="23.2" r="3" />
       </g>
-      <circle cx="15" cy="15" r="3.8" fill="#FF6363" />
+      <circle ref={centerRef} cx="15" cy="15" r="3.8" fill="#FF6363" style={{ transformBox: "fill-box", transformOrigin: "center" }} />
     </svg>
   );
 }

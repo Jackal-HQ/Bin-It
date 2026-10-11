@@ -28,7 +28,7 @@ Databricks (batch) --> CSV export --> db/load_gold.py --> Neon
 
 ## Stack
 
-- Web dashboard + API: Next.js (App Router) + TypeScript, `apps/web`. Map: MapLibre via react-map-gl; heatmap: deck.gl `H3HexagonLayer` + h3-js; data fetching: TanStack Query; validation: zod.
+- Web dashboard + API: Next.js (App Router) + TypeScript, `apps/web`. Map: MapLibre via react-map-gl; heatmap: deck.gl `H3HexagonLayer` + h3-js; data fetching: TanStack Query; validation: zod. Landing-page 3D bin: `three` (plain, no react-three-fiber).
 - Mobile: Expo SDK 57 (React Native) + TypeScript + Expo Router, `apps/mobile`. expo-image-picker, expo-location, expo-image-manipulator, expo-secure-store, expo-crypto, expo-file-system, react-native-webview, TanStack Query; Daylight skin: expo-font, expo-linear-gradient, `@expo-google-fonts/manrope` and `geist-mono` plus a static Doto font in `assets/fonts` (no UI kit: `react-native-paper` was removed). Light only. Run in Expo Go. Nearby map = MapLibre GL JS + OpenFreeMap tiles inside a WebView (`lib/mapHtml.ts`): no API key, no Google Cloud account; Street View is a plain Google Maps URL. The native `react-native-maps` view rendered black in Expo Go and is not used.
 - DB: Neon Postgres with PostGIS + pgvector. Driver in API: `@neondatabase/serverless`.
 - Photos: Neon Object Storage (S3-compatible, beta), bucket `report-photos`, `public_read`. Use `@aws-sdk/client-s3` with `forcePathStyle: true`. Fallback if the beta misbehaves: Vercel Blob.
@@ -182,6 +182,8 @@ Demo (about 3 minutes): report an overflowing bin on the phone (classified, merg
 ## Web dashboard (apps/web/app/dashboard)
 
 Build spec and decisions: `docs/web-dashboard.md` (supersedes the plan below where they differ: map left + side panel with Queue / Bins / Scenario tabs at `/dashboard`, OpenFreeMap tiles, staff key on PATCH only). Built on 2026-10-10 against mocks; Phases 1-3 of the spec are in place, Phase 4 polish and the live-data checks remain.
+
+Landing page extras (2026-10-11): a 3D bin behind the page that turns on scroll (`components/landing/BinBackdrop.tsx` + `bin3d.ts`, uses `three`, lazy-loaded, landing only) and a tappable logo (`components/dash/LogoMark.tsx`; mobile `Brand` in `components/ui.tsx`). See DESIGN.md, "Marketing and prose pages".
 
 Visual style: Daylight (`.claude/DESIGN.md`), ported 2026-10-11. Fonts are Manrope and Doto (axes wght + ROND, round dots) from `next/font/google` in `app/layout.tsx`, so a build needs network for Google Fonts; Geist Mono was already loaded. The map layers and colors (`components/map/layers.ts`, `lib/labels.ts`) were not touched; only its legend, zoom and attribution are restyled.
 
