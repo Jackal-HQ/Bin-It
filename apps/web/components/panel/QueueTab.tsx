@@ -101,7 +101,7 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
               <th className="px-2 py-2 font-medium">Label</th>
               <th className="px-1 py-2 text-right font-medium">Count</th>
               <th className="px-2 py-2 font-medium">Status</th>
-              <th className="hidden px-2 py-2 font-medium sm:table-cell">Last seen</th>
+              <th className="hidden px-2 py-2 font-medium @[420px]:table-cell">Last seen</th>
               <th className="py-2 pl-1 pr-3 font-medium"><span className="sr-only">Photo</span></th>
             </tr>
           </thead>
@@ -126,7 +126,7 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
                 </td>
                 <td className="px-1 py-2 text-right tabular-nums">{t.report_count}</td>
                 <td className="px-2 py-2">{STATUS_TEXT[t.status] ?? t.status}</td>
-                <td className="hidden px-2 py-2 whitespace-nowrap text-zinc-500 sm:table-cell">{timeAgo(t.last_seen)}</td>
+                <td className="hidden px-2 py-2 whitespace-nowrap text-zinc-500 @[420px]:table-cell">{timeAgo(t.last_seen)}</td>
                 <td className="py-1.5 pl-1 pr-3">
                   <Thumb src={t.photo_url} className="h-9 w-9" />
                 </td>
