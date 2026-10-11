@@ -177,7 +177,13 @@ In PowerShell, `curl` is an alias for `Invoke-WebRequest`; use `curl.exe` for th
 
 Demo (about 3 minutes): report an overflowing bin on the phone (classified, merged with a nearby duplicate) -> report appears on the dashboard -> ranked bin recommendations with the under-reported layer -> run add-top-20-bins scenario on a Neon branch -> switch city to NYC and Chicago with no code changes. Keep cached responses and a screen recording as fallback.
 
-## Web dashboard plan (apps/web, not built yet)
+## Web dashboard (apps/web/app/dashboard)
+
+Build spec and decisions: `docs/web-dashboard.md` (supersedes the plan below where they differ: map left + side panel with Queue / Bins / Scenario tabs at `/dashboard`, OpenFreeMap tiles, staff key on PATCH only). Built on 2026-10-10 against mocks; Phases 1-3 of the spec are in place, Phase 4 polish and the live-data checks remain.
+
+Gotchas: `@loaders.gl/*` is pinned to 4.5.3 via `overrides` (4.5.4 is partly published); hexes use `PolygonLayer` + `h3-js`, not `@deck.gl/geo-layers`. MapLibre 6's worker is copied to `public/` on `postinstall` (`scripts/copy-maplibre-worker.mjs`) and set with `setWorkerUrl`; without it the map shows no tiles and no pins. Local `next build` needs `DATABASE_URL` or `USE_MOCKS=1`.
+
+### Original plan (kept for the API work list)
 
 State today: `apps/web/app/page.tsx` is a placeholder wordmark page. The API route handlers exist (tickets, cities, health, reports live; cells, recommendations, scenarios mock-only). `package.json` has only next, react, zod, the Neon driver, the S3 client and Tailwind v4. Nothing for maps, data fetching or H3 is installed yet. Read `node_modules/next/dist/docs/` before routing or caching work (Next 16, `cacheComponents`, async `params`).
 
@@ -257,5 +263,5 @@ Update this section as work lands.
 - [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id}, cells, recommendations are live; only scenarios (Neon branch what-if) is still mock-only
 - [ ] Databricks pipeline + gold load: `db/load_gold.py` written (expects `data/gold/<slug>/{cell_scores,bins,bin_candidates}.csv`); notebooks and CSV export not in the repo yet; gold CSVs for orlando/nyc/chicago exist under `data/gold/` (`reports_per_1k` blank, so no under-reported flags yet); `data/explain.py` runs (LLM top 20 with `meta-llama/Llama-3.1-8B-Instruct`, templates for the rest); whether gold and rationales are loaded in Neon for all three cities is not confirmed
 - [x] Mobile: report flow, nearby map, detail
-- [ ] Web: queue, map/heatmap, bins tab, scenario tab (planned in detail above; only a placeholder page exists)
+- [ ] Web: `/dashboard` built against mocks (queue with polling + status PATCH, map with pins/bins/heatmap/under-reported/sites, bins tab, scenario tab with branch cleanup, cached-data mode + `scripts/save-cache.ts`); still to do: test against live data (Gate 2), real cells/recommendations/scenarios handlers, cache saved for all three cities, rehearsal
 - [ ] Smoke tests, cache mode, recorded demo

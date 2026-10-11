@@ -39,8 +39,8 @@ export type Ticket = {
   status: Status;
   first_seen?: string;
   last_seen?: string;
-  // Only GET /api/reports/nearby populates this (the representative report's photo);
-  // the GET /api/tickets queue omits it, so it is optional.
+  // The representative report's photo (most severe, then most recent); null when none.
+  // Returned by GET /api/tickets and GET /api/reports/nearby.
   photo_url?: string | null;
   is_synthetic: boolean;
 };
@@ -80,3 +80,8 @@ export type Scenario = {
 };
 
 export type ApiError = { error: { code: string; message: string } };
+
+export type Health = { database: string; classifier: string; use_mocks: boolean };
+
+/** Map bounds as sent in `bbox=`: west, south, east, north. */
+export type Bbox = [number, number, number, number];

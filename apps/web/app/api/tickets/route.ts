@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { mocks, mocksEnabled } from "@/lib/mocks";
-import { TICKET_SYNTHETIC, apiError, findCity, query, ticketJson } from "@/lib/server";
+import { TICKET_PHOTO, TICKET_SYNTHETIC, apiError, findCity, query, ticketJson } from "@/lib/server";
 
 const STATUSES = ["received", "reviewed", "resolved"];
 
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   const rows = await query(
     `SELECT t.id, ST_Y(t.centroid::geometry) AS lat, ST_X(t.centroid::geometry) AS lng,
             t.label, t.max_severity, t.report_count, t.status, t.first_seen, t.last_seen,
-            ${TICKET_SYNTHETIC} AS is_synthetic
+            ${TICKET_SYNTHETIC} AS is_synthetic, ${TICKET_PHOTO} AS photo_url
        FROM tickets t
       WHERE t.city_id = $1
         AND ($2::text IS NULL OR t.status = $2)
@@ -30,5 +30,7 @@ export async function GET(request: Request) {
       LIMIT 500`,
     [city.id, status, label],
   );
-  return NextResponse.json({ tickets: rows.map((r) => ticketJson(r, true)) });
+  return NextResponse.json({
+    tickets: rows.map((r) => ({ ...ticketJson(r, true), photo_url: (r.photo_url as string | null) ?? null })),
+  });
 }
