@@ -2,6 +2,7 @@
   "scenario": {
     "id": "s_01",
     "branch_id": "br_demo",
+    "mode": "branch",
     "before": { "avg_distance_m": 520, "coverage_150m_pct": 41 },
     "after": { "avg_distance_m": 310, "coverage_150m_pct": 58 }
   }

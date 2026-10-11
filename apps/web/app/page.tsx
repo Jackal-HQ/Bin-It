@@ -1,9 +1,11 @@
+import { SiteFooter } from "@/components/SiteFooter";
+
 export default function Home() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-3xl flex-1 flex-col justify-between gap-16 bg-white px-16 py-32 dark:bg-black">
+    <div className="flex flex-1 flex-col bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex w-full max-w-3xl flex-1 flex-col justify-between gap-12 self-center bg-white px-6 py-16 dark:bg-black sm:gap-16 sm:px-16 sm:py-24">
         {/* wordmark */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <span
             aria-hidden
             className="flex h-7 w-7 items-center justify-center rounded-md bg-brand text-sm font-bold text-brand-fg"
@@ -20,11 +22,11 @@ export default function Home() {
 
         {/* hero */}
         <div className="flex flex-col gap-6">
-          <h1 className="max-w-xl text-4xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50">
+          <h1 className="max-w-xl text-3xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50 sm:text-4xl">
             See where new trash bins would{" "}
             <span className="text-brand">help most</span>.
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+          <p className="max-w-md text-base leading-7 text-zinc-600 dark:text-zinc-400 sm:text-lg sm:leading-8">
             Residents photo-report overflowing bins from their phones. Staff get a
             dashboard that corrects for reporting bias and ranks the best places to add
             bins — shown as{" "}
@@ -32,15 +34,15 @@ export default function Home() {
             never measured outcomes.
           </p>
 
-          <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+          <div className="flex flex-col gap-3 text-base font-medium sm:flex-row sm:gap-4">
             <a
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 text-brand-fg transition-colors hover:opacity-90 md:w-[180px]"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 text-brand-fg transition-colors hover:opacity-90 sm:w-[180px]"
               href="/dashboard"
             >
               Open dashboard
             </a>
             <a
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[180px]"
+              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] sm:w-[180px]"
               href="https://github.com/"
               target="_blank"
               rel="noopener noreferrer"
@@ -79,7 +81,7 @@ export default function Home() {
           </ol>
         </div>
 
-        {/* footer line */}
+        {/* tagline */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-500 dark:text-zinc-500">
           <span>Orlando, FL</span>
           <span aria-hidden className="text-zinc-300 dark:text-zinc-700">·</span>
@@ -88,6 +90,7 @@ export default function Home() {
           <span>Neon · Hugging Face · Databricks</span>
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

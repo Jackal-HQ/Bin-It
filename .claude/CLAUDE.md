@@ -234,7 +234,7 @@ lib/types.ts                    exists; keep in sync with docs/api.md and apps/m
 
 ### API work the dashboard needs (API developer)
 
-DONE: items 1 and 2 (`GET /api/recommendations`, `GET /api/cells`) are live; `reports_per_1k` is nullable.
+DONE: all of items 1-3 are live (`GET /api/recommendations`, `GET /api/cells`, scenarios); `reports_per_1k` is nullable. Scenario ids are `s_<neon branch id>`; only branches named `scenario-*` are ever deleted; stale ones (>15 min) are swept on the next create.
 
 1. `GET /api/recommendations?city=`: select rank, lat/lng from `geom`, gain, nearest_bin_m, nearby_reports, rationale from `bin_candidates` joined to `cities`, ordered by rank. Easiest; unblocks the Bins tab. Run `python data/explain.py <slug>` first so `rationale` is filled.
 2. `GET /api/cells?city=&bbox=`: from `cell_scores` (centroid as lat/lng), optional `ST_MakeEnvelope` filter, same shape as `mocks/cells.json`.
@@ -260,7 +260,7 @@ Update this section as work lands.
 - [x] Mock API deployed
 - [x] Classifier container + tunnel (about 66% label accuracy at last eval; prompts in `classifier/app.py`)
 - [x] Seed data (Orlando, NYC, Chicago; `db/seed.py`, reset with `db/reset_demo.sql`)
-- [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id}, cells, recommendations are live; only scenarios (Neon branch what-if) is still mock-only
+- [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id}, cells, recommendations, scenarios are all live (scenarios: Neon branch via `lib/scenarios.ts`, falls back to a no-write "calculated" mode; ~5 s on a real branch, numbers identical in both modes)
 - [ ] Databricks pipeline + gold load: `db/load_gold.py` written (expects `data/gold/<slug>/{cell_scores,bins,bin_candidates}.csv`); notebooks and CSV export not in the repo yet; gold CSVs for orlando/nyc/chicago exist under `data/gold/` (`reports_per_1k` blank, so no under-reported flags yet); `data/explain.py` runs (LLM top 20 with `meta-llama/Llama-3.1-8B-Instruct`, templates for the rest); whether gold and rationales are loaded in Neon for all three cities is not confirmed
 - [x] Mobile: report flow, nearby map, detail
 - [ ] Web: `/dashboard` built against mocks (queue with polling + status PATCH, map with pins/bins/heatmap/under-reported/sites, bins tab, scenario tab with branch cleanup, cached-data mode + `scripts/save-cache.ts`); still to do: test against live data (Gate 2), real cells/recommendations/scenarios handlers, cache saved for all three cities, rehearsal

@@ -76,7 +76,8 @@ export type Recommendation = {
 
 export type Scenario = {
   id: string;
-  branch_id: string;
+  branch_id: string; // "none" when mode is "calculated"
+  mode?: "branch" | "calculated";
   before: { avg_distance_m: number; coverage_150m_pct: number };
   after: { avg_distance_m: number; coverage_150m_pct: number };
 };

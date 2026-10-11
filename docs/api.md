@@ -177,6 +177,8 @@ Mock: `mocks/recommendations.json`
 
 Used by: web. What-if on a Neon branch; the branch is always deleted afterward (by the client calling `DELETE /api/scenarios/{id}`).
 
+The server creates a branch of the default branch, inserts the proposed bins as `source='proposed'`, and measures coverage over `cell_scores` cells with `demand > 0`: demand-weighted average distance to the nearest bin and the share of demand within 150 m (an assumption, not a measurement). `before` ignores the proposed bins, `after` includes them. If the branch cannot be made in time (Neon API error, branch limit, slow endpoint) it computes the same numbers on the main database without writing anything and returns `mode: "calculated"` with `branch_id: "none"`. Limits: 1-100 bins. Errors: `invalid_body` 400, `unknown_city` 400, `no_data` 409 (no demand scores or no existing bins loaded), `scenario_failed` 502.
+
 Request:
 ```json
 { "city": "orlando", "proposed_bins": [{ "lat": 28.5400, "lng": -81.3810 }] }
@@ -188,6 +190,7 @@ Response `201`:
   "scenario": {
     "id": "s_01",
     "branch_id": "br_demo",
+    "mode": "branch",
     "before": { "avg_distance_m": 520, "coverage_150m_pct": 41 },
     "after": { "avg_distance_m": 310, "coverage_150m_pct": 58 }
   }
@@ -198,9 +201,9 @@ Mock: `mocks/scenario-create.json`
 
 ### DELETE /api/scenarios/{id}
 
-Used by: web. Deletes the scenario's Neon branch.
+Used by: web. Deletes the scenario's Neon branch. Ids are `s_<branch id>`; only branches named `scenario-*` are ever deleted. Idempotent: an unknown or already-deleted branch and `s_calc_*` ids return `204`. Branches older than 15 minutes are also swept on the next create.
 
-Response `204`: empty body.
+Response `204`: empty body. `400 invalid_id` for a malformed id, `502 delete_failed` if Neon refuses.
 
 ### GET /api/health
 

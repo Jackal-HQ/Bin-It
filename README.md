@@ -74,7 +74,7 @@ authoritative. Endpoints:
 | `GET /api/health` | both | database + classifier status | live |
 | `GET /api/cells` | web | per-cell scores keyed by H3 id | live |
 | `GET /api/recommendations` | web | ranked new-bin sites with `rationale` | live |
-| `POST /api/scenarios`, `DELETE /api/scenarios/{id}` | web | what-if on a Neon branch | mock only (`501` with `USE_MOCKS=0`) |
+| `POST /api/scenarios`, `DELETE /api/scenarios/{id}` | web | what-if on a Neon branch | live (Neon branch, falls back to a calculated result) |
 
 Conventions: JSON everywhere; errors are `{"error": {"code": "...", "message": "..."}}`;
 every call takes `city=<slug>` (`orlando`, `nyc`, `chicago`). Mobile sends an anonymous
@@ -235,7 +235,7 @@ as real.
 | Mock API | done: handlers serve `mocks/` behind `USE_MOCKS`, deployed on Vercel |
 | Classifier container + tunnel | done: CLIP zero-shot behind a tunnel (about 66% label accuracy on our 73 photos at last measurement) |
 | Seed data | done: Orlando, NYC and Chicago demo reports (`db/seed.py`), flagged synthetic |
-| Real API handlers | partly done: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id} are live; only scenarios still mock-only |
+| Real API handlers | partly done: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id} are live; all handlers live |
 | Databricks pipeline + gold load | loader written (`db/load_gold.py`); notebooks and CSV exports not in the repo yet |
 | Mobile app | done: report flow, nearby map and list, ticket and report detail |
 | Web dashboard | in progress (see `apps/web`) |

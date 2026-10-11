@@ -29,7 +29,7 @@ npx tsc --noEmit
 | `PHOTO_BASE_URL` | public base URL of the bucket, stored on each report |
 | `CLASSIFIER_URL`, `CLASSIFIER_KEY` | photo classifier behind the tunnel |
 | `STAFF_KEY` | required by `PATCH /api/tickets/{id}` (`401` when unset) |
-| `NEON_API_KEY`, `NEON_PROJECT_ID` | scenario branches (not wired yet) |
+| `NEON_API_KEY`, `NEON_PROJECT_ID` | scenario branches (server only) |
 
 Restart `npm run dev` after editing it. Secrets must only be read in route handlers and
 `lib/server.ts`, never in client components.
@@ -45,7 +45,7 @@ The contract is `docs/api.md` (and `mocks/`); this folder implements it.
 | `GET /api/reports/nearby`, `GET /api/reports/{id}` | live |
 | `GET /api/tickets`, `PATCH /api/tickets/{id}` | live |
 | `GET /api/cells`, `GET /api/recommendations` | live (read `cell_scores`, `bin_candidates`) |
-| `POST/DELETE /api/scenarios` | mock only; `501` when `USE_MOCKS=0` |
+| `POST/DELETE /api/scenarios` | live: Neon branch (`lib/scenarios.ts`, needs `NEON_API_KEY` + `NEON_PROJECT_ID`); falls back to `mode: "calculated"` without them |
 
 Every handler keeps the `if (mocksEnabled()) return mocks...` branch first. Shared server
 code is in `lib/server.ts` (Neon query helper, error helper, photo upload, classifier call).
