@@ -3,9 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  /* Bin-It accent (matches the mobile app's green) */
-  --brand: #166534;
+  /* Brand accent — Raycast Coral Pulse (.claude/DESIGN.md), the single product accent
+     shared by the landing page, mobile app, and dashboard. */
+  --brand: #ff6363;
   --brand-fg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dashboard dark mode follows the Raycast canvas (void-black / ink). */
+    --background: #040506;
+    --foreground: #e6e6e6;
+    --brand: #ff6363;
+  }
 }
 
 @theme inline {
@@ -47,15 +57,6 @@
 }
 .animate-spotlight {
   animation: spotlight 2s ease 0.75s 1 forwards;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    /* a lighter green reads better on near-black */
-    --brand: #22c55e;
-  }
 }
 
 body {

@@ -4,6 +4,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { Recommendation } from "@/lib/types";
 import { Empty, ErrorRetry, Loading, UnderReportedBadge } from "./States";
 import TopNControl from "./TopNControl";
+import { TooltipCard } from "@/components/ui/tooltip-card";
 
 const ROWS = 20;
 
@@ -38,16 +39,31 @@ export default function BinsTab({ query, isUnderReported, topN, onTopN, selected
             <button
               onClick={() => onSelect(r)}
               className={`flex w-full gap-3 border-b border-zinc-100 p-3 text-left hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 ${
-                r.rank === selectedRank ? "bg-green-50 dark:bg-green-950" : ""
+                r.rank === selectedRank ? "bg-brand/10" : ""
               }`}
             >
-              <span
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-brand text-xs font-bold ${
-                  r.rank <= topN ? "text-brand" : "border-zinc-300 text-zinc-400"
-                }`}
+              <TooltipCard
+                content={
+                  <span className="block">
+                    <span className="block font-medium text-white">Site #{r.rank}</span>
+                    <span className="mt-1 block text-ash">
+                      Estimated gain {r.gain.toFixed(3)} · {Math.round(r.nearest_bin_m)} m to
+                      nearest bin · {r.nearby_reports} nearby reports
+                    </span>
+                    {isUnderReported(r) && (
+                      <span className="mt-1 block text-coral-pulse">In an under-reported area</span>
+                    )}
+                  </span>
+                }
               >
-                {r.rank}
-              </span>
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-brand text-xs font-bold ${
+                    r.rank <= topN ? "text-brand" : "border-zinc-300 text-zinc-400"
+                  }`}
+                >
+                  {r.rank}
+                </span>
+              </TooltipCard>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm text-zinc-900 dark:text-zinc-100">{r.rationale || "No reason written yet."}</span>
                 <span className="mt-1.5 flex items-center gap-2">

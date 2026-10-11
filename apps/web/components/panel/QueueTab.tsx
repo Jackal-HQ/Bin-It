@@ -111,7 +111,7 @@ export default function QueueTab({ city, query, filters, onFilters, selectedId, 
                 key={t.id}
                 onClick={() => onSelect(t)}
                 className={`cursor-pointer border-t border-zinc-100 transition-colors duration-700 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 ${
-                  t.id === selectedId ? "bg-green-50 dark:bg-green-950" : ""
+                  t.id === selectedId ? "bg-brand/10" : ""
                 } ${fresh.has(t.id) ? "bg-yellow-100 dark:bg-yellow-900" : ""}`}
               >
                 <td className="py-2 pl-3 pr-1">
