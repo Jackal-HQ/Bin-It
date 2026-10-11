@@ -9,7 +9,7 @@ import requests, json
 import requests
 import yaml
 
-DATA = Path(__file__).resolve().parent         # data/, regardless of where the script is run from
+DATA = Path(__file__).resolve() .parent         # data/, regardless of where the script is run from
 
 slug = sys.argv[1]
 cfg = yaml.safe_load(open(DATA / "cities" / f"{slug}.yaml"))
