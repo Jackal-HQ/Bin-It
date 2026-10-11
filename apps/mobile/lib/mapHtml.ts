@@ -82,6 +82,14 @@ export function mapHtml(
             box-shadow: 0 10px 24px -10px rgba(70,55,10,.45); line-height: 1.75; }
   .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
   .legend .ring { border: 2.5px solid #111827; background: #9CA3AF; width: 12px; height: 12px; box-sizing: border-box; }
+  .legend-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%;
+                 background: none; border: 0; padding: 0; margin: 0; font: 800 12px Manrope, sans-serif;
+                 color: #1E1D1A; letter-spacing: .02em; min-height: 24px; }
+  .legend-head .chev { font-size: 11px; color: #6E6B62; transition: transform .2s ease; }
+  .legend.collapsed { padding: 6px 12px; }
+  .legend.collapsed .chev { transform: rotate(180deg); }
+  .legend-body { margin-top: 6px; }
+  .legend.collapsed .legend-body { display: none; }
   .maplibregl-ctrl-group { border-radius: 999px; overflow: hidden; box-shadow: 0 10px 24px -10px rgba(70,55,10,.45); background: rgba(254,253,250,.95); }
   .maplibregl-ctrl-group button { width: 40px; height: 40px; }
   .maplibregl-ctrl-attrib { border-radius: 999px; background: rgba(255,255,255,.74); font-size: 10px; color: #6E6B62; }
@@ -186,12 +194,28 @@ window.focusPoint = function (i) {
   if (!m.getPopup().isOpen()) m.togglePopup();
 };
 
+// Collapsible legend: tap the header to fold it down to a small pill. The choice is kept in
+// localStorage so it survives the map being rebuilt when new reports arrive.
 var legend = el("div", "legend");
-legend.innerHTML = '<div><i style="background:#A50026"></i>High</div>' +
+legend.innerHTML = '<button type="button" class="legend-head" aria-expanded="true" aria-label="Toggle legend">' +
+  '<span>Legend</span><span class="chev">&#9662;</span></button>' +
+  '<div class="legend-body">' +
+  '<div><i style="background:#A50026"></i>High</div>' +
   '<div><i style="background:#F46D43"></i>Medium</div>' +
   '<div><i style="background:#FDAE61"></i>Low</div>' +
   '<div><i class="ring"></i>Dark ring = demo data</div>' +
-  '<div><i style="background:#374151"></i>Bin</div>';
+  '<div><i style="background:#374151"></i>Bin</div>' +
+  '</div>';
 document.body.appendChild(legend);
+var legendHead = legend.querySelector(".legend-head");
+function setLegend(open) {
+  legend.classList.toggle("collapsed", !open);
+  legendHead.setAttribute("aria-expanded", open ? "true" : "false");
+  try { localStorage.setItem("binit-legend-open", open ? "1" : "0"); } catch (e) {}
+}
+var storedLegend = null;
+try { storedLegend = localStorage.getItem("binit-legend-open"); } catch (e) {}
+setLegend(storedLegend === null ? true : storedLegend === "1");
+legendHead.addEventListener("click", function () { setLegend(legend.classList.contains("collapsed")); });
 </script></body></html>`;
 }
