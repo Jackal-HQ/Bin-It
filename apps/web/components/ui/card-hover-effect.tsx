@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 export type HoverItem = {
   n: string;
+  icon?: ReactNode; // optional glyph, shown in a circular container instead of the number
   title: string;
   description: string;
 };
@@ -43,11 +44,17 @@ export function HoverEffect({ items, className }: { items: HoverItem[]; classNam
                 "rgba(255,255,255,0.05) 0px 1px 0px 0px inset, rgba(255,255,255,0.25) 0px 0px 0px 1px, rgba(0,0,0,0.2) 0px -1px 0px 0px inset",
             }}
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-coral-pulse/10 font-mono text-xs text-coral-pulse">
-              {item.n}
-            </span>
-            <p className="mt-3 text-[16px] font-medium text-white">{item.title}</p>
-            <p className="mt-1.5 text-[14px] leading-6 text-ash">{item.description}</p>
+            {item.icon ? (
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-obsidian text-mist">
+                {item.icon}
+              </span>
+            ) : (
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-coral-pulse/10 font-mono text-xs text-coral-pulse">
+                {item.n}
+              </span>
+            )}
+            <p className="mt-4 text-[20px] font-medium leading-[1.2] text-white">{item.title}</p>
+            <p className="mt-2 text-[16px] leading-[1.5] text-ash">{item.description}</p>
           </div>
         </div>
       ))}
