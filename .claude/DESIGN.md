@@ -156,7 +156,7 @@ Same tokens, same dark canvas. Layout and recipes:
 | Detail card | `KeyCard` look (16px, key shadow, `bg-ink/60`), 16px/500 title, `dl` with `text-smoke` keys and `text-white` values; keys carry a Tooltip |
 | Buttons | Primary = Mist/Iron, secondary = `border-rc-border text-ash`; no coral buttons. Status: `success-green` for good, `coral-pulse` for errors, never new hues |
 | Errors and warnings | `rounded-[12px] border border-coral-pulse/30 bg-ember-hush/60` |
-| Map | Left as it was before the dashboard restyle: OpenFreeMap Liberty (or `NEXT_PUBLIC_MAP_STYLE_URL`) with the deck.gl layers and colors in `lib/labels.ts` (warm severity pins, blue hexes, pink under-reported outline, green sites). Only the legend overlay uses the dark glass card |
+| Map | Left as it was before the dashboard restyle: OpenFreeMap Liberty (or `NEXT_PUBLIC_MAP_STYLE_URL`) with the deck.gl layers and colors in `lib/labels.ts` (warm severity pins, blue hexes, pink under-reported outline, green sites). Only the legend overlay uses the dark glass card. Hovering a report pin shows `ReportHoverCard` (Tooltip Card look): photo, label, severity, status, report count, last seen |
 
 ### Where this differs from the Raycast reference
 
