@@ -228,6 +228,8 @@ lib/types.ts                    exists; keep in sync with docs/api.md and apps/m
 
 ### API work the dashboard needs (API developer)
 
+DONE: items 1 and 2 (`GET /api/recommendations`, `GET /api/cells`) are live; `reports_per_1k` is nullable.
+
 1. `GET /api/recommendations?city=`: select rank, lat/lng from `geom`, gain, nearest_bin_m, nearby_reports, rationale from `bin_candidates` joined to `cities`, ordered by rank. Easiest; unblocks the Bins tab. Run `python data/explain.py <slug>` first so `rationale` is filled.
 2. `GET /api/cells?city=&bbox=`: from `cell_scores` (centroid as lat/lng), optional `ST_MakeEnvelope` filter, same shape as `mocks/cells.json`.
 3. `POST /api/scenarios` + `DELETE /api/scenarios/{id}`: create a Neon branch of main via the Neon API (`NEON_API_KEY`, `NEON_PROJECT_ID`, server only), connect to the branch, insert `proposed` bins, compute before/after coverage from `bins` + `cell_scores.demand`, return the contract shape, delete the branch in `DELETE` and as a safety net on failure. Unverified: the exact Neon API calls for branch creation and the branch connection string; check the Neon API reference before coding. Fallback if branches misbehave: compute before/after in a transaction that rolls back, and say so.
@@ -252,7 +254,7 @@ Update this section as work lands.
 - [x] Mock API deployed
 - [x] Classifier container + tunnel (about 66% label accuracy at last eval; prompts in `classifier/app.py`)
 - [x] Seed data (Orlando, NYC, Chicago; `db/seed.py`, reset with `db/reset_demo.sql`)
-- [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id} are live; cells, recommendations, scenarios still mock-only (work list in the web dashboard plan)
+- [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id}, cells, recommendations are live; only scenarios (Neon branch what-if) is still mock-only
 - [ ] Databricks pipeline + gold load: `db/load_gold.py` written (expects `data/gold/<slug>/{cell_scores,bins,bin_candidates}.csv`); notebooks and CSV export not in the repo yet; gold CSVs for orlando/nyc/chicago exist under `data/gold/` (`reports_per_1k` blank, so no under-reported flags yet); `data/explain.py` runs (LLM top 20 with `meta-llama/Llama-3.1-8B-Instruct`, templates for the rest); whether gold and rationales are loaded in Neon for all three cities is not confirmed
 - [x] Mobile: report flow, nearby map, detail
 - [ ] Web: queue, map/heatmap, bins tab, scenario tab (planned in detail above; only a placeholder page exists)

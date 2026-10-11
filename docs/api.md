@@ -136,7 +136,9 @@ Mock: `mocks/ticket-patch.json`
 
 Used by: web. Per-cell scores keyed by H3 id. Accepts `bbox`.
 
-Query: `city`, `bbox` (optional).
+Query: `city`, `bbox` (optional, `west,south,east,north`, filters by cell centroid). Up to 20,000 cells.
+`reports_per_1k` is `null` when the pipeline has no population data for the city; then
+`under_reported` is `false` for every cell.
 
 Response `200`:
 ```json
@@ -153,7 +155,8 @@ Mock: `mocks/cells.json`
 
 Used by: web. Ranked new-bin sites with `rationale`.
 
-Query: `city`.
+Query: `city`. Ordered by `rank`, up to 100 rows. `rationale` is an empty string until
+`python data/explain.py <slug>` has run.
 
 Response `200`:
 ```json

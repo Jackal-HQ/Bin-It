@@ -15,15 +15,17 @@ those numbers, so it cannot invent facts. Sites outside the top N, and any site 
 the LLM call fails, get a template sentence built from the same facts, so every row ends
 up with a rationale.
 
-Needs DATABASE_URL and (for the LLM) HF_TOKEN in .env.local. Optional HF_MODEL picks the
-chat model served by Hugging Face Inference Providers. Port 5432 is blocked on school
-wifi: use a hotspot. The free HF credit is tiny, hence the top-N limit and the cache.
+Needs DATABASE_URL and (for the LLM) HF_TOKEN in .env.local. If port 5432 is blocked it
+automatically uses Neon's HTTPS SQL endpoint (port 443) instead. Optional HF_MODEL picks the
+chat model served by Hugging Face Inference Providers. The free HF credit is tiny, hence the top-N limit and the cache.
 """
 import argparse
 import os
 import sys
+from urllib.parse import urlparse
 
 import psycopg
+import requests
 from dotenv import load_dotenv
 
 load_dotenv(".env.local")
@@ -36,7 +38,7 @@ SQL = """
 WITH ranked AS (
     SELECT centroid, under_reported, demand,
            percent_rank() OVER (ORDER BY expected_overflow) AS pr
-    FROM cell_scores WHERE city_id = %(city)s AND expected_overflow IS NOT NULL
+    FROM cell_scores WHERE city_id = %s AND expected_overflow IS NOT NULL
 )
 SELECT c.id, c.rank, c.nearest_bin_m, c.nearby_reports, c.rationale,
        n.pr, n.under_reported
@@ -48,13 +50,54 @@ LEFT JOIN LATERAL (
     ORDER BY r.centroid <-> c.geom
     LIMIT 1
 ) n ON true
-WHERE c.city_id = %(city)s
+WHERE c.city_id = %s
 ORDER BY c.rank
 """
 
 
 def fail(message):
     sys.exit(f"error: {message}")
+
+
+class Db:
+    """Neon access. Tries a normal connection (port 5432); if that port is blocked, falls
+    back to Neon's SQL-over-HTTPS endpoint (port 443), which works on school wifi/hotspots."""
+
+    def __init__(self, url):
+        self.url = url
+        self.conn = None
+        try:
+            self.conn = psycopg.connect(url, connect_timeout=8)
+        except psycopg.OperationalError:
+            host = urlparse(url).hostname
+            self.endpoint = f"https://{host}/sql"
+            print("note: port 5432 unreachable, using Neon's HTTPS SQL endpoint instead")
+
+    def run(self, sql, params=()):
+        """Execute one statement (use %s placeholders); returns rows as tuples."""
+        if self.conn:
+            with self.conn.cursor() as cur:
+                cur.execute(sql, params)
+                rows = cur.fetchall() if cur.description else []
+            self.conn.commit()
+            return rows
+        n = 0
+
+        def number(_):
+            nonlocal n
+            n += 1
+            return f"${n}"
+        import re
+        http_sql = re.sub(r"%s", number, sql)
+        r = requests.post(
+            self.endpoint,
+            headers={"Neon-Connection-String": self.url, "Neon-Array-Mode": "true"},
+            json={"query": http_sql, "params": list(params)},
+            timeout=60,
+        )
+        if r.status_code != 200:
+            fail(f"database request failed ({r.status_code}): {r.text[:300]}")
+        return [tuple(row) for row in r.json().get("rows", [])]
 
 
 def facts(row):
@@ -101,14 +144,11 @@ def llm_sentence(client, model, row):
     return text[:MAX_LEN]
 
 
-def explain_city(conn, slug, client, model, top, force):
-    with conn.cursor() as cur:
-        cur.execute("SELECT id FROM cities WHERE slug = %s", (slug,))
-        found = cur.fetchone()
-        if not found:
-            fail(f"no city {slug!r} in Neon")
-        cur.execute(SQL, {"city": found[0]})
-        rows = cur.fetchall()
+def explain_city(db, slug, client, model, top, force):
+    found = db.run("SELECT id FROM cities WHERE slug = %s", (slug,))
+    if not found:
+        fail(f"no city {slug!r} in Neon")
+    rows = db.run(SQL, (found[0][0], found[0][0]))
     if not rows:
         print(f"{slug}: no bin_candidates (run db/load_gold.py {slug} first)")
         return
@@ -139,9 +179,8 @@ def explain_city(conn, slug, client, model, top, force):
             template_n += 1
         updates.append((text, cid))
 
-    with conn.cursor() as cur:
-        cur.executemany("UPDATE bin_candidates SET rationale = %s WHERE id = %s", updates)
-    conn.commit()
+    for text, cid in updates:
+        db.run("UPDATE bin_candidates SET rationale = %s WHERE id = %s", (text, cid))
     print(f"{slug}: {llm_n} written by LLM, {template_n} from template, {kept} kept (already set)")
 
 
@@ -164,15 +203,13 @@ def main():
             client = InferenceClient(token=token, timeout=30)
             print(f"LLM: {model} for the top {args.top} sites per city")
 
-    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-        if args.city == "all":
-            with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM cities ORDER BY slug")
-                slugs = [r[0] for r in cur.fetchall()]
-        else:
-            slugs = [args.city]
-        for slug in slugs:
-            explain_city(conn, slug, client, model, args.top, args.force)
+    db = Db(os.environ["DATABASE_URL"])
+    if args.city == "all":
+        slugs = [r[0] for r in db.run("SELECT slug FROM cities ORDER BY slug")]
+    else:
+        slugs = [args.city]
+    for slug in slugs:
+        explain_city(db, slug, client, model, args.top, args.force)
 
 
 if __name__ == "__main__":
