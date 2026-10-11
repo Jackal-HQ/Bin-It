@@ -41,9 +41,9 @@ Databricks (batch) --> CSV export --> db/load_gold.py --> Neon
 apps/web/        Next.js: dashboard pages/components + app/api route handlers
 apps/mobile/     Expo app
 classifier/      FastAPI + CLIP container (Dockerfile, app.py, requirements.txt)
-db/              migrations/001_init.sql, seed.py, load_gold.py
-data/            cities/*.yaml, notebooks/, test_photos/ (+labels.csv), raw/, gold/, fetch_city.py, eval.py, explain.py
-scripts/         smoke.sh
+db/              migrations/001_init.sql, seed.py, load_gold.py, reset_demo.sql
+data/            cities/*.yaml, notebooks/ (planned), test_photos/ (+labels.csv), raw/, gold/<slug>/*.csv, fetch_city.py, fetch_hf_test_photos.py, eval.py, explain.py
+scripts/         test_upload.py, smoke.sh (planned)
 docs/api.md      the API contract (copy of the Spec tab's contract)
 mocks/           sample JSON, one file per endpoint
 ```
@@ -107,7 +107,7 @@ No ready-made dataset fits our classes. The team shoots 60-100 photos. `data/tes
 
 ## Environment variables (`.env.local`, never commit)
 
-`DATABASE_URL` (pooled Neon string), `NEON_API_KEY`, `NEON_PROJECT_ID`, `HF_TOKEN`, `CLASSIFIER_URL`, `CLASSIFIER_KEY`, `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY_ID`, `STORAGE_SECRET_ACCESS_KEY`, `STORAGE_BUCKET`, `PHOTO_BASE_URL` (public base of the bucket; set after one test upload), `STAFF_KEY`, `USE_MOCKS`. Mobile: `EXPO_PUBLIC_API_BASE`. Web: `NEXT_PUBLIC_MAP_STYLE_URL`, optional `NEXT_PUBLIC_USE_CACHE`.
+`DATABASE_URL` (pooled Neon string), `NEON_API_KEY`, `NEON_PROJECT_ID`, `HF_TOKEN`, `CLASSIFIER_URL`, `CLASSIFIER_KEY`, `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY_ID`, `STORAGE_SECRET_ACCESS_KEY`, `STORAGE_BUCKET`, `AWS_REGION`, `PHOTO_BASE_URL` (public base of the bucket; set after one test upload), `STAFF_KEY`, `USE_MOCKS`. Optional `HF_MODEL` for `data/explain.py`. Python scripts read the repo-root `.env.local`; the Next.js app reads `apps/web/.env.local`: keep them in sync. Mobile: `EXPO_PUBLIC_API_BASE`. Web: `NEXT_PUBLIC_MAP_STYLE_URL`, optional `NEXT_PUBLIC_USE_CACHE`.
 Never put `NEON_API_KEY` (or any secret) in web or mobile client code. Only API routes use it.
 
 ## Commands (developers are on Windows / PowerShell)
@@ -129,8 +129,10 @@ cloudflared tunnel --url http://localhost:7860     # or: ngrok http 7860
 # data + db scripts (python)
 python data/fetch_city.py orlando
 python db/seed.py
-python db/load_gold.py orlando
+python db/load_gold.py orlando                      # then nyc, chicago (replaces that city's gold rows, clears rationale)
+python data/explain.py orlando                      # bin-site rationales (LLM top 20, template for the rest); or: all
 python data/eval.py
+# demo reset: run db/reset_demo.sql in the Neon SQL Editor
 bash scripts/smoke.sh                               # needs curl, jq, psql (use Git Bash/WSL)
 ```
 
@@ -150,6 +152,10 @@ In PowerShell, `curl` is an alias for `Invoke-WebRequest`; use `curl.exe` for th
 - `data/cities/*.yaml` bboxes are rough: UCF is outside Orlando's. Do not use a bbox to decide whether a phone is "in" a city; the mobile app uses distance from the city center.
 - Reports are saved at the device GPS, not at the selected city's location. A report made with the wrong city selected is stored under that city at the real coordinates.
 - `db/reset_demo.sql` only removes device ids `test` and `demo`; phone reports use a random UUID, so add it to the list when cleaning up.
+- `db/load_gold.py` stores a blank `reports_per_1k` as NULL (the column is nullable). The current exports have it blank for every cell, so no cell is flagged `under_reported` yet; the pipeline must join population/311 data before the under-reported layer means anything. Check `demand` is not all zeros too.
+- Hugging Face Inference Providers only serve models listed at `https://router.huggingface.co/v1/models` (query it with the token). `meta-llama/Llama-3.2-3B-Instruct` is NOT served for our token (`model_not_supported`); `data/explain.py` defaults to `meta-llama/Llama-3.1-8B-Instruct`, which answered. Avoid reasoning models (empty content at small `max_tokens`). Template sentences cached in `bin_candidates.rationale` are upgraded to LLM text on a later run automatically; LLM text is kept unless `--force`.
+- Run Python scripts from the repo root with the venv active (system Python lacks psycopg). Use Python 3.12.
+- The classifier's label is stored even when wrong (about 66% label accuracy); `unclassified` reports never merge.
 - Existing prior art: the City of Orlando already runs a "Clean & Safe" app for reporting overflowing cans downtown. Our differentiators: duplicate merging, photo severity, reporting-bias correction, bin placement planning.
 
 ## Working rules for Claude
@@ -171,6 +177,73 @@ In PowerShell, `curl` is an alias for `Invoke-WebRequest`; use `curl.exe` for th
 
 Demo (about 3 minutes): report an overflowing bin on the phone (classified, merged with a nearby duplicate) -> report appears on the dashboard -> ranked bin recommendations with the under-reported layer -> run add-top-20-bins scenario on a Neon branch -> switch city to NYC and Chicago with no code changes. Keep cached responses and a screen recording as fallback.
 
+## Web dashboard plan (apps/web, not built yet)
+
+State today: `apps/web/app/page.tsx` is a placeholder wordmark page. The API route handlers exist (tickets, cities, health, reports live; cells, recommendations, scenarios mock-only). `package.json` has only next, react, zod, the Neon driver, the S3 client and Tailwind v4. Nothing for maps, data fetching or H3 is installed yet. Read `node_modules/next/dist/docs/` before routing or caching work (Next 16, `cacheComponents`, async `params`).
+
+Goal: staff open one page, pick a city, see the ticket queue, a map with the under-reported heat layer and recommended bins, and run an add-bins what-if. Owner: web developer; the three mock-only endpoints belong to the API developer. Contract first: mocks and `docs/api.md` already define every shape the dashboard needs, so the UI can be built against `USE_MOCKS=1` and switched to real data with no UI change.
+
+### Layout
+
+One page, `app/page.tsx`, with a city selector (orlando / nyc / chicago, from `GET /api/cities`), a staff-key field and a health dot in the header, and three tabs sharing one map:
+
+| Tab | Data | What staff do |
+| --- | --- | --- |
+| Queue | `GET /api/tickets?city&status&label` | Sorted by severity then report count; filter by status/label; open a ticket (photo, label, severity, report count, first/last seen); set status received / reviewed / resolved via `PATCH`. Clicking a row flies the map to the ticket. |
+| Map | `GET /api/cells`, `GET /api/tickets`, bins from `GET /api/reports/nearby?bbox=` | Toggle layers: H3 expected overflow, under-reported cells, tickets (severity-colored, "Demo data" badge when `is_synthetic`), existing bins. |
+| Bins | `GET /api/recommendations` | Ranked list of 50 sites with gain, nearest bin distance, nearby reports and the `rationale`. Select sites (default top 20), show them on the map, run the scenario. |
+
+Scenario panel (inside the Bins tab): "Add top N bins" calls `POST /api/scenarios`, shows before/after average distance to nearest bin and % of demand within 150 m (label them "estimated" and show the 150 m assumption), then ALWAYS calls `DELETE /api/scenarios/{id}` (also on error and unmount). Disable the button while a scenario runs; the free plan allows 10 branches including main.
+
+### Files (create under apps/web)
+
+```text
+app/page.tsx                    shell: header (city, staff key, health dot), tabs, shared map
+components/Providers.tsx        TanStack Query provider + selected-city context
+components/MapView.tsx          react-map-gl (MapLibre) + deck.gl overlay; client component, no SSR
+components/layers.ts            H3HexagonLayer (cells), ScatterplotLayer (tickets, bins, recommended)
+components/TicketQueue.tsx      table + filters + status actions
+components/TicketDrawer.tsx     one ticket detail + status change
+components/RecommendationList.tsx
+components/ScenarioPanel.tsx    run / before-after / cleanup
+components/Legend.tsx           color scales + "estimates" note
+lib/api.ts                      typed fetchers (same origin); adds X-Staff-Key to PATCH
+lib/hooks.ts                    useCities, useTickets, useCells, useRecommendations, useScenario
+lib/types.ts                    exists; keep in sync with docs/api.md and apps/mobile/lib/types.ts
+```
+
+### Dependencies to add (and why)
+
+`@tanstack/react-query` (caching, refetch after PATCH); `maplibre-gl` + `react-map-gl` (basemap with the same keyless OpenFreeMap style the mobile app uses: set `NEXT_PUBLIC_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty`); `deck.gl` (or `@deck.gl/core`, `layers`, `geo-layers`, `mapbox`) for `H3HexagonLayer`; `h3-js` (peer of the H3 layer). No charting or UI kits. State the reason in the commit message.
+
+### Behavior rules
+
+- All fetching goes through `lib/api.ts`. The browser never calls Neon, storage, the classifier or Databricks, and no secret is read client-side. Staff type the staff key into the header; keep it in `sessionStorage` only (demo-grade) and send it only on PATCH. Never put `STAFF_KEY` in a `NEXT_PUBLIC_*` var.
+- Switching city re-centers the map on that city's center from `/api/cities` (never test "inside the bbox": the YAML bboxes are rough) and refetches every query by `city`.
+- Render unknown labels as "received" and `unclassified` as "not classified"; severity 0 is "clean".
+- Every synthetic ticket shows a "Demo data" badge. The footer states that projected changes are estimates, that the Orlando model is lightly validated, and that the target is litter-related complaint density, not measured bin overflow.
+- Empty states matter for the demo: no gold data for a city -> "scores not loaded for this city", not an empty map. `under_reported` is false everywhere until the pipeline fills `reports_per_1k`; do not present that layer as meaningful until it does.
+- Cell payloads are about 3.7k (Orlando), 5.6k (Chicago), 7.4k (NYC) rows, a few hundred KB: fine to load per city; pass `bbox` if it gets slow.
+- Cached mode: `NEXT_PUBLIC_USE_CACHE=1` reads pre-saved JSON from `apps/web/public/cache/<endpoint>-<city>.json` so the demo survives dead wifi. Add a small script that saves the live responses once Gate 3 data is loaded.
+
+### API work the dashboard needs (API developer)
+
+1. `GET /api/recommendations?city=`: select rank, lat/lng from `geom`, gain, nearest_bin_m, nearby_reports, rationale from `bin_candidates` joined to `cities`, ordered by rank. Easiest; unblocks the Bins tab. Run `python data/explain.py <slug>` first so `rationale` is filled.
+2. `GET /api/cells?city=&bbox=`: from `cell_scores` (centroid as lat/lng), optional `ST_MakeEnvelope` filter, same shape as `mocks/cells.json`.
+3. `POST /api/scenarios` + `DELETE /api/scenarios/{id}`: create a Neon branch of main via the Neon API (`NEON_API_KEY`, `NEON_PROJECT_ID`, server only), connect to the branch, insert `proposed` bins, compute before/after coverage from `bins` + `cell_scores.demand`, return the contract shape, delete the branch in `DELETE` and as a safety net on failure. Unverified: the exact Neon API calls for branch creation and the branch connection string; check the Neon API reference before coding. Fallback if branches misbehave: compute before/after in a transaction that rolls back, and say so.
+4. Keep `if (mocksEnabled()) return mocks...` first in each handler; update `docs/api.md` and `mocks/` if any shape changes.
+
+### Build order
+
+1. Providers, `lib/api.ts`, `lib/hooks.ts`, city selector, health dot (against mocks).
+2. Queue tab with real tickets and PATCH (Gate 2: a phone report shows up here).
+3. Map with tickets and bins; then the H3 cell layer and under-reported toggle.
+4. Bins tab on `GET /api/recommendations`.
+5. Scenario panel and cleanup guarantees.
+6. Polish: empty/loading/error states, legend, demo-data badges, cached mode, narrow-width check, two 3-minute click-through rehearsals.
+
+Done when the demo script below runs on the deployed Vercel URL for all three cities without code changes, with cached mode as the fallback.
+
 ## Status
 
 Update this section as work lands.
@@ -179,8 +252,8 @@ Update this section as work lands.
 - [x] Mock API deployed
 - [x] Classifier container + tunnel (about 66% label accuracy at last eval; prompts in `classifier/app.py`)
 - [x] Seed data (Orlando, NYC, Chicago; `db/seed.py`, reset with `db/reset_demo.sql`)
-- [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id} are live; cells, recommendations, scenarios still mock-only
-- [ ] Databricks pipeline + gold load: `db/load_gold.py` written (expects `data/gold/<slug>/{cell_scores,bins,bin_candidates}.csv`); notebooks and CSV export not in the repo yet; `data/explain.py` written (rationales per bin site, template fallback), untested against live Neon/HF
+- [ ] Real API handlers: cities, health, reports, reports/nearby, reports/{id}, tickets, tickets/{id} are live; cells, recommendations, scenarios still mock-only (work list in the web dashboard plan)
+- [ ] Databricks pipeline + gold load: `db/load_gold.py` written (expects `data/gold/<slug>/{cell_scores,bins,bin_candidates}.csv`); notebooks and CSV export not in the repo yet; gold CSVs for orlando/nyc/chicago exist under `data/gold/` (`reports_per_1k` blank, so no under-reported flags yet); `data/explain.py` runs (LLM top 20 with `meta-llama/Llama-3.1-8B-Instruct`, templates for the rest); whether gold and rationales are loaded in Neon for all three cities is not confirmed
 - [x] Mobile: report flow, nearby map, detail
-- [ ] Web: queue, map/heatmap, bins tab, scenario tab
+- [ ] Web: queue, map/heatmap, bins tab, scenario tab (planned in detail above; only a placeholder page exists)
 - [ ] Smoke tests, cache mode, recorded demo
