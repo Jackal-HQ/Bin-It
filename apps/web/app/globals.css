@@ -128,10 +128,16 @@ body {
 .bin-map .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
   filter: invert(1);
 }
-.bin-map .maplibregl-ctrl-attrib {
-  background: rgb(4 5 6 / 0.7);
+.bin-map .maplibregl-ctrl.maplibregl-ctrl-attrib,
+.bin-map .maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact,
+.bin-map .maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact-show {
+  background: rgb(4 5 6 / 0.75);
   color: #9c9c9d;
+  border-radius: 8px;
 }
 .bin-map .maplibregl-ctrl-attrib a {
   color: #9c9c9d;
+}
+.bin-map .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
 }

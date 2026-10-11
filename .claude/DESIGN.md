@@ -18,7 +18,7 @@ This file is the style reference for every Bin-It page outside the staff dashboa
 | Landing page `/` | This guide, fully |
 | New marketing or info pages (about, how it works, FAQ) | This guide, fully |
 | `/privacy`, `/terms` | Should adopt this guide (they are still light zinc); use the "Prose page" template below |
-| Staff dashboard `/dashboard` | Keeps its own palette and components (`components/Dashboard.tsx`, `panel/`, `map/`). Do not restyle it with these tokens without asking |
+| Staff dashboard `/dashboard` | This guide, dark only (see "Dashboard" below): `components/Dashboard.tsx`, `TopBar.tsx`, `panel/`, `map/` |
 | Mobile app (`apps/mobile`) | Its own theme (`lib/theme.ts`); this guide does not apply |
 
 The page is dark throughout. Do not add light sections, alternating bands, or a light theme variant.
@@ -108,6 +108,7 @@ Copy the markup from `app/page.tsx`; this table says where each lives.
 | Spotlight card | `components/landing/SpotlightCard.tsx`: key-shadow card with a cursor-following neutral highlight (no coral) |
 | Bento | `components/landing/Bento.tsx`: report / rank / place / bias cards in a 3-column grid (two spanning 2) |
 | Product window | `components/landing/ProductWindow.tsx`: dashboard mockup with hex map + ranked list; sits under the hero text |
+| Tooltip | `components/ui/tooltip-card.tsx` (Aceternity Tooltip Card): follows the pointer, spring-opens, flips at viewport edges, portaled so panels do not clip it. `ink` surface, `rc-border`, 13px `text-ash`. Use `<Tooltip content=...>` for any explanation (badges, column headers, layer names, metrics) instead of `title=` |
 | Built-on strip | `border-y border-rc-border/60`, mono 12px names in `text-smoke` |
 | Footer | `border-t border-rc-border/60`, centered mono 12px meta strip: `© year Bin-It | Privacy | Terms | Dashboard` |
 
@@ -139,7 +140,24 @@ Prose page (privacy, terms): Nav, `max-w-3xl` column, eyebrow, 32 px heading (40
 
 Do: reuse `KeyCard`, `HoverEffect`, `CountUp`, `FadeContent`; add new tokens to `globals.css` rather than hardcoding hex values; keep one primary action per view; link `Open dashboard` to `/dashboard`.
 
-Don't: add chromatic buttons or colored status text; add new accent colors; use gradients on UI controls (only the hero artwork); use drop shadows on cards; set the page on a light surface; restyle `/dashboard` with these tokens.
+Don't: add chromatic buttons or colored status text; add new accent colors; use gradients on UI controls (only the hero artwork); use drop shadows on cards; set the page on a light surface.
+
+
+### Dashboard (`/dashboard`)
+
+Same tokens, same dark canvas. Layout and recipes:
+
+| Part | Recipe |
+| --- | --- |
+| Root | `dash bg-void-black font-[family-name:var(--font-inter)] text-white` (the `.dash` class sets the dark scrollbar colors) |
+| Top bar | `border-b border-rc-border bg-void-black/80 backdrop-blur-[48px]`; coral diamond + "Bin-It" + mono `Staff` badge; selects and menus `rounded-[8px] border-rc-border bg-obsidian`; staff key and health as mono 11px `text-smoke` |
+| Side panel | `bg-ink`, `border-l border-rc-border`; tabs are a segmented control on `bg-ink/90` with the active tab `bg-graphite text-white` (motion `layoutId` slides it) |
+| Lists and tables | header mono 10px uppercase `text-smoke` on `bg-obsidian`; row dividers `border-rc-border/60`; hover `bg-white/[0.04]`; selected row `bg-coral-pulse/10` plus a 2px coral inset on the left |
+| Detail card | `KeyCard` look (16px, key shadow, `bg-ink/60`), 16px/500 title, `dl` with `text-smoke` keys and `text-white` values; keys carry a Tooltip |
+| Buttons | Primary = Mist/Iron, secondary = `border-rc-border text-ash`; no coral buttons. Status: `success-green` for good, `coral-pulse` for errors, never new hues |
+| Errors and warnings | `rounded-[12px] border border-coral-pulse/30 bg-ember-hush/60` |
+| Map | OpenFreeMap Positron inverted to a dark basemap with CSS (`.bin-map-dark`, only on the MapLibre canvas); a custom `NEXT_PUBLIC_MAP_STYLE_URL` is used unfiltered. Controls and legend are dark glass. Hover shows a small ink card |
+| Map data colors | Hex risk: navy to Info Blue ramp. Pins: warm amber, coral, red by severity, growing in size; white ring = real report, grey ring = demo. Under-reported: white outline. Sites: dark disc with mist ring (coral fill while a scenario runs). Selection ring: white |
 
 ### Where this differs from the Raycast reference
 

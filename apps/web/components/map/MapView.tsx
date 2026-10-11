@@ -10,7 +10,7 @@ import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
 import type { PickingInfo } from "@deck.gl/core";
 import { buildLayers, toCellShapes, type CellShape } from "./layers";
 import type { LayerToggles, Selection } from "@/lib/selection";
-import type { RankedCell } from "@/lib/labels";
+import { labelText, riskText, severityText, type RankedCell } from "@/lib/labels";
 import type { Bbox, Bin, Cell, City, Recommendation, Ticket } from "@/lib/types";
 
 // public/maplibre-gl-worker.mjs is copied from node_modules on postinstall (see scripts/).
@@ -20,6 +20,33 @@ setWorkerUrl("/maplibre-gl-worker.mjs");
 // A custom NEXT_PUBLIC_MAP_STYLE_URL is used as is and assumed to be dark already.
 const CUSTOM_STYLE = process.env.NEXT_PUBLIC_MAP_STYLE_URL;
 const MAP_STYLE = CUSTOM_STYLE || "https://tiles.openfreemap.org/styles/positron";
+
+/** What the hover card shows for the object under the pointer (same look as the Tooltip card). */
+function hoverText(layerId: string | undefined, o: unknown): { title: string; body: string } | null {
+  if (!o || !layerId) return null;
+  if (layerId === "pins") {
+    const t = o as Ticket;
+    return {
+      title: labelText(t.label),
+      body: `${severityText(t.max_severity)} severity · ${t.report_count} report${t.report_count === 1 ? "" : "s"}${t.is_synthetic ? " · demo data" : ""}`,
+    };
+  }
+  if (layerId === "sites") {
+    const r = o as Recommendation;
+    return {
+      title: `Recommended site #${r.rank}`,
+      body: `${Math.round(r.nearest_bin_m)} m to nearest bin · ${r.nearby_reports} nearby reports`,
+    };
+  }
+  if (layerId === "risk" || layerId === "under") {
+    const c = o as RankedCell;
+    return {
+      title: c.under_reported ? "Under-reported area" : "Area",
+      body: `Expected overflow: ${riskText(c.risk_rank)}`,
+    };
+  }
+  return null;
+}
 
 export type FlyTarget = { lat: number; lng: number; zoom: number; key: string | number };
 
@@ -48,7 +75,8 @@ const round = (n: number) => Math.round(n * 1000) / 1000;
 export default function MapView(props: Props) {
   const { city, flyTo, cells, onSelect, onBoundsChange } = props;
   const mapRef = useRef<MapRef>(null);
-  const [hovering, setHovering] = useState(false);
+  const [hover, setHover] = useState<{ x: number; y: number; title: string; body: string } | null>(null);
+  const hovering = hover !== null;
 
   const shapes = useMemo<CellShape[]>(() => toCellShapes(cells), [cells]);
   const layers = useMemo(
@@ -94,7 +122,7 @@ export default function MapView(props: Props) {
   }
 
   return (
-    <div className={`bin-map h-full w-full ${CUSTOM_STYLE ? "" : "bin-map-dark"}`}>
+    <div className={`bin-map relative h-full w-full ${CUSTOM_STYLE ? "" : "bin-map-dark"}`}>
       <Map
         ref={mapRef}
         initialViewState={{ longitude: city.center.lng, latitude: city.center.lat, zoom: 13 }}
@@ -108,9 +136,21 @@ export default function MapView(props: Props) {
         <DeckOverlay
           layers={layers}
           onClick={handleClick}
-          onHover={(info: PickingInfo) => setHovering(Boolean(info.object))}
+          onHover={(info: PickingInfo) => {
+            const text = hoverText(info.layer?.id, info.object);
+            setHover(text ? { x: info.x, y: info.y, ...text } : null);
+          }}
         />
       </Map>
+      {hover && (
+        <div
+          className="pointer-events-none absolute z-20 max-w-[240px] rounded-[12px] border border-rc-border bg-ink px-3 py-2 text-[13px] leading-[1.5] text-ash"
+          style={{ left: Math.min(hover.x + 14, 9999), top: hover.y + 14 }}
+        >
+          <span className="block font-medium text-white">{hover.title}</span>
+          <span className="block">{hover.body}</span>
+        </div>
+      )}
     </div>
   );
 }

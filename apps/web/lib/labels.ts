@@ -39,13 +39,14 @@ export const SEVERITY_COLOR: RGB[] = [
 export const severityColor = (s: number): RGB => SEVERITY_COLOR[Math.max(0, Math.min(3, s))];
 export const severityRadius = (s: number) => 7 + 2 * Math.max(0, Math.min(3, s));
 
-// risk rank 0..1 (see rankCells) -> deep navy to bright sky blue (glows on the dark map)
+// risk rank 0..1 (see rankCells) -> deep navy to Info Blue (#56c2ff, the Raycast supporting
+// accent). A cool ramp keeps hexes distinct from the warm severity pins on the dark map.
 const RISK_STOPS: RGB[] = [
   [14, 26, 52],
-  [20, 52, 112],
-  [24, 84, 176],
-  [64, 136, 232],
-  [150, 196, 255],
+  [18, 50, 100],
+  [26, 92, 160],
+  [50, 150, 220],
+  [120, 205, 255],
 ];
 export function riskColor(v: number): RGB {
   const t = Math.max(0, Math.min(1, v)) * (RISK_STOPS.length - 1);
