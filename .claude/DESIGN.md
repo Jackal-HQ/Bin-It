@@ -1,4 +1,4 @@
-# Raycast — Style Reference
+# Bin-It Design Reference (Raycast-derived)
 > Midnight command center, coral neon
 
 **Theme:** dark
@@ -6,6 +6,153 @@
 Source measurements are normalized; roles and recommendations are interpreted. Font summary lists are independent, not paired by position. HTML examples are reconstructions, not source components.
 
 Raycast reads as a dark power-tool cockpit: an almost-black canvas (#040506) with barely-visible elevation steps, a single warm coral accent (#ff6363) that carries brand identity, and quiet white/gray typography in Inter. Components are defined less by shadows and more by hairline borders, inset highlight strokes, and the distinctive 'keyboard key' inner-shadow treatment that makes cards feel pressed and tactile rather than floating. Color is rationed — the page is 98% achromatic, and the coral appears only in the logo, hero artwork, AI badge, and the occasional warm-tinted surface. Navigation floats with a glass-blur effect, and most interactive surfaces are neutral light-gray buttons on dark, not chromatic CTAs. The hero abandons the system entirely with large red/blue gradient geometry, then the rest of the page returns to the austere dark surface — contrast through atmosphere, not decoration.
+
+## Bin-It implementation guide (read this first)
+
+This file is the style reference for every Bin-It page outside the staff dashboard. The sections after this one are the original Raycast measurements; this section says how we apply them. When the two disagree, this section wins. The reference implementation is `apps/web/app/page.tsx` (landing page): copy its patterns rather than inventing new ones.
+
+### Scope
+
+| Surface | Style |
+| --- | --- |
+| Landing page `/` | This guide, fully |
+| New marketing or info pages (about, how it works, FAQ) | This guide, fully |
+| `/privacy`, `/terms` | Should adopt this guide (they are still light zinc); use the "Prose page" template below |
+| Staff dashboard `/dashboard` | Keeps its own palette and components (`components/Dashboard.tsx`, `panel/`, `map/`). Do not restyle it with these tokens without asking |
+| Mobile app (`apps/mobile`) | Its own theme (`lib/theme.ts`); this guide does not apply |
+
+The page is dark throughout. Do not add light sections, alternating bands, or a light theme variant.
+
+### Tokens (defined in `apps/web/app/globals.css`, use the Tailwind names)
+
+| Tailwind name | Value | Use |
+| --- | --- | --- |
+| `bg-void-black` | `#040506` | Page canvas, the only page background |
+| `bg-ink` | `#07080a` | Card / window surfaces |
+| `bg-obsidian` | `#111214` | Recessed wells: command bar, icon containers, inputs |
+| `bg-graphite` | `#1b1c1e` | Badge and tag fill |
+| `text-white` | `#ffffff` | Headings, high-emphasis text |
+| `text-ash` | `#9c9c9d` | Body copy, secondary text, nav links |
+| `text-smoke` | `#6a6b6c` | Muted labels, eyebrows, meta strips |
+| `bg-mist` + `text-iron` | `#e6e6e6` / `#454647` | The only filled button |
+| `border-rc-border` | `#363739` | Every hairline border (nav, outlined buttons, tiles, dividers) |
+| `bg-coral-pulse`, `text-coral-pulse` | `#ff6363` | Brand accent: logo diamond, one highlighted phrase, hero artwork, the selected row |
+| `bg-ember-hush` | `#452324` | Warm notice surface (use at `/60`) |
+| `electric-sky`, `cobalt-edge` | `#63a1ff`, `#143ca3` | Hero artwork only |
+
+Coral is rationed: logo, one phrase in the hero headline, hero atmosphere, the active row in a product mockup, and the `bg-coral-pulse/15` tint behind it. Never for body text, links, borders, icons or buttons. No other hues. Success/warning colors are not part of this surface; if a page needs status, use text labels.
+
+### Type
+
+Target: Inter for text, Geist Mono (`font-mono`) for eyebrows, meta strips and technical labels. `--font-inter` is loaded in `layout.tsx`, but `globals.css` sets `body { font-family: Arial, Helvetica, sans-serif }` and the landing page does not override it, so today the page actually renders in Arial. To get Inter, add `font-[family-name:var(--font-inter)]` to the page root (new pages should do this); changing the global body font would also affect the dashboard, so do not do that without asking.
+
+| Role | Classes | Notes |
+| --- | --- | --- |
+| Hero headline | `text-[40px] sm:text-[56px] font-normal leading-[1.1] sm:leading-[1.17] tracking-[0.22px]` | Weight 400, never bold. One coral phrase at most |
+| Section heading | `text-[32px] font-normal leading-[1.15]`, `max-w-2xl` | One strong statement per section |
+| Card title | `text-[20px] font-medium leading-[1.2]` | |
+| Body | `text-[16px] leading-[1.5] text-ash`, `max-w-[480px]` in hero | |
+| Small body | `text-[14px] leading-[1.6] text-ash` | Notices, stat labels |
+| Stat number | `text-[32px] font-medium leading-none text-white` | Use `CountUp` |
+| Eyebrow | `font-mono text-[11px] uppercase tracking-[0.073em] text-smoke` | Above every section heading |
+| Meta strip | `font-mono text-[12px] text-smoke`, separated by `|` | Footers, hero footnote |
+
+Letter-spacing on large text is slightly positive, never negative. No weights above 600.
+
+### Layout and spacing
+
+- Page container: `mx-auto w-full max-w-[1200px] px-6`.
+- Sections: `py-24` (about 96 px) between sections; hero is `h-dvh max-h-[900px] min-h-[640px]`.
+- Grids: 3 columns for feature cards (`sm:grid-cols-3`), 4 for stats (`grid-cols-2 lg:grid-cols-4`), gap `gap-4` for cards, `gap-2` for compact tiles.
+- Stay on the 8 px grid (8/12/16/24/40/96).
+- Anchored sections use `scroll-mt-24` so the fixed nav does not cover them.
+- Mobile first: single column below `sm`; nav links hide below `sm`, keep logo and the action button.
+
+### Radius
+
+| Element | Radius |
+| --- | --- |
+| Floating nav | `rounded-full` (pill) |
+| Buttons, inputs, list rows, compact tiles | `rounded-[8px]` |
+| Badges / tags | `rounded-[6px]` |
+| Product window frame | `rounded-[12px]` |
+| Cards, command bar, notices | `rounded-[16px]` |
+| Icon containers | `rounded-full` |
+
+### Elevation
+
+No drop shadows on cards. Elevation is the "key" stack, already wrapped in `KeyCard` (`components/ui/card-hover-effect.tsx`) and exported as `KEY_SHADOW` in the landing page:
+
+```text
+rgba(255,255,255,0.05) 0 1px 0 0 inset, rgba(255,255,255,0.25) 0 0 0 1px, rgba(0,0,0,0.2) 0 -1px 0 0 inset
+```
+
+The Mist button alone may carry the subtle lift `rgba(0,0,0,0.03) 0 7px 3px 0, rgba(0,0,0,0.25) 0 4px 4px 0`. Use a flat `border border-rc-border` for quiet tiles and outlined buttons. Do not mix the key stack and a border on the same element.
+
+### Components (recipes)
+
+Copy the markup from `app/page.tsx`; this table says where each lives.
+
+| Component | Recipe |
+| --- | --- |
+| Glass nav | `fixed inset-x-0 top-4 z-50 flex justify-center px-4` > `nav.flex w-full max-w-[720px] items-center justify-between gap-4 rounded-full border border-rc-border bg-void-black/60 py-2 pl-5 pr-2 backdrop-blur-[48px]`. Logo diamond (`h-3 w-3 rotate-45 rounded-[2px] bg-coral-pulse`) + "Bin-It" 13px/500; links 13px/500 `text-ash hover:text-white`; one Mist action button on the right |
+| Primary button | `h-10 rounded-[8px] bg-mist px-4 text-[14px] font-medium text-iron hover:opacity-90`. One per view |
+| Secondary button | same size, `border border-rc-border text-ash hover:text-white`, transparent |
+| Badge | `rounded-[6px] bg-graphite px-2 py-1 text-ash` (mono uppercase when it is a section tag) |
+| Feature card | `HoverEffect` or `KeyCard`: 16 px radius, `p-6`, `bg-ink/60`, key shadow; icon in `h-12 w-12 rounded-full bg-obsidian text-mist`, 24 px stroke icon (1.6 stroke, round caps) |
+| Stat card | `KeyCard` with `CountUp` (`components/reactbits/CountUp.tsx`) + 14 px ash label |
+| Product window | Frame `rounded-[12px] bg-ink p-3` + key shadow; command bar `rounded-[16px] bg-obsidian px-4 py-3`; rows `rounded-[8px] px-3 py-2.5`; the selected row `bg-coral-pulse/15` with a coral dot. Always captioned as an illustration |
+| City / link tile | `rounded-[8px] border border-rc-border p-4` with a Graphite badge on the right |
+| Notice | `rounded-[16px] bg-ember-hush/60 p-6`, 16px/500 white title, 14px ash body. Use for caveats and "estimates, not measurements" |
+| Footer | `border-t border-rc-border/60`, centered mono 12px meta strip: `© year Bin-It | Privacy | Terms | Dashboard` |
+
+### Hero atmosphere
+
+Depth comes from light, not shadow: a blue radial wash (`rgba(4,63,150,0.55)` to `rgba(6,18,37,0.25)` at about 50% 30%), two blurred coral bars rotated about -24 degrees (`bg-coral-pulse/45 blur-[60px]` and `/30 blur-[50px]`), and a bottom fade into `void-black`. Keep text centered over the calmest part. Use the hero treatment once per page and only on the first screen; inner pages get a plain `void-black` header with an eyebrow and a 32 px heading.
+
+### Page templates
+
+Marketing page: Nav, Hero (eyebrow badge, 56 px headline, one 480 px paragraph, primary + secondary button, mono meta line), then sections each shaped as eyebrow + 32 px heading + content (cards, window, stats, tiles), then the Notice if there are caveats, then Footer.
+
+Prose page (privacy, terms): Nav, `max-w-3xl` column, eyebrow, 32 px heading (40/56 px if it is the page title), body 16 px ash with 24 px between paragraphs, `h2` 20 px white, hairline dividers `border-rc-border`, then Footer.
+
+### Motion
+
+- Section entrances use `FadeContent` (`components/reactbits/FadeContent.tsx`, scroll-triggered fade); numbers use `CountUp`. Nothing bounces, loops or autoplays except the optional hero Spotlight in `components/ui/spotlight.tsx`.
+- Hover transitions are `transition-opacity` or `transition-colors`, about 150-200 ms. No scale or translate on hover.
+- Every animation must degrade to the final state: content must be readable if JavaScript or WebGL fails. Honor `prefers-reduced-motion` for anything that loops.
+
+### Content rules (project, not visual)
+
+- Say "estimate" for every projected number and show assumptions (150 m threshold, Orlando model transferred from NYC and Chicago, lightly validated).
+- Seeded or illustrative figures are labeled as an illustration or "demo data". Never present synthetic data as real.
+- Only claim numbers that exist in our data (current counts: 3 cities, 16,744 hexagons, 50 sites per city, 5 photo classes). If a number changes with a data reload, say where it comes from.
+- Privacy: no accounts, no names, no photos with faces or plates on marketing pages.
+- One idea per section; plain language; no superlatives.
+
+### Do and don't (Bin-It specific)
+
+Do: reuse `KeyCard`, `HoverEffect`, `CountUp`, `FadeContent`; add new tokens to `globals.css` rather than hardcoding hex values; keep one primary action per view; link `Open dashboard` to `/dashboard`.
+
+Don't: add chromatic buttons or colored status text; add new accent colors; use gradients on UI controls (only the hero artwork); use drop shadows on cards; set the page on a light surface; restyle `/dashboard` with these tokens.
+
+### Where this differs from the Raycast reference
+
+- The nav is a true pill (`rounded-full`); the reference says both "pill-shaped" and "8 px radius", we chose the pill and keep 8 px on buttons inside it.
+- Section headings use 32 px / 400 with a mono eyebrow above them; the reference mostly shows 56 px hero type.
+- We add an Ember Hush notice for caveats, and a product-window mockup of our own dashboard instead of Raycast's command bar.
+- Fonts: Inter body, Geist Mono for technical text; SF Pro is not loaded, so stat numbers use the Inter/Geist stack.
+- Icons are inline 24 px SVG strokes rather than SF glyphs.
+
+### Maintenance
+
+When a new page needs a pattern that is not listed (form, table, tabs), build it from the tokens above, add its recipe to the Components table, and note it in this section in the same change. Reference implementation files: `apps/web/app/page.tsx`, `apps/web/components/ui/*`, `apps/web/components/reactbits/*`, `apps/web/app/globals.css`.
+
+---
+
+## Raycast reference measurements
+> The sections below are the original extracted style reference. Use them for values this guide does not cover.
+
 
 ## Tokens — Colors
 
