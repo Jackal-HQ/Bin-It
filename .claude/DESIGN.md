@@ -156,8 +156,7 @@ Same tokens, same dark canvas. Layout and recipes:
 | Detail card | `KeyCard` look (16px, key shadow, `bg-ink/60`), 16px/500 title, `dl` with `text-smoke` keys and `text-white` values; keys carry a Tooltip |
 | Buttons | Primary = Mist/Iron, secondary = `border-rc-border text-ash`; no coral buttons. Status: `success-green` for good, `coral-pulse` for errors, never new hues |
 | Errors and warnings | `rounded-[12px] border border-coral-pulse/30 bg-ember-hush/60` |
-| Map | OpenFreeMap Positron inverted to a dark basemap with CSS (`.bin-map-dark`, only on the MapLibre canvas); a custom `NEXT_PUBLIC_MAP_STYLE_URL` is used unfiltered. Controls and legend are dark glass. Hover shows a small ink card |
-| Map data colors | Hex risk: navy to Info Blue ramp. Pins: warm amber, coral, red by severity, growing in size; white ring = real report, grey ring = demo. Under-reported: white outline. Sites: dark disc with mist ring (coral fill while a scenario runs). Selection ring: white |
+| Map | Left as it was before the dashboard restyle: OpenFreeMap Liberty (or `NEXT_PUBLIC_MAP_STYLE_URL`) with the deck.gl layers and colors in `lib/labels.ts` (warm severity pins, blue hexes, pink under-reported outline, green sites). Only the legend overlay uses the dark glass card |
 
 ### Where this differs from the Raycast reference
 

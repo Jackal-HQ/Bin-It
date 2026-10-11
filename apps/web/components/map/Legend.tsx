@@ -5,7 +5,7 @@ import {
   BIN_COLOR,
   RISK_GRADIENT,
   SEVERITY_COLOR,
-  SITE_RING,
+  SITE_COLOR,
   UNDER_REPORTED_COLOR,
   rgb,
   severityText,
@@ -70,8 +70,8 @@ export default function Legend({ layers, anyUnderReported, ratesLoaded }: Props)
               ))}
             </div>
             <div className="mt-1.5 flex items-center gap-1.5">
-              <span className="inline-block h-3 w-3 shrink-0 rounded-full border-2 border-smoke bg-ash" />
-              Grey ring = demo data, white ring = real report. Number = merged reports.
+              <span className="inline-block h-3 w-3 shrink-0 rounded-full border-2 border-zinc-900 bg-zinc-400" />
+              Dark ring = demo data. Number = merged reports.
             </div>
           </div>
         )}
@@ -88,10 +88,7 @@ export default function Legend({ layers, anyUnderReported, ratesLoaded }: Props)
         {layers.under && (
           <div>
             <div className={`flex items-center gap-1.5 ${heading}`}>
-              <span
-                className="inline-block h-3 w-3 border-2 border-dashed"
-                style={{ borderColor: rgb(UNDER_REPORTED_COLOR) }}
-              />
+              <span className="inline-block h-3 w-3 border-[3px]" style={{ borderColor: rgb(UNDER_REPORTED_COLOR) }} />
               Under-reported area
             </div>
             <p className="mt-1 text-smoke">
@@ -106,7 +103,7 @@ export default function Legend({ layers, anyUnderReported, ratesLoaded }: Props)
         {layers.bins && (
           <div className="flex items-center gap-1.5">
             <span
-              className="inline-block h-2 w-2 rounded-full border border-void-black"
+              className="inline-block h-2 w-2 rounded-full border border-white"
               style={{ background: rgb(BIN_COLOR) }}
             />
             Existing bin
@@ -115,8 +112,8 @@ export default function Legend({ layers, anyUnderReported, ratesLoaded }: Props)
         {layers.sites && (
           <div className="flex items-center gap-1.5">
             <span
-              className="inline-flex h-4 w-4 items-center justify-center rounded-full border-2 bg-void-black font-mono text-[9px] font-bold text-white"
-              style={{ borderColor: rgb(SITE_RING) }}
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full border-2 bg-white font-mono text-[9px] font-bold"
+              style={{ borderColor: rgb(SITE_COLOR), color: rgb(SITE_COLOR) }}
             >
               1
             </span>
